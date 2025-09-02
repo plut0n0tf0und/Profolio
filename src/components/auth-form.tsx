@@ -132,9 +132,9 @@ export function AuthForm() {
   };
 
   return (
-    <Card className="w-full">
+    <Card className="w-full border-0 bg-transparent shadow-none">
       <Tabs defaultValue="login" className="w-full">
-        <CardHeader>
+        <CardHeader className="px-0">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="login">Log In</TabsTrigger>
             <TabsTrigger value="signup">Sign Up</TabsTrigger>
@@ -143,7 +143,7 @@ export function AuthForm() {
         <TabsContent value="login">
           <Form {...loginForm}>
             <form onSubmit={loginForm.handleSubmit(onLoginSubmit)}>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 px-0">
                 <FormField
                   control={loginForm.control}
                   name="email"
@@ -184,10 +184,10 @@ export function AuthForm() {
                   )}
                 />
               </CardContent>
-              <CardFooter>
+              <CardFooter className="px-0">
                 <Button
                   type="submit"
-                  className="w-full bg-accent text-accent-foreground hover:bg-accent/90"
+                  className="w-full"
                   disabled={isPending}
                 >
                   {isPending && (
@@ -202,7 +202,7 @@ export function AuthForm() {
         <TabsContent value="signup">
           <Form {...signUpForm}>
             <form onSubmit={signUpForm.handleSubmit(onSignUpSubmit)}>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 px-0">
                 <FormField
                   control={signUpForm.control}
                   name="email"
@@ -243,10 +243,10 @@ export function AuthForm() {
                   )}
                 />
               </CardContent>
-              <CardFooter>
+              <CardFooter className="px-0">
                 <Button
                   type="submit"
-                  className="w-full bg-accent text-accent-foreground hover:bg-accent/90"
+                  className="w-full"
                   disabled={isPending}
                 >
                   {isPending && (
@@ -260,7 +260,7 @@ export function AuthForm() {
         </TabsContent>
       </Tabs>
 
-      <div className="relative px-6 pb-4">
+      <div className="relative py-4 px-0">
         <div className="absolute inset-0 flex items-center">
           <span className="w-full border-t" />
         </div>
@@ -271,7 +271,7 @@ export function AuthForm() {
         </div>
       </div>
 
-      <CardFooter className="flex gap-4">
+      <CardFooter className="flex gap-4 px-0">
         <Button
           variant="outline"
           className="w-full"

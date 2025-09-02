@@ -5,9 +5,14 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
+import Image from 'next/image';
 
 type User = {
   email?: string;
+  user_metadata?: {
+    avatar_url?: string;
+    full_name?: string;
+  }
 };
 
 export default function DashboardPage() {
@@ -35,36 +40,51 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center">
+      <div className="flex min-h-screen flex-col items-center justify-center bg-background">
         <Loader2 className="h-16 w-16 animate-spin text-primary" />
         <p className="mt-4 text-muted-foreground">Loading your dashboard...</p>
       </div>
     );
   }
 
+  const displayName = user?.user_metadata?.full_name || user?.email;
+  const avatarUrl = user?.user_metadata?.avatar_url;
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-8">
-      <div className="w-full max-w-xl rounded-lg border bg-card p-8 text-center shadow-sm">
-        <h1 className="text-3xl font-bold tracking-tight">
-          Welcome to Your Dashboard
-        </h1>
-        <p className="mt-4 text-lg text-muted-foreground">
-          You have successfully logged in!
-        </p>
-        {user?.email && (
-          <p className="mt-2 text-md text-foreground">
-            Signed in as: <span className="font-semibold">{user.email}</span>
-          </p>
-        )}
-        <div className="mt-8">
+    <div className="flex min-h-screen flex-col bg-background">
+      <header className="flex h-16 items-center justify-between border-b bg-card px-4 md:px-6">
+        <h1 className="text-xl font-bold text-foreground">Dashboard</h1>
+        <div className="flex items-center gap-4">
+          {avatarUrl && (
+             <Image
+              src={avatarUrl}
+              alt={displayName || 'User Avatar'}
+              width={40}
+              height={40}
+              className="rounded-full"
+            />
+          )}
+          <span className="hidden text-sm text-muted-foreground sm:inline">
+            {displayName}
+          </span>
           <Button
+            variant="outline"
             onClick={handleLogout}
-            className="w-full max-w-xs bg-accent text-accent-foreground hover:bg-accent/90"
           >
             Log Out
           </Button>
         </div>
-      </div>
-    </main>
+      </header>
+      <main className="flex flex-1 flex-col items-center justify-center p-8 text-center">
+        <div className="space-y-4">
+          <h2 className="text-4xl font-bold tracking-tight">
+            Welcome, {displayName}!
+          </h2>
+          <p className="text-lg text-muted-foreground">
+            You have successfully logged in.
+          </p>
+        </div>
+      </main>
+    </div>
   );
 }
