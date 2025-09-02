@@ -34,18 +34,12 @@ const loginSchema = z.object({
   password: z.string().min(1, { message: 'Password is required.' }),
 });
 
-const signUpSchema = z
-  .object({
-    email: z.string().email({ message: 'Please enter a valid email address.' }),
-    password: z
-      .string()
-      .min(8, { message: 'Password must be at least 8 characters long.' }),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match.",
-    path: ['confirmPassword'],
-  });
+const signUpSchema = z.object({
+  email: z.string().email({ message: 'Please enter a valid email address.' }),
+  password: z
+    .string()
+    .min(8, { message: 'Password must be at least 8 characters long.' }),
+});
 
 export function AuthForm() {
   const { toast } = useToast();
@@ -62,7 +56,7 @@ export function AuthForm() {
 
   const signUpForm = useForm<z.infer<typeof signUpSchema>>({
     resolver: zodResolver(signUpSchema),
-    defaultValues: { email: '', password: '', confirmPassword: '' },
+    defaultValues: { email: '', password: '' },
   });
 
   const onLoginSubmit = (values: z.infer<typeof loginSchema>) => {
@@ -143,7 +137,7 @@ export function AuthForm() {
         <TabsContent value="login">
           <Form {...loginForm}>
             <form onSubmit={loginForm.handleSubmit(onLoginSubmit)}>
-              <CardContent className="space-y-4 px-0">
+              <CardContent className="space-y-4 px-0 min-h-[260px]">
                 <FormField
                   control={loginForm.control}
                   name="email"
@@ -202,7 +196,7 @@ export function AuthForm() {
         <TabsContent value="signup">
           <Form {...signUpForm}>
             <form onSubmit={signUpForm.handleSubmit(onSignUpSubmit)}>
-              <CardContent className="space-y-4 px-0">
+              <CardContent className="space-y-4 px-0 min-h-[260px]">
                 <FormField
                   control={signUpForm.control}
                   name="email"
@@ -224,23 +218,6 @@ export function AuthForm() {
                   control={signUpForm.control}
                   name="password"
                   render={({ field }) => <PasswordStrengthInput field={field} />}
-                />
-                <FormField
-                  control={signUpForm.control}
-                  name="confirmPassword"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Confirm Password</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="password"
-                          placeholder="••••••••"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
                 />
               </CardContent>
               <CardFooter className="flex flex-col gap-4 px-0">
