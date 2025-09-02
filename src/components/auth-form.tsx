@@ -28,6 +28,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PasswordStrengthInput } from './password-strength-input';
 import { supabase } from '@/lib/supabase';
+import { ForgotPasswordDialog } from './forgot-password-dialog';
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address.' }),
@@ -48,6 +49,7 @@ export function AuthForm() {
   const [isSocialLoginPending, setSocialLoginPending] = useState<string | null>(
     null
   );
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
 
   const loginForm = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
@@ -98,6 +100,7 @@ export function AuthForm() {
             title: 'Sign Up Successful',
             description: 'Welcome! You can now log in.',
            });
+           router.push('/dashboard');
         }
       }
     });
@@ -109,7 +112,7 @@ export function AuthForm() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: `${location.origin}/auth/callback`,
         },
       });
       if (error) {
@@ -123,8 +126,10 @@ export function AuthForm() {
       }
     });
   };
+  
 
   return (
+    <>
     <Card className="w-full border-0 bg-transparent shadow-none">
       <Tabs defaultValue="login" className="w-full">
         <CardHeader className="px-0">
@@ -162,8 +167,12 @@ export function AuthForm() {
                     <FormItem>
                         <div className="flex items-center">
                         <FormLabel>Password</FormLabel>
-                        <Button asChild variant="link" className="ml-auto h-auto p-0 text-sm font-normal text-primary hover:underline">
-                          <a href="#">Forgot password?</a>
+                        <Button 
+                          type="button" 
+                          variant="link" 
+                          onClick={() => setShowForgotPassword(true)}
+                          className="ml-auto h-auto p-0 text-sm font-normal text-primary hover:underline">
+                          Forgot password?
                         </Button>
                       </div>
                       <FormControl>
@@ -278,5 +287,7 @@ export function AuthForm() {
         </Button>
       </CardFooter>
     </Card>
+    <ForgotPasswordDialog open={showForgotPassword} onOpenChange={setShowForgotPassword} />
+    </>
   );
 }
