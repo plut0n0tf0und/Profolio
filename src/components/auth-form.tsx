@@ -4,6 +4,7 @@ import { useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { useRouter } from 'next/navigation';
 
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -48,6 +49,7 @@ const signUpSchema = z
 
 export function AuthForm() {
   const { toast } = useToast();
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [isSocialLoginPending, setSocialLoginPending] = useState<string | null>(
     null
@@ -74,8 +76,7 @@ export function AuthForm() {
         });
       } else {
         toast({ title: 'Login Successful', description: 'Welcome back!' });
-        // Here you would typically redirect the user to a dashboard page
-        // e.g., router.push('/dashboard');
+        router.push('/dashboard');
       }
     });
   };
@@ -98,7 +99,8 @@ export function AuthForm() {
           description:
             'Welcome! Please check your email to verify your account.',
         });
-        // Here you would typically redirect the user or switch to the login tab
+        // On successful signup, Supabase sends a confirmation email.
+        // The user will be redirected to the dashboard after they log in.
       }
     });
   };
@@ -109,7 +111,7 @@ export function AuthForm() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: window.location.origin,
+          redirectTo: `${window.location.origin}/dashboard`,
         },
       });
       if (error) {
@@ -122,7 +124,7 @@ export function AuthForm() {
         setSocialLoginPending(null);
       }
       // The user will be redirected to the provider's login page,
-      // so we don't need to handle success here or reset the pending state on success.
+      // and then to the dashboard.
     });
   };
 
