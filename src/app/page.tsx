@@ -1,4 +1,5 @@
 import { AuthForm } from '@/components/auth-form';
+import { AnimatedGrid } from '@/components/animated-grid';
 
 export default function Home() {
   return (
@@ -16,7 +17,7 @@ export default function Home() {
           </div>
         </div>
         <div className="relative hidden h-full md:block">
-           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/10 via-background to-background" />
+          <AnimatedGrid />
         </div>
       </div>
     </main>
