@@ -26,35 +26,7 @@ import {
 } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PasswordStrengthInput } from './password-strength-input';
-
-// This is a placeholder for your Firebase configuration.
-// In a real application, you would initialize Firebase here
-// and use the actual Firebase Auth methods.
-// e.g., import { auth } from '@/lib/firebase';
-const firebaseAuth = {
-  signInWithGoogle: async () => {
-    console.log('Signing in with Google');
-    // Simulate a successful login
-    return { user: { email: 'user@google.com' } };
-  },
-  signInWithGithub: async () => {
-    console.log('Signing in with GitHub');
-    // Simulate a successful login
-    return { user: { email: 'user@github.com' } };
-  },
-  signInWithEmail: async (email: string, password: string) => {
-    console.log('Signing in with email:', email);
-    // Simulate a failure for a common test password
-    if (password === 'password') throw new Error('Invalid credentials');
-    // Simulate success for other passwords
-    return { user: { email } };
-  },
-  signUpWithEmail: async (email: string, password: string) => {
-    console.log('Signing up with email:', email, 'and password:', password);
-    // Simulate a successful signup
-    return { user: { email } };
-  },
-};
+import { supabase } from '@/lib/supabase';
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address.' }),
@@ -93,39 +65,40 @@ export function AuthForm() {
 
   const onLoginSubmit = (values: z.infer<typeof loginSchema>) => {
     startTransition(async () => {
-      try {
-        await firebaseAuth.signInWithEmail(values.email, values.password);
-        toast({ title: 'Login Successful', description: 'Welcome back!' });
-        // Here you would typically redirect the user to a dashboard page
-        // e.g., router.push('/dashboard');
-      } catch (error) {
+      const { error } = await supabase.auth.signInWithPassword(values);
+      if (error) {
         toast({
           variant: 'destructive',
           title: 'Login Failed',
-          description:
-            (error as Error).message || 'An unexpected error occurred.',
+          description: error.message || 'An unexpected error occurred.',
         });
+      } else {
+        toast({ title: 'Login Successful', description: 'Welcome back!' });
+        // Here you would typically redirect the user to a dashboard page
+        // e.g., router.push('/dashboard');
       }
     });
   };
 
   const onSignUpSubmit = (values: z.infer<typeof signUpSchema>) => {
     startTransition(async () => {
-      try {
-        await firebaseAuth.signUpWithEmail(values.email, values.password);
+      const { error } = await supabase.auth.signUp({
+        email: values.email,
+        password: values.password,
+      });
+      if (error) {
+        toast({
+          variant: 'destructive',
+          title: 'Sign Up Failed',
+          description: error.message || 'An unexpected error occurred.',
+        });
+      } else {
         toast({
           title: 'Sign Up Successful',
           description:
             'Welcome! Please check your email to verify your account.',
         });
         // Here you would typically redirect the user or switch to the login tab
-      } catch (error) {
-        toast({
-          variant: 'destructive',
-          title: 'Sign Up Failed',
-          description:
-            (error as Error).message || 'An unexpected error occurred.',
-        });
       }
     });
   };
@@ -133,26 +106,23 @@ export function AuthForm() {
   const handleSocialLogin = (provider: 'google' | 'github') => {
     setSocialLoginPending(provider);
     startTransition(async () => {
-      try {
-        const authProvider =
-          provider === 'google'
-            ? firebaseAuth.signInWithGoogle
-            : firebaseAuth.signInWithGithub;
-        await authProvider();
-        toast({
-          title: 'Login Successful',
-          description: `Welcome via ${provider}!`,
-        });
-      } catch (error) {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: window.location.origin,
+        },
+      });
+      if (error) {
         toast({
           variant: 'destructive',
           title: 'Login Failed',
           description:
-            (error as Error).message || `Failed to sign in with ${provider}.`,
+            error.message || `Failed to sign in with ${provider}.`,
         });
-      } finally {
         setSocialLoginPending(null);
       }
+      // The user will be redirected to the provider's login page,
+      // so we don't need to handle success here or reset the pending state on success.
     });
   };
 
