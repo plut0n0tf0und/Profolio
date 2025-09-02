@@ -32,8 +32,7 @@ export function AnimatedGrid() {
                                 left: `${Math.random() * 100}%`,
                                 animation: `float ${Math.random() * 10 + 10}s infinite alternate-reverse ease-in-out`,
                                 animationDelay: `${Math.random() * -5}s`,
-                                filter: 'blur(10px) drop-shadow(0 0 15px hsl(var(--primary)))',
-                                opacity: 0.5,
+                                opacity: 0.8,
                             }}
                         />
                     ))}
