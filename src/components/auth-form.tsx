@@ -83,10 +83,11 @@ export function AuthForm() {
 
   const onSignUpSubmit = (values: z.infer<typeof signUpSchema>) => {
     startTransition(async () => {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email: values.email,
         password: values.password,
       });
+
       if (error) {
         toast({
           variant: 'destructive',
@@ -94,13 +95,17 @@ export function AuthForm() {
           description: error.message || 'An unexpected error occurred.',
         });
       } else {
-        toast({
-          title: 'Sign Up Successful',
-          description:
-            'Welcome! Please check your email to verify your account.',
-        });
-        // On successful signup, Supabase sends a confirmation email.
-        // The user will be redirected to the dashboard after they log in.
+        if (data.user && data.user.identities && data.user.identities.length === 0) {
+           toast({
+            title: 'Sign Up Almost Complete!',
+            description: 'A confirmation link has been sent to your email. Please verify your account before logging in.',
+          });
+        } else {
+           toast({
+            title: 'Sign Up Successful',
+            description: 'Welcome! You can now log in.',
+           });
+        }
       }
     });
   };
@@ -111,7 +116,7 @@ export function AuthForm() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${window.location.origin}/dashboard`,
+          redirectTo: `${window.location.origin}/auth/callback`,
         },
       });
       if (error) {
@@ -123,8 +128,6 @@ export function AuthForm() {
         });
         setSocialLoginPending(null);
       }
-      // The user will be redirected to the provider's login page,
-      // and then to the dashboard.
     });
   };
 
