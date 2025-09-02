@@ -1,5 +1,4 @@
 import { AuthForm } from '@/components/auth-form';
-import Image from 'next/image';
 
 export default function Home() {
   return (
@@ -17,14 +16,7 @@ export default function Home() {
           </div>
         </div>
         <div className="relative hidden h-full md:block">
-           <Image
-            src="https://picsum.photos/800/1200"
-            alt="Abstract art representing security and technology"
-            fill
-            className="object-cover"
-            data-ai-hint="abstract technology"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-card via-card/80 to-transparent md:bg-gradient-to-r"></div>
+           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/10 via-background to-background" />
         </div>
       </div>
     </main>
