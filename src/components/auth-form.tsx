@@ -137,7 +137,7 @@ export function AuthForm() {
         <TabsContent value="login">
           <Form {...loginForm}>
             <form onSubmit={loginForm.handleSubmit(onLoginSubmit)}>
-              <CardContent className="space-y-4 px-0 min-h-[260px]">
+              <CardContent className="space-y-4 px-0">
                 <FormField
                   control={loginForm.control}
                   name="email"
@@ -196,7 +196,7 @@ export function AuthForm() {
         <TabsContent value="signup">
           <Form {...signUpForm}>
             <form onSubmit={signUpForm.handleSubmit(onSignUpSubmit)}>
-              <CardContent className="space-y-4 px-0 min-h-[260px]">
+              <CardContent className="space-y-4 px-0">
                 <FormField
                   control={signUpForm.control}
                   name="email"
