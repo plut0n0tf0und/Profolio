@@ -6,7 +6,6 @@ import { useFormContext } from 'react-hook-form';
 
 import { suggestPassword } from '@/ai/flows/ai-password-suggestion';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
   FormControl,
   FormItem,
@@ -28,8 +27,6 @@ export function PasswordStrengthInput({ field }: PasswordStrengthInputProps) {
   const [isPending, startTransition] = useTransition();
   const [strength, setStrength] = useState(0);
   const [feedback, setFeedback] = useState('');
-  const [useSymbols, setUseSymbols] = useState(true);
-  const [useNumbers, setUseNumbers] = useState(true);
   const { toast } = useToast();
 
   const handleSuggestPassword = () => {
@@ -39,8 +36,8 @@ export function PasswordStrengthInput({ field }: PasswordStrengthInputProps) {
       try {
         const result = await suggestPassword({
           length: 16,
-          useSymbols,
-          useNumbers,
+          useSymbols: true,
+          useNumbers: true,
         });
         if (result && result.password) {
           setValue(field.name, result.password, {
@@ -66,7 +63,7 @@ export function PasswordStrengthInput({ field }: PasswordStrengthInputProps) {
     if (strength === 0) return '';
     if (strength < 40) return 'text-destructive';
     if (strength < 75) return 'text-primary';
-    return 'text-accent';
+    return 'text-green-400';
   };
 
   return (
@@ -92,34 +89,6 @@ export function PasswordStrengthInput({ field }: PasswordStrengthInputProps) {
       <FormControl>
         <Input type="password" placeholder="••••••••" {...field} />
       </FormControl>
-      <div className="mt-2 flex items-center space-x-4 text-sm">
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id={`use-symbols-${field.name}`}
-            checked={useSymbols}
-            onCheckedChange={(checked) => setUseSymbols(Boolean(checked))}
-          />
-          <label
-            htmlFor={`use-symbols-${field.name}`}
-            className="text-sm font-medium leading-none text-muted-foreground peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-          >
-            Symbols
-          </label>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Checkbox
-            id={`use-numbers-${field.name}`}
-            checked={useNumbers}
-            onCheckedChange={(checked) => setUseNumbers(Boolean(checked))}
-          />
-          <label
-            htmlFor={`use-numbers-${field.name}`}
-            className="text-sm font-medium leading-none text-muted-foreground peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-          >
-            Numbers
-          </label>
-        </div>
-      </div>
       {feedback && (
         <div className="mt-2 space-y-2">
           <Progress value={strength} className="h-2" />
