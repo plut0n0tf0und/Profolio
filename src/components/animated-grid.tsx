@@ -5,7 +5,6 @@ import { cn } from '@/lib/utils';
 
 export function AnimatedGrid() {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isMouseEntered, setIsMouseEntered] = useState(false);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!containerRef.current) return;
@@ -17,12 +16,14 @@ export function AnimatedGrid() {
   };
 
   const handleMouseEnter = () => {
-    setIsMouseEntered(true);
+    if (containerRef.current) {
+      containerRef.current.style.transition = 'transform 0.1s ease-out';
+    }
   };
 
   const handleMouseLeave = () => {
     if (!containerRef.current) return;
-    setIsMouseEntered(false);
+    containerRef.current.style.transition = 'transform 0.5s ease-out';
     containerRef.current.style.transform = `rotateY(0deg) rotateX(0deg)`;
   };
 
@@ -35,24 +36,27 @@ export function AnimatedGrid() {
     >
       <div
         ref={containerRef}
-        className={cn(
-            "relative w-full max-w-md transform-gpu rounded-2xl border transition-transform duration-300 ease-out [transform-style:preserve-3d]",
-            isMouseEntered ? "border-slate-500/30" : "border-transparent"
-        )}
+        className="relative w-full max-w-md transform-gpu rounded-2xl transition-transform duration-300 ease-out [transform-style:preserve-3d]"
       >
         <div className="grid h-full w-full grid-cols-2 grid-rows-2 gap-4 [transform-style:preserve-3d] [transform:translateZ(10px)]">
-            <div className="col-span-2 row-span-1 flex flex-col justify-end rounded-xl border border-slate-700 bg-slate-900/70 p-4 shadow-xl backdrop-blur-sm [transform-style:preserve-3d] [transform:translateZ(40px)]">
-                <p className="text-sm font-light text-slate-300">Recommendations</p>
-                <p className="mt-1 text-lg font-semibold text-slate-100">AI-Powered Insights</p>
-            </div>
-            <div className="col-span-1 row-span-1 flex flex-col justify-end rounded-xl border border-slate-700 bg-slate-900/70 p-4 shadow-xl backdrop-blur-sm [transform-style:preserve-3d] [transform:translateZ(20px)]">
-                 <p className="text-sm font-light text-slate-300">For</p>
-                <p className="mt-1 text-lg font-semibold text-slate-100">Developers</p>
-            </div>
-            <div className="col-span-1 row-span-1 flex flex-col justify-end rounded-xl border border-slate-700 bg-slate-900/70 p-4 shadow-xl backdrop-blur-sm [transform-style:preserve-3d] [transform:translateZ(60px)]">
-                 <p className="text-sm font-light text-slate-300">UX</p>
-                <p className="mt-1 text-lg font-semibold text-slate-100">Techniques</p>
-            </div>
+          <div className="col-span-2 row-span-1 flex flex-col justify-end rounded-xl border border-slate-700 bg-slate-900/70 p-4 shadow-xl backdrop-blur-sm [transform-style:preserve-3d] [transform:translateZ(40px)]">
+            <p className="text-sm font-light text-slate-300">Recommendations</p>
+            <p className="mt-1 text-lg font-semibold text-slate-100">
+              AI-Powered Insights
+            </p>
+          </div>
+          <div className="col-span-1 row-span-1 flex flex-col justify-end rounded-xl border border-slate-700 bg-slate-900/70 p-4 shadow-xl backdrop-blur-sm [transform-style:preserve-3d] [transform:translateZ(20px)]">
+            <p className="text-sm font-light text-slate-300">For</p>
+            <p className="mt-1 text-lg font-semibold text-slate-100">
+              Developers
+            </p>
+          </div>
+          <div className="col-span-1 row-span-1 flex flex-col justify-end rounded-xl border border-slate-700 bg-slate-900/70 p-4 shadow-xl backdrop-blur-sm [transform-style:preserve-3d] [transform:translateZ(60px)]">
+            <p className="text-sm font-light text-slate-300">UX</p>
+            <p className="mt-1 text-lg font-semibold text-slate-100">
+              Techniques
+            </p>
+          </div>
         </div>
       </div>
     </div>
