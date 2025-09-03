@@ -95,19 +95,20 @@ export function AuthForm({ mode }: AuthFormProps) {
   const handleSocialLogin = (provider: 'google' | 'github') => {
     setSocialLoginPending(provider);
     startTransition(async () => {
-      const redirectTo = `${location.origin}/auth/callback`;
-      const options = {
-        redirectTo,
-        queryParams: {},
-      };
-
+      let redirectTo = `${location.origin}/auth/callback`;
+      
+      const queryParams = new URLSearchParams();
       if (mode === 'login') {
-        options.queryParams = { is_login: 'true' };
+        queryParams.set('is_login', 'true');
       }
+      
+      redirectTo = `${redirectTo}?${queryParams.toString()}`;
 
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
-        options,
+        options: {
+          redirectTo,
+        },
       });
 
       if (error) {
