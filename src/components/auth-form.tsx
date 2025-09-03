@@ -23,9 +23,7 @@ import {
   Card,
   CardContent,
   CardFooter,
-  CardHeader,
 } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PasswordStrengthInput } from './password-strength-input';
 import { supabase } from '@/lib/supabase';
 import { ForgotPasswordDialog } from './forgot-password-dialog';
@@ -42,7 +40,11 @@ const signUpSchema = z.object({
     .min(8, { message: 'Password must be at least 8 characters long.' }),
 });
 
-export function AuthForm() {
+interface AuthFormProps {
+    mode: 'login' | 'signup';
+}
+
+export function AuthForm({ mode }: AuthFormProps) {
   const { toast } = useToast();
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -51,60 +53,49 @@ export function AuthForm() {
   );
   const [showForgotPassword, setShowForgotPassword] = useState(false);
 
-  const loginForm = useForm<z.infer<typeof loginSchema>>({
-    resolver: zodResolver(loginSchema),
+  const form = useForm<z.infer<typeof loginSchema | typeof signUpSchema>>({
+    resolver: zodResolver(mode === 'login' ? loginSchema : signUpSchema),
     defaultValues: { email: '', password: '' },
   });
 
-  const signUpForm = useForm<z.infer<typeof signUpSchema>>({
-    resolver: zodResolver(signUpSchema),
-    defaultValues: { email: '', password: '' },
-  });
-
-  const onLoginSubmit = (values: z.infer<typeof loginSchema>) => {
+  const onSubmit = (values: z.infer<typeof loginSchema | typeof signUpSchema>) => {
     startTransition(async () => {
-      const { error } = await supabase.auth.signInWithPassword(values);
-      if (error) {
-        toast({
-          variant: 'destructive',
-          title: 'Login Failed',
-          description: error.message || 'An unexpected error occurred.',
-        });
-      } else {
-        router.push('/dashboard');
-        router.refresh();
-      }
-    });
-  };
-
-  const onSignUpSubmit = (values: z.infer<typeof signUpSchema>) => {
-    startTransition(async () => {
-      const { data, error } = await supabase.auth.signUp({
-        email: values.email,
-        password: values.password,
-      });
-
-      if (error) {
-        toast({
-          variant: 'destructive',
-          title: 'Sign Up Failed',
-          description: error.message || 'An unexpected error occurred.',
-        });
-      } else {
-        if (data.user && data.user.identities && data.user.identities.length === 0) {
-           toast({
-            title: 'Sign Up Almost Complete!',
-            description: 'A confirmation link has been sent to your email. Please verify your account before logging in.',
-          });
-        } else {
-           toast({
-            title: 'Sign Up Successful',
-            description: 'Welcome! You can now log in.',
-           });
-           router.push('/dashboard');
-           router.refresh();
+        if (mode === 'signup') {
+            const { data, error } = await supabase.auth.signUp(values);
+            if (error) {
+                toast({
+                  variant: 'destructive',
+                  title: 'Sign Up Failed',
+                  description: error.message || 'An unexpected error occurred.',
+                });
+            } else {
+                if (data.user && data.user.identities && data.user.identities.length === 0) {
+                   toast({
+                    title: 'Sign Up Almost Complete!',
+                    description: 'A confirmation link has been sent to your email. Please verify your account before logging in.',
+                  });
+                } else {
+                   toast({
+                    title: 'Sign Up Successful',
+                    description: 'Welcome! You can now log in.',
+                   });
+                   router.push('/dashboard');
+                   router.refresh();
+                }
+              }
+        } else { // login
+            const { error } = await supabase.auth.signInWithPassword(values);
+            if (error) {
+                toast({
+                  variant: 'destructive',
+                  title: 'Login Failed',
+                  description: error.message || 'An unexpected error occurred.',
+                });
+              } else {
+                router.push('/dashboard');
+                router.refresh();
+              }
         }
-      }
     });
   };
 
@@ -133,20 +124,11 @@ export function AuthForm() {
   return (
     <>
     <Card className="w-full border-0 bg-transparent shadow-none">
-      <Tabs defaultValue="login" className="w-full">
-        <CardHeader className="px-0">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="login">Log In</TabsTrigger>
-            <TabsTrigger value="signup">Sign Up</TabsTrigger>
-          </TabsList>
-        </CardHeader>
-        
-        <TabsContent value="login">
-          <Form {...loginForm}>
-            <form onSubmit={loginForm.handleSubmit(onLoginSubmit)}>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)}>
               <CardContent className="space-y-4 px-0">
                 <FormField
-                  control={loginForm.control}
+                  control={form.control}
                   name="email"
                   render={({ field }) => (
                     <FormItem>
@@ -162,30 +144,34 @@ export function AuthForm() {
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={loginForm.control}
+                 <FormField
+                  control={form.control}
                   name="password"
                   render={({ field }) => (
-                    <FormItem>
-                        <div className="flex items-center">
-                        <FormLabel>Password</FormLabel>
-                        <Button 
-                          type="button" 
-                          variant="link" 
-                          onClick={() => setShowForgotPassword(true)}
-                          className="ml-auto h-auto p-0 text-sm font-normal text-primary hover:underline">
-                          Forgot password?
-                        </Button>
-                      </div>
-                      <FormControl>
-                        <Input
-                          type="password"
-                          placeholder="••••••••"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
+                    mode === 'login' ? (
+                      <FormItem>
+                          <div className="flex items-center">
+                          <FormLabel>Password</FormLabel>
+                          <Button 
+                            type="button" 
+                            variant="link" 
+                            onClick={() => setShowForgotPassword(true)}
+                            className="ml-auto h-auto p-0 text-sm font-normal text-primary hover:underline">
+                            Forgot password?
+                          </Button>
+                        </div>
+                        <FormControl>
+                          <Input
+                            type="password"
+                            placeholder="••••••••"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    ) : (
+                        <PasswordStrengthInput field={field} />
+                    )
                   )}
                 />
               </CardContent>
@@ -198,57 +184,12 @@ export function AuthForm() {
                   {isPending && (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   )}
-                  Log In
+                  {mode === 'login' ? 'Log In' : 'Create Account'}
                 </Button>
               </CardFooter>
             </form>
           </Form>
-        </TabsContent>
-        <TabsContent value="signup">
-          <Form {...signUpForm}>
-            <form onSubmit={signUpForm.handleSubmit(onSignUpSubmit)}>
-              <CardContent className="space-y-4 px-0">
-                <FormField
-                  control={signUpForm.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="email"
-                          placeholder="name@example.com"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={signUpForm.control}
-                  name="password"
-                  render={({ field }) => <PasswordStrengthInput field={field} />}
-                />
-              </CardContent>
-              <CardFooter className="flex flex-col gap-4 px-0">
-                <Button
-                  type="submit"
-                  className="w-full"
-                  disabled={isPending}
-                >
-                  {isPending && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  )}
-                  Create Account
-                </Button>
-              </CardFooter>
-            </form>
-          </Form>
-        </TabsContent>
       
-      </Tabs>
-
       <div className="relative py-4 px-0">
         <div className="absolute inset-0 flex items-center">
           <span className="w-full border-t" />

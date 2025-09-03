@@ -2,24 +2,24 @@ import { AuthForm } from '@/components/auth-form';
 import { AnimatedGrid } from '@/components/animated-grid';
 import Link from 'next/link';
 
-export default function Home() {
+export default function LoginPage() {
   return (
     <main className="flex min-h-screen w-full items-center justify-center p-4">
       <div className="grid w-full max-w-6xl grid-cols-1 overflow-hidden rounded-lg md:grid-cols-2 bg-card shadow-lg">
         <div className="flex flex-col justify-center p-8 sm:p-12 lg:p-16">
           <h1 className="text-4xl font-black tracking-tighter sm:text-5xl lg:text-6xl font-headline">
-            AuthNexus
+            Welcome Back
           </h1>
           <p className="mt-4 text-lg text-muted-foreground">
-            Experience the future of secure, seamless authentication powered by AI.
+            Log in to access your dashboard.
           </p>
           <div className="mt-8">
-            <AuthForm mode="signup" />
+            <AuthForm mode="login" />
           </div>
-           <p className="mt-4 text-center text-sm text-muted-foreground">
-              Already have an account?{' '}
-              <Link href="/login" className="font-semibold text-primary hover:underline">
-                Log In
+            <p className="mt-4 text-center text-sm text-muted-foreground">
+              Don't have an account?{' '}
+              <Link href="/" className="font-semibold text-primary hover:underline">
+                Sign Up
               </Link>
             </p>
         </div>
