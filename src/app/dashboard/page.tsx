@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { useToast } from '@/hooks/use-toast';
 import {
   Home,
   Settings,
@@ -36,6 +37,7 @@ type User = {
 };
 
 export default function DashboardPage() {
+  const { toast } = useToast();
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -53,6 +55,24 @@ export default function DashboardPage() {
     getUser();
   }, [router]);
 
+  
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const error = urlParams.get('error');
+    if (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Login Failed',
+        description: decodeURIComponent(error),
+      });
+      // Optional: remove query param from URL
+      const url = new URL(window.location.href);
+      url.searchParams.delete('error');
+      window.history.replaceState({}, '', url.toString());
+    }
+  }, []);
+
+  
   const handleLogout = async () => {
     await supabase.auth.signOut();
     router.push('/');
@@ -82,13 +102,13 @@ export default function DashboardPage() {
         <SidebarContent>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton href="#" isActive>
+              <SidebarMenuButton ref="#" isActive>
                 <Home />
                 Dashboard
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton href="#">
+              <SidebarMenuButton ref="#">
                 <Settings />
                 Settings
               </SidebarMenuButton>

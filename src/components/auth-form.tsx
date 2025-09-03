@@ -112,38 +112,36 @@ export function AuthForm({ mode }: AuthFormProps) {
 
   const handleSocialLogin = (provider: 'google' | 'github') => {
     setSocialLoginPending(provider);
+  
     startTransition(async () => {
-      let redirectTo = `${location.origin}/auth/callback`;
-      
-      const { data: { user } } = await supabase.auth.getUser();
-
-      // If it's a login attempt, we need to do the pre-check.
-      if (mode === 'login' && !user) {
-        // This is a simplified check. A full implementation would involve
-        // getting the user's email from the provider before the redirect,
-        // which requires a more complex server-side flow.
-        // For this scenario, we will use a flag and check post-login.
-        redirectTo = `${location.origin}/auth/callback?is_login=true`;
-      }
-      
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: {
-          redirectTo,
-        },
-      });
-
-      if (error) {
+      try {
+        const { error: oauthError } = await supabase.auth.signInWithOAuth({
+          provider,
+          options: {
+            redirectTo: `${location.origin}/auth/callback${mode === 'login' ? '?is_login=true' : ''}`,
+          },
+        });
+  
+        if (oauthError) {
+          toast({
+            variant: 'destructive',
+            title: 'Authentication Failed',
+            description: oauthError.message || `Failed to sign in with ${provider}.`,
+          });
+          setSocialLoginPending(null);
+        }
+      } catch (err) {
         toast({
           variant: 'destructive',
-          title: 'Login Failed',
-          description:
-            error.message || `Failed to sign in with ${provider}.`,
+          title: 'Authentication Failed',
+          description: 'Unexpected error occurred.',
         });
         setSocialLoginPending(null);
       }
     });
   };
+  
+  
 
   return (
     <>
