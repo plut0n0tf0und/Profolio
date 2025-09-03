@@ -1,20 +1,53 @@
 'use client';
 
+import { AuthForm } from '@/components/auth-form';
+import { AnimatedGrid } from '@/components/animated-grid';
+import Link from 'next/link';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Loader2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
-export default function HomePage() {
+export default function SignupPage() {
+  const searchParams = useSearchParams();
   const router = useRouter();
+  const { toast } = useToast();
 
   useEffect(() => {
-    router.replace('/signup');
-  }, [router]);
+    const error = searchParams.get('error');
+    if (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Sign Up Failed',
+        description: decodeURIComponent(error),
+      });
+      router.replace('/signup'); // clean up ?error= from URL
+    }
+  }, [searchParams, router, toast]);
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-background">
-      <Loader2 className="h-16 w-16 animate-spin text-primary" />
-      <p className="mt-4 text-muted-foreground">Redirecting...</p>
-    </div>
+    <main className="flex min-h-screen w-full items-center justify-center p-4">
+      <div className="grid w-full max-w-6xl grid-cols-1 overflow-hidden rounded-lg md:grid-cols-2 bg-card shadow-lg">
+        <div className="flex flex-col justify-center p-8 sm:p-12 lg:p-16">
+          <h1 className="text-4xl font-black tracking-tighter sm:text-5xl lg:text-6xl font-headline">
+            Create an Account
+          </h1>
+          <p className="mt-4 text-lg text-muted-foreground">
+            Sign up to get access to magical UX techniques.
+          </p>
+          <div className="mt-8">
+            <AuthForm mode="signup" />
+          </div>
+          <p className="mt-4 text-center text-sm text-muted-foreground">
+            Already have an account?{' '}
+            <Link href="/login" className="font-semibold text-primary hover:underline">
+              Log In
+            </Link>
+          </p>
+        </div>
+        <div className="relative hidden h-full md:block">
+          <AnimatedGrid />
+        </div>
+      </div>
+    </main>
   );
 }

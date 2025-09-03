@@ -110,36 +110,41 @@ export function AuthForm({ mode }: AuthFormProps) {
     });
   };
 
-  const handleSocialLogin = (provider: 'google' | 'github') => {
+  const handleSocialLogin = async (provider: 'google' | 'github') => {
     setSocialLoginPending(provider);
   
-    startTransition(async () => {
-      try {
-        const { error: oauthError } = await supabase.auth.signInWithOAuth({
-          provider,
-          options: {
-            redirectTo: `${location.origin}/auth/callback${mode === 'login' ? '?is_login=true' : ''}`,
-          },
-        });
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback${mode === 'login' ? '?is_login=true' : ''}`,
+          skipBrowserRedirect: true, // stop auto redirect so we can handle toast first
+        },
+      });
   
-        if (oauthError) {
-          toast({
-            variant: 'destructive',
-            title: 'Authentication Failed',
-            description: oauthError.message || `Failed to sign in with ${provider}.`,
-          });
-          setSocialLoginPending(null);
-        }
-      } catch (err) {
+      if (error) {
         toast({
           variant: 'destructive',
           title: 'Authentication Failed',
-          description: 'Unexpected error occurred.',
+          description: error.message || `Failed to sign in with ${provider}.`,
         });
         setSocialLoginPending(null);
+        return;
       }
-    });
+  
+      if (data?.url) {
+        window.location.href = data.url; // now manually redirect
+      }
+    } catch (err) {
+      toast({
+        variant: 'destructive',
+        title: 'Authentication Failed',
+        description: 'Unexpected error occurred.',
+      });
+      setSocialLoginPending(null);
+    }
   };
+  
   
   
 

@@ -18,30 +18,25 @@ export async function GET(request: NextRequest) {
   // Exchange OAuth code for session (temporary)
   const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
-  if (error) {
-    console.error('Error exchanging code for session:', error);
-    const errorMessage = encodeURIComponent('Authentication failed. Please try again.');
-    return NextResponse.redirect(`${origin}/login?error=${errorMessage}`);
+// inside GET()
+if (error) {
+  console.error('Error exchanging code for session:', error);
+  const errorMessage = encodeURIComponent('Authentication failed. Please try again.');
+  return NextResponse.redirect(`${origin}/auth/callback?error=${errorMessage}`);
+}
+
+if (isLogin && data.user) {
+  const createdAt = new Date(data.user.created_at);
+  const lastSignInAt = data.user.last_sign_in_at ? new Date(data.user.last_sign_in_at) : createdAt;
+  const isNewUser = Math.abs(createdAt.getTime() - lastSignInAt.getTime()) < 5000;
+
+  if (isNewUser) {
+    await supabase.auth.signOut();
+    const errorMessage = encodeURIComponent('This account is not registered. Please sign up.');
+    return NextResponse.redirect(`${origin}/auth/callback?error=${errorMessage}`);
   }
+}
 
-  // If login attempt, check if user already exists in Supabase
-  if (isLogin && data.user?.email) {
-    const { data: existingUser, error: userError } = await supabase
-      .from('users') // Or 'profiles' if you use a separate table
-      .select('id')
-      .eq('email', data.user.email)
-      .single();
-
-    if (userError || !existingUser) {
-      // Abort login for non-registered users
-      await supabase.auth.signOut();
-      const errorMessage = encodeURIComponent(
-        'This account is not registered. Please sign up first.'
-      );
-      return NextResponse.redirect(`${origin}/login?error=${errorMessage}`);
-    }
-  }
-
-  // Login success or signup flow
-  return NextResponse.redirect(`${origin}/dashboard`);
+// Success → go dashboard
+return NextResponse.redirect(`${origin}/dashboard`);
 }
