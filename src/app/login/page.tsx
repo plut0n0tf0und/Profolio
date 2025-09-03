@@ -17,7 +17,7 @@ export default function LoginPage() {
       toast({
         variant: 'destructive',
         title: 'Login Failed',
-        description: error,
+        description: decodeURIComponent(error),
       });
     }
   }, [error, toast]);

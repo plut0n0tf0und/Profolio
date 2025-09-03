@@ -95,12 +95,21 @@ export function AuthForm({ mode }: AuthFormProps) {
   const handleSocialLogin = (provider: 'google' | 'github') => {
     setSocialLoginPending(provider);
     startTransition(async () => {
+      const redirectTo = `${location.origin}/auth/callback`;
+      const options = {
+        redirectTo,
+        queryParams: {},
+      };
+
+      if (mode === 'login') {
+        options.queryParams = { is_login: 'true' };
+      }
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
-        options: {
-          redirectTo: `${location.origin}/auth/callback?is_login=${mode === 'login'}`,
-        },
+        options,
       });
+
       if (error) {
         toast({
           variant: 'destructive',
@@ -112,7 +121,6 @@ export function AuthForm({ mode }: AuthFormProps) {
       }
     });
   };
-  
 
   return (
     <>
