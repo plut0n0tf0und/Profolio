@@ -72,6 +72,7 @@ export function AuthForm() {
         });
       } else {
         router.push('/dashboard');
+        router.refresh();
       }
     });
   };
@@ -101,6 +102,7 @@ export function AuthForm() {
             description: 'Welcome! You can now log in.',
            });
            router.push('/dashboard');
+           router.refresh();
         }
       }
     });
