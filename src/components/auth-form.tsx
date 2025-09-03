@@ -70,8 +70,8 @@ export function AuthForm({ mode }: AuthFormProps) {
                 });
             } else {
                 toast({
-                title: 'Sign Up Successful',
-                description: 'Welcome! Redirecting you to the dashboard.',
+                  title: 'Welcome!',
+                  description: 'You have successfully signed up. Redirecting...',
                 });
                 router.push('/dashboard');
                 router.refresh();
@@ -82,7 +82,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                 toast({
                   variant: 'destructive',
                   title: 'Login Failed',
-                  description: error.message || 'An unexpected error occurred.',
+                  description: error.message || 'Invalid email or password.',
                 });
               } else {
                 router.push('/dashboard');
