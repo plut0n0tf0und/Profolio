@@ -1,8 +1,28 @@
+'use client';
+
 import { AuthForm } from '@/components/auth-form';
 import { AnimatedGrid } from '@/components/animated-grid';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { useEffect } from 'react';
+import { useToast } from '@/hooks/use-toast';
 
 export default function LoginPage() {
+  const searchParams = useSearchParams();
+  const { toast } = useToast();
+  const error = searchParams.get('error');
+
+  useEffect(() => {
+    if (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Login Failed',
+        description: error,
+      });
+    }
+  }, [error, toast]);
+
+
   return (
     <main className="flex min-h-screen w-full items-center justify-center p-4">
       <div className="grid w-full max-w-6xl grid-cols-1 overflow-hidden rounded-lg md:grid-cols-2 bg-card shadow-lg">

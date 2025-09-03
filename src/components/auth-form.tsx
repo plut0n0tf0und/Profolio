@@ -98,7 +98,7 @@ export function AuthForm({ mode }: AuthFormProps) {
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${location.origin}/auth/callback`,
+          redirectTo: `${location.origin}/auth/callback?is_login=${mode === 'login'}`,
         },
       });
       if (error) {
