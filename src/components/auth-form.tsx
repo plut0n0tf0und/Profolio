@@ -61,7 +61,7 @@ export function AuthForm({ mode }: AuthFormProps) {
   const onSubmit = (values: z.infer<typeof loginSchema | typeof signUpSchema>) => {
     startTransition(async () => {
         if (mode === 'signup') {
-            const { data, error } = await supabase.auth.signUp(values);
+            const { error } = await supabase.auth.signUp(values);
             if (error) {
                 toast({
                   variant: 'destructive',
@@ -69,20 +69,13 @@ export function AuthForm({ mode }: AuthFormProps) {
                   description: error.message || 'An unexpected error occurred.',
                 });
             } else {
-                if (data.user && data.user.identities && data.user.identities.length === 0) {
-                   toast({
-                    title: 'Sign Up Almost Complete!',
-                    description: 'A confirmation link has been sent to your email. Please verify your account before logging in.',
-                  });
-                } else {
-                   toast({
-                    title: 'Sign Up Successful',
-                    description: 'Welcome! You can now log in.',
-                   });
-                   router.push('/dashboard');
-                   router.refresh();
-                }
-              }
+                toast({
+                title: 'Sign Up Successful',
+                description: 'Welcome! Redirecting you to the dashboard.',
+                });
+                router.push('/dashboard');
+                router.refresh();
+            }
         } else { // login
             const { error } = await supabase.auth.signInWithPassword(values);
             if (error) {
