@@ -8,10 +8,10 @@ export default function Home() {
       <div className="grid w-full max-w-6xl grid-cols-1 overflow-hidden rounded-lg md:grid-cols-2 bg-card shadow-lg">
         <div className="flex flex-col justify-center p-8 sm:p-12 lg:p-16">
           <h1 className="text-4xl font-black tracking-tighter sm:text-5xl lg:text-6xl font-headline">
-            AuthNexus
+            Create an Account
           </h1>
           <p className="mt-4 text-lg text-muted-foreground">
-            Experience the future of secure, seamless authentication powered by AI.
+            Sign up to get access to magical UX techniques.
           </p>
           <div className="mt-8">
             <AuthForm mode="signup" />
