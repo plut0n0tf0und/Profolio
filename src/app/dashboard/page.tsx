@@ -25,6 +25,7 @@ import {
   SidebarInset,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
+import { Logo } from '@/components/logo';
 
 type User = {
   email?: string;
@@ -74,7 +75,8 @@ export default function DashboardPage() {
       <Sidebar>
         <SidebarHeader>
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-semibold">AuthNexus</h2>
+            <Logo className="size-8" />
+            <h2 className="text-xl font-semibold">Profolio</h2>
           </div>
         </SidebarHeader>
         <SidebarContent>
