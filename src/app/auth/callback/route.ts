@@ -16,6 +16,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(`${origin}/login?error=${errorMessage}`);
     }
 
+    // This is the critical check for the login flow
     if (isLogin && data.user) {
       const createdAt = new Date(data.user.created_at);
       const lastSignInAt = data.user.last_sign_in_at ? new Date(data.user.last_sign_in_at) : createdAt;

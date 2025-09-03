@@ -44,6 +44,24 @@ interface AuthFormProps {
     mode: 'login' | 'signup';
 }
 
+async function getProviderUrl(provider: 'google' | 'github', redirectTo: string) {
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider,
+    options: {
+      redirectTo,
+      // Important: this tells Supabase to return the URL instead of redirecting
+      skipBrowserRedirect: true, 
+    },
+  });
+
+  if (error) {
+    console.error('Error getting provider URL:', error);
+    return null;
+  }
+  return data.url;
+}
+
+
 export function AuthForm({ mode }: AuthFormProps) {
   const { toast } = useToast();
   const router = useRouter();
@@ -97,13 +115,17 @@ export function AuthForm({ mode }: AuthFormProps) {
     startTransition(async () => {
       let redirectTo = `${location.origin}/auth/callback`;
       
-      const queryParams = new URLSearchParams();
-      if (mode === 'login') {
-        queryParams.set('is_login', 'true');
+      const { data: { user } } = await supabase.auth.getUser();
+
+      // If it's a login attempt, we need to do the pre-check.
+      if (mode === 'login' && !user) {
+        // This is a simplified check. A full implementation would involve
+        // getting the user's email from the provider before the redirect,
+        // which requires a more complex server-side flow.
+        // For this scenario, we will use a flag and check post-login.
+        redirectTo = `${location.origin}/auth/callback?is_login=true`;
       }
       
-      redirectTo = `${redirectTo}?${queryParams.toString()}`;
-
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
