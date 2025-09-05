@@ -4,7 +4,7 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { fetchRequirementById, Requirement, saveOrUpdateResult } from '@/lib/supabaseClient';
-import { getTechniquesForStage } from '@/lib/uxTechniques';
+import { getFilteredTechniques } from '@/lib/uxTechniques';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
@@ -88,8 +88,6 @@ export default function ResultPage() {
   const [stageTechniques, setStageTechniques] = useState<StageTechniques>({});
   const [isLoading, setIsLoading] = useState(true);
 
-  const fiveDStages = useMemo(() => ["Discover", "Define", "Design", "Develop", "Deliver"], []);
-
   const handleSaveResult = useCallback(async () => {
     if (!requirement || !id) return;
   
@@ -139,19 +137,14 @@ export default function ResultPage() {
         router.push('/dashboard');
       } else if(data) {
         setRequirement(data);
-
-        const categorized: StageTechniques = fiveDStages.reduce((acc, stage) => {
-            acc[stage] = getTechniquesForStage(stage);
-            return acc;
-        }, {} as StageTechniques);
-
-        setStageTechniques(categorized);
+        const filteredTechniques = getFilteredTechniques(data);
+        setStageTechniques(filteredTechniques);
       }
       setIsLoading(false);
     };
 
     getRequirement();
-  }, [id, router, toast, fiveDStages]);
+  }, [id, router, toast]);
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
