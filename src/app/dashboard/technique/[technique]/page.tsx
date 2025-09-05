@@ -386,10 +386,17 @@ export default function TechniqueDetailPage() {
         <h1 className="text-xl font-bold text-center flex-1 truncate px-4">
           {isEditMode ? `Remix: ${techniqueName}` : techniqueName}
         </h1>
-        <div className="w-24 flex justify-end"> 
-          <Button variant="default" size="sm" onClick={() => setIsEditMode(!isEditMode)}>
-            {isEditMode ? <><X className="mr-2 h-4 w-4"/> Cancel</> : <><Wand2 className="mr-2 h-4 w-4" /> Remix</>}
-          </Button>
+        <div className="w-24 flex justify-end">
+          {!isEditMode && (
+            <Button variant="default" size="sm" onClick={() => setIsEditMode(true)}>
+              <Wand2 className="mr-2 h-4 w-4" /> Remix
+            </Button>
+          )}
+          {isEditMode && (
+             <Button variant="outline" size="sm" onClick={() => setIsEditMode(false)}>
+              <X className="mr-2 h-4 w-4"/> Cancel
+            </Button>
+          )}
         </div>
       </header>
 
