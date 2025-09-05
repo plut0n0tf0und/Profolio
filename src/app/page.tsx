@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { Logo } from '@/components/logo';
 
 export default function LoginPage() {
   const searchParams = useSearchParams();
@@ -39,27 +40,33 @@ export default function LoginPage() {
 
 
   return (
-    <main className="flex min-h-screen w-full items-center justify-center p-4">
-      <div className="grid w-full max-w-6xl grid-cols-1 overflow-hidden rounded-lg md:grid-cols-2 bg-card shadow-lg">
-        <div className="flex flex-col justify-center p-8 sm:p-12 lg:p-16">
-          <h1 className="text-4xl font-black tracking-tighter sm:text-5xl lg:text-6xl font-headline">
-            Welcome Back
-          </h1>
-          <p className="mt-4 text-lg text-muted-foreground">
-            Log in to access your dashboard.
-          </p>
-          <div className="mt-8">
+    <main className="flex min-h-screen w-full flex-col items-center justify-center bg-background p-4">
+      <div className="grid w-full max-w-5xl grid-cols-1 md:grid-cols-2">
+        <div className="relative hidden h-full md:flex items-center justify-center p-8">
+          <AnimatedGrid />
+        </div>
+        <div className="flex w-full max-w-md flex-col justify-center gap-6 p-4 sm:p-6 md:p-8">
+            <div className="flex items-center gap-4">
+              <Logo className="h-10 w-10 text-primary" />
+              <h1 className="text-2xl font-bold text-foreground">Profolio</h1>
+            </div>
+            <div>
+                <h2 className="text-3xl font-black tracking-tighter text-foreground sm:text-4xl">
+                    Welcome Back
+                </h2>
+                <p className="mt-2 text-muted-foreground">
+                    Enter your credentials to access your projects.
+                </p>
+            </div>
+          
             <AuthForm mode="login" />
-          </div>
-            <p className="mt-4 text-center text-sm text-muted-foreground">
-              Don't have an account?{' '}
+
+            <p className="text-center text-sm text-muted-foreground">
+              Don&apos;t have an account?{' '}
               <Link href="/signup" className="font-semibold text-primary hover:underline">
                 Sign Up
               </Link>
             </p>
-        </div>
-        <div className="relative hidden h-full md:block">
-          <AnimatedGrid />
         </div>
       </div>
     </main>
