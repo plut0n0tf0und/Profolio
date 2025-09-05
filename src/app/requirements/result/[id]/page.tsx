@@ -100,25 +100,39 @@ export default function ResultPage() {
 
   const handleSaveResult = useCallback(async () => {
     if (!requirement || !id) return;
-
-    const resultData = { ...requirement, stage_techniques: stageTechniques };
-
+  
+    const resultData = {
+      user_id: 'CURRENT_USER_ID',       // replace with actual user ID from session
+      requirement_id: id,
+      project_name: requirement.project_name || '',
+      role: requirement.role || '',
+      date: requirement.date ? new Date(requirement.date).toISOString() : null,
+      problem_statement: requirement.problem_statement || '',
+      output_type: Array.isArray(requirement.output_type) ? requirement.output_type : [],
+      outcome: Array.isArray(requirement.outcome) ? requirement.outcome : [],
+      device_type: Array.isArray(requirement.device_type) ? requirement.device_type : [],
+      stage_techniques: stageTechniques || {},
+    };
+  
+    console.log("Saving data to Supabase:", resultData);
+  
     const { error } = await saveOrUpdateResult(id, resultData);
-
+  
     if (error) {
-        console.error("Supabase save error:", error);
-        toast({
-            title: "Save Failed",
-            description: "There was a problem saving your project results. Check console for details.",
-            className: 'px-3 py-2 text-sm border border-neutral-300 bg-neutral-50 text-neutral-900 rounded-lg shadow-md',
-        });
+      console.error("Supabase save error:", error);
+      toast({
+        title: "Save Failed",
+        description: "There was a problem saving your project results. Check console for details.",
+        className: 'px-3 py-2 text-sm border border-neutral-300 bg-neutral-50 text-neutral-900 rounded-lg shadow-md',
+      });
     } else {
-        toast({
-            title: "Project Saved!",
-            description: "Your project results have been successfully saved.",
-        });
+      toast({
+        title: "Project Saved!",
+        description: "Your project results have been successfully saved.",
+      });
     }
   }, [requirement, id, stageTechniques, toast]);
+  
 
 
   useEffect(() => {

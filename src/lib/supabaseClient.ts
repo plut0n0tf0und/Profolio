@@ -145,7 +145,7 @@ export async function fetchRequirementById(
 export async function saveOrUpdateResult(
     requirementId: string,
     resultData: Requirement
-): Promise<{ data: Requirement | null; error: PostgrestError | any | null }> {
+): Promise<{ data: Requirement | null; error: PostgrestError | null }> {
     try {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
@@ -153,32 +153,38 @@ export async function saveOrUpdateResult(
         }
 
         const dataToUpsert = {
-            ...resultData,
-            id: requirementId, // Use the requirement ID as the primary key for saved_results
             user_id: user.id,
+            requirement_id: requirementId,
+            project_name: resultData.project_name || '',
+            role: resultData.role || '',
+            date: resultData.date ? new Date(resultData.date).toISOString() : null,
+            problem_statement: resultData.problem_statement || '',
+            output_type: Array.isArray(resultData.output_type) ? resultData.output_type : [],
+            outcome: Array.isArray(resultData.outcome) ? resultData.outcome : [],
+            device_type: Array.isArray(resultData.device_type) ? resultData.device_type : [],
+            stage_techniques: resultData.stage_techniques || {},
         };
 
         const { data, error } = await supabase
             .from('saved_results')
-            .upsert(dataToUpsert, { onConflict: 'id' })
+            .upsert(dataToUpsert, { onConflict: 'requirement_id,user_id' })
             .select()
             .single();
-        
-        if (error) {
-          throw error;
-        }
+
+        if (error) throw error;
 
         return { data, error: null };
     } catch (error: any) {
-        return { data: null, error };
+        return { data: null, error: error as PostgrestError };
     }
 }
+
 
 /**
  * Fetches all saved results for the currently authenticated user.
  * @returns A promise that resolves with an array of saved results or an error.
  */
-export async function fetchSavedResults(): Promise<{ data: Requirement[] | null; error: PostgretError | null }> {
+export async function fetchSavedResults(): Promise<{ data: Requirement[] | null; error: PostgrestError | null }> {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
         return { data: null, error: { message: 'User not authenticated', details: '', hint: '', code: '401' } };
@@ -201,7 +207,7 @@ export async function fetchSavedResults(): Promise<{ data: Requirement[] | null;
  */
 export async function fetchSavedResultById(
   id: string
-): Promise<{ data: Requirement | null; error: PostgretError | null }> {
+): Promise<{ data: Requirement | null; error: PostgrestError | null }> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
     return { data: null, error: { message: 'User not authenticated', details: '', hint: '', code: '401' } };
