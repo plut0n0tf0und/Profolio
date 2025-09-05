@@ -217,19 +217,6 @@ export default function RequirementsPage() {
     }
   };
 
-  const onFinalSubmit = () => {
-    if (!requirementId) {
-      toast({
-        title: 'Cannot Proceed',
-        description: 'Please save the final section to view recommendations.',
-        className: 'px-3 py-2 text-sm border border-neutral-300 bg-neutral-50 text-neutral-900 rounded-lg shadow-md',
-      });
-      return;
-    }
-    router.push(`/requirements/result/${requirementId}`);
-  };
-
-
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center border-b border-border bg-background px-4">
@@ -256,7 +243,7 @@ export default function RequirementsPage() {
         </div>
         <h1 className="ml-4 text-xl font-bold">Define Project</h1>
       </header>
-      <main className="container mx-auto max-w-3xl p-4 py-8 md:p-8">
+      <main className="container mx-auto max-w-3xl flex-1 p-4 md:p-8">
       <Card className="w-full">
         <CardHeader>
           <CardTitle className="text-3xl">Define Your Project</CardTitle>
@@ -381,7 +368,7 @@ export default function RequirementsPage() {
                                     }}
                                   />
                                 </FormControl>
-                                <FormLabel className="font-normal">{item}</FormLabel>
+                                <FormLabel className="font-normal text-sm">{item}</FormLabel>
                               </FormItem>
                             ))}
                           </div>
@@ -404,7 +391,7 @@ export default function RequirementsPage() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>What kind of results are you looking for?</FormLabel>
-                          <div className="grid grid-cols-2 gap-4 pt-2">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                             {outcomes.map((item) => (
                                <FormItem key={item} className="flex flex-row items-start space-x-3 space-y-0">
                                 <FormControl>
@@ -417,7 +404,7 @@ export default function RequirementsPage() {
                                     }}
                                   />
                                 </FormControl>
-                                <FormLabel className="font-normal">{item}</FormLabel>
+                                <FormLabel className="font-normal text-sm">{item}</FormLabel>
                               </FormItem>
                             ))}
                           </div>
@@ -440,7 +427,7 @@ export default function RequirementsPage() {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Which devices are you targeting?</FormLabel>
-                          <div className="grid grid-cols-2 gap-4 pt-2">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                             {deviceTypes.map((item) => (
                               <FormItem key={item} className="flex flex-row items-start space-x-3 space-y-0">
                                 <FormControl>
@@ -453,7 +440,7 @@ export default function RequirementsPage() {
                                     }}
                                   />
                                 </FormControl>
-                                <FormLabel className="font-normal">{item}</FormLabel>
+                                <FormLabel className="font-normal text-sm">{item}</FormLabel>
                               </FormItem>
                             ))}
                           </div>
@@ -486,13 +473,13 @@ export default function RequirementsPage() {
                                 <FormControl>
                                   <RadioGroupItem value="new" />
                                 </FormControl>
-                                <FormLabel className="font-normal">New Project</FormLabel>
+                                <FormLabel className="font-normal text-sm">New Project</FormLabel>
                               </FormItem>
                               <FormItem className="flex items-center space-x-3 space-y-0">
                                 <FormControl>
                                   <RadioGroupItem value="old" />
                                 </FormControl>
-                                <FormLabel className="font-normal">Existing Project</FormLabel>
+                                <FormLabel className="font-normal text-sm">Existing Project</FormLabel>
                               </FormItem>
                             </RadioGroup>
                           </FormControl>
