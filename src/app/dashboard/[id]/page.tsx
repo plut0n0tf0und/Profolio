@@ -3,6 +3,7 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import Link from 'next/link';
 import { fetchSavedResultById, deleteSavedResult, Requirement } from '@/lib/supabaseClient';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -25,14 +26,25 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
-import { ChevronLeft, Edit, Wand2, Loader2 } from 'lucide-react';
+import { ChevronLeft, Edit, Wand2, Loader2, ExternalLink } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
 import { Separator } from '@/components/ui/separator';
 
 type StageTechniques = { [key: string]: string[] };
 
-const FiveDProcess = ({ techniques }: { techniques: StageTechniques }) => {
+const FiveDProcess = ({ techniques, projectId }: { techniques: StageTechniques, projectId: string }) => {
+  const router = useRouter();
+
+  const slugify = (text: string) => {
+    return text.toString().toLowerCase()
+      .replace(/\s+/g, '-')           // Replace spaces with -
+      .replace(/[^\w-]+/g, '')       // Remove all non-word chars
+      .replace(/--+/g, '-')         // Replace multiple - with single -
+      .replace(/^-+/, '')             // Trim - from start of text
+      .replace(/-+$/, '');            // Trim - from end of text
+  };
+
   return (
     <Card className="w-full border-border/50 shadow-lg">
       <CardHeader>
@@ -48,15 +60,14 @@ const FiveDProcess = ({ techniques }: { techniques: StageTechniques }) => {
                 {stageTechs.length > 0 ? (
                   <div className="space-y-3 p-2">
                     {stageTechs.map(technique => (
-                      <Card key={technique} className="bg-background/50 border-border/50">
-                        <CardContent className="flex items-center justify-between p-4">
-                          <span className="font-medium">{technique}</span>
-                          <Button variant="default" size="sm">
-                            <Wand2 className="mr-2 h-4 w-4" />
-                            Remix
-                          </Button>
-                        </CardContent>
-                      </Card>
+                       <Link key={technique} href={`/dashboard/technique/${slugify(technique)}`} passHref>
+                        <Card className="bg-background/50 border-border/50 hover:border-primary/50 transition-all cursor-pointer">
+                          <CardContent className="flex items-center justify-between p-4">
+                            <span className="font-medium">{technique}</span>
+                            <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                          </CardContent>
+                        </Card>
+                      </Link>
                     ))}
                   </div>
                 ) : (
@@ -204,7 +215,7 @@ export default function ProjectDetailPage() {
               </CardContent>
             </Card>
 
-            <FiveDProcess techniques={stageTechniques} />
+            <FiveDProcess techniques={stageTechniques} projectId={id} />
             
             <Separator />
             
