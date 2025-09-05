@@ -43,40 +43,41 @@ const SectionCard = ({ title, children, action, noPadding }: { title: string, ch
 );
 
 const techniqueRemixSchema = z.object({
-  date: z.string().optional(),
-  duration: z.string().optional(),
-  teamSize: z.string().optional(),
-  why: z.string().optional(),
-  overview: z.string().optional(),
-  problemStatement: z.string().optional(),
-  role: z.string().optional(),
+  date: z.string(),
+  duration: z.string(),
+  teamSize: z.string(),
+  why: z.string(),
+  overview: z.string(),
+  problemStatement: z.string(),
+  role: z.string(),
   prerequisites: z.array(z.object({
     id: z.string(),
     text: z.string(),
     checked: z.boolean(),
-  })).optional(),
+  })),
   executionSteps: z.array(z.object({
     id: z.string(),
     text: z.string(),
     checked: z.boolean(),
-  })).optional(),
+  })),
   attachments: z.object({
-    files: z.array(z.object({ 
-      id: z.string(), 
-      description: z.string(), 
-      value: z.any() 
-    })).optional(),
-    links: z.array(z.object({ 
-      id: z.string(), 
-      description: z.string(), 
-      value: z.string() 
-    })).optional(),
-    notes: z.array(z.object({ 
-      id: z.string(), 
-      value: z.string() 
-    })).optional(),
-  }).optional(),
+    files: z.array(z.object({
+      id: z.string(),
+      description: z.string(),
+      value: z.any()
+    })),
+    links: z.array(z.object({
+      id: z.string(),
+      description: z.string(),
+      value: z.string()
+    })),
+    notes: z.array(z.object({
+      id: z.string(),
+      value: z.string()
+    })),
+  }),
 });
+
 
 type TechniqueRemixData = z.infer<typeof techniqueRemixSchema>;
 
@@ -496,19 +497,13 @@ export default function TechniqueDetailPage() {
             <AlertDialogHeader>
                 <AlertDialogTitle>You have unsaved changes</AlertDialogTitle>
                 <AlertDialogDescription>
-                    Do you want to save your changes before leaving?
+                    Are you sure you want to leave? Your changes will be discarded.
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <Button variant="outline" onClick={() => {
-                    setIsBackAlertOpen(false);
-                    performNavigation();
-                }}>
+                <AlertDialogCancel>Keep Editing</AlertDialogCancel>
+                <AlertDialogAction onClick={performNavigation}>
                     Discard
-                </Button>
-                <AlertDialogAction onClick={handleSaveAndGoBack}>
-                    Save & Go Back
                 </AlertDialogAction>
             </AlertDialogFooter>
         </AlertDialogContent>
