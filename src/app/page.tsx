@@ -13,6 +13,13 @@ export default function LoginPage() {
   const error = searchParams.get('error');
 
   useEffect(() => {
+    document.documentElement.classList.add('dark');
+    return () => {
+      document.documentElement.classList.remove('dark');
+    };
+  }, []);
+
+  useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const error = params.get('error');
     if (error) {

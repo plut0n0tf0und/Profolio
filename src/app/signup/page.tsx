@@ -13,6 +13,13 @@ export default function SignupPage() {
   const { toast } = useToast();
 
   useEffect(() => {
+    document.documentElement.classList.add('dark');
+    return () => {
+      document.documentElement.classList.remove('dark');
+    };
+  }, []);
+
+  useEffect(() => {
     const error = searchParams.get('error');
     if (error) {
       toast({
