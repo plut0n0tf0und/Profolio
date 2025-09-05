@@ -1,12 +1,12 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
+import { useForm, useFormState } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { insertRequirement } from '@/lib/supabaseClient';
+import { insertRequirement, fetchRequirementById, updateRequirement } from '@/lib/supabaseClient';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -50,7 +50,6 @@ import { CalendarIcon, Loader2, UserCircle, ChevronLeft } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { getTechniquesForOutputs } from "@/lib/uxTechniques";
 import { Sidebar } from '@/components/Sidebar';
 
 const formSchema = z.object({
@@ -71,6 +70,15 @@ const formSchema = z.object({
     required_error: 'You need to select a project type.',
   }),
 });
+
+const sectionSchemas = {
+  'item-1': formSchema.pick({ project_name: true, date: true, problem_statement: true, role: true }),
+  'item-2': formSchema.pick({ output_type: true }),
+  'item-3': formSchema.pick({ outcome: true }),
+  'item-4': formSchema.pick({ device_type: true }),
+  'item-5': formSchema.pick({ project_type: true }),
+};
+
 
 const outputTypes = [
   "Presentation",
@@ -94,12 +102,15 @@ const outputTypes = [
 const outcomes = ['Qualitative', 'Quantitative', 'Insight'];
 const deviceTypes = ['Mobile', 'Desktop', 'Electronics', 'Kiosk'];
 
+const accordionItems = ['item-1', 'item-2', 'item-3', 'item-4', 'item-5'];
+
 export default function RequirementsPage() {
   const { toast } = useToast();
   const router = useRouter();
   const [activeAccordionItem, setActiveAccordionItem] = useState('item-1');
   const [isSidebarOpen, setSidebarOpen] = useState(false);
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [requirementId, setRequirementId] = useState<string | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -114,31 +125,90 @@ export default function RequirementsPage() {
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    try {
-      const { data, error } = await insertRequirement(values);
+  const handleSaveAndNext = async (currentSection: keyof typeof sectionSchemas) => {
+    setIsSubmitting(true);
+    
+    const fieldsToValidate = Object.keys(sectionSchemas[currentSection].shape) as (keyof z.infer<typeof formSchema>)[];
+    const isValid = await form.trigger(fieldsToValidate);
 
-      if (error) throw error;
-
+    if (!isValid) {
       toast({
-        title: 'Success!',
-        description: 'Your project requirements have been saved.',
+        variant: 'destructive',
+        title: 'Validation Error',
+        description: 'Please fill in all required fields for this section.',
       });
+      setIsSubmitting(false);
+      return;
+    }
 
-      if (data && data.id) {
-        router.push(`/requirements/result/${data.id}`);
+    const values = form.getValues();
+    const sectionData = fieldsToValidate.reduce((acc, key) => {
+      acc[key] = values[key];
+      return acc;
+    }, {} as any);
+    
+    // Convert date to ISO string for Supabase
+    if (sectionData.date && sectionData.date instanceof Date) {
+      sectionData.date = sectionData.date.toISOString();
+    }
+
+    try {
+      let savedData;
+      if (requirementId) {
+        // Update existing requirement
+        const { data, error } = await updateRequirement(requirementId, sectionData);
+        if (error) throw error;
+        savedData = data;
       } else {
-         throw new Error("Failed to get requirement ID after creation.");
+        // Create new requirement
+        const { data, error } = await insertRequirement(sectionData);
+        if (error) throw error;
+        savedData = data;
+        if (savedData?.id) {
+          setRequirementId(savedData.id);
+        }
       }
 
+      toast({
+        title: 'Progress Saved!',
+        description: `Section has been successfully saved.`,
+      });
+
+      // Move to next section
+      const currentIndex = accordionItems.indexOf(currentSection);
+      if (currentIndex < accordionItems.length - 1) {
+        setActiveAccordionItem(accordionItems[currentIndex + 1]);
+      } else {
+        // Last section, redirect to results
+        if (savedData?.id) {
+            router.push(`/requirements/result/${savedData.id}`);
+        } else {
+            throw new Error("Could not find requirement ID to show results.");
+        }
+      }
     } catch (error: any) {
       toast({
         variant: 'destructive',
         title: 'Uh oh! Something went wrong.',
         description: error.message || 'There was a problem saving your requirements.',
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
+
+  const onFinalSubmit = () => {
+    if (!requirementId) {
+      toast({
+        variant: 'destructive',
+        title: 'Cannot Proceed',
+        description: 'Please save the final section to view recommendations.',
+      });
+      return;
+    }
+    router.push(`/requirements/result/${requirementId}`);
+  };
+
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
@@ -158,7 +228,7 @@ export default function RequirementsPage() {
                 <AlertDialogHeader>
                   <AlertDialogTitle>Are you sure you want to leave?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Any changes you've made will not be saved.
+                    Any changes you've made may not be saved.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -175,12 +245,12 @@ export default function RequirementsPage() {
         <CardHeader>
           <CardTitle className="text-3xl">Define Your Project</CardTitle>
           <CardDescription>
-            Fill out the details below to get tailored UX recommendations.
+            Fill out the details below to get tailored UX recommendations. Save your progress at each step.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
               <Accordion
                 type="single"
                 collapsible
@@ -267,19 +337,22 @@ export default function RequirementsPage() {
                         </FormItem>
                       )}
                     />
+                    <Button onClick={() => handleSaveAndNext('item-1')} disabled={isSubmitting} className="w-full">
+                       {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save & Next'}
+                    </Button>
                   </AccordionContent>
                 </AccordionItem>
                 
                 <AccordionItem value="item-2">
                   <AccordionTrigger className="text-xl font-semibold">2. Output Type</AccordionTrigger>
-                  <AccordionContent className="pt-4">
+                  <AccordionContent className="pt-4 space-y-4">
                     <FormField
                       control={form.control}
                       name="output_type"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>What are you creating?</FormLabel>
-                          <div className="grid grid-cols-2 gap-4 pt-2">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 max-h-60 overflow-y-auto">
                             {outputTypes.map((item) => (
                               <FormItem key={item} className="flex flex-row items-start space-x-3 space-y-0">
                                 <FormControl>
@@ -300,12 +373,15 @@ export default function RequirementsPage() {
                         </FormItem>
                       )}
                     />
+                    <Button onClick={() => handleSaveAndNext('item-2')} disabled={isSubmitting} className="w-full">
+                       {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save & Next'}
+                    </Button>
                   </AccordionContent>
                 </AccordionItem>
 
                 <AccordionItem value="item-3">
                   <AccordionTrigger className="text-xl font-semibold">3. Desired Outcome</AccordionTrigger>
-                  <AccordionContent className="pt-4">
+                  <AccordionContent className="pt-4 space-y-4">
                     <FormField
                       control={form.control}
                       name="outcome"
@@ -333,12 +409,15 @@ export default function RequirementsPage() {
                         </FormItem>
                       )}
                     />
+                     <Button onClick={() => handleSaveAndNext('item-3')} disabled={isSubmitting} className="w-full">
+                       {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save & Next'}
+                    </Button>
                   </AccordionContent>
                 </AccordionItem>
 
                  <AccordionItem value="item-4">
                   <AccordionTrigger className="text-xl font-semibold">4. Device Type</AccordionTrigger>
-                  <AccordionContent className="pt-4">
+                  <AccordionContent className="pt-4 space-y-4">
                     <FormField
                       control={form.control}
                       name="device_type"
@@ -366,12 +445,15 @@ export default function RequirementsPage() {
                         </FormItem>
                       )}
                     />
+                    <Button onClick={() => handleSaveAndNext('item-4')} disabled={isSubmitting} className="w-full">
+                       {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save & Next'}
+                    </Button>
                   </AccordionContent>
                 </AccordionItem>
 
                  <AccordionItem value="item-5">
                   <AccordionTrigger className="text-xl font-semibold">5. Project Type</AccordionTrigger>
-                  <AccordionContent className="pt-4">
+                  <AccordionContent className="pt-4 space-y-4">
                      <FormField
                       control={form.control}
                       name="project_type"
@@ -402,21 +484,12 @@ export default function RequirementsPage() {
                         </FormItem>
                       )}
                     />
+                    <Button onClick={() => handleSaveAndNext('item-5')} disabled={isSubmitting} className="w-full">
+                       {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Show Recommendations'}
+                    </Button>
                   </AccordionContent>
                 </AccordionItem>
-
               </Accordion>
-
-              <Button type="submit" className="w-full !mt-8" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  'Show Recommendations'
-                )}
-              </Button>
             </form>
           </Form>
         </CardContent>
@@ -425,3 +498,5 @@ export default function RequirementsPage() {
     </div>
   );
 }
+
+    
