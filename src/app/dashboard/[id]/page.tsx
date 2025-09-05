@@ -64,7 +64,10 @@ const FiveDProcess = ({ techniques, projectId }: { techniques: StageTechniques, 
                         <Card className="bg-background/50 border-border/50 hover:border-primary/50 transition-all cursor-pointer">
                           <CardContent className="flex items-center justify-between p-4">
                             <span className="font-medium">{technique}</span>
-                            <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                             <Button variant="ghost" size="sm" onClick={(e) => { e.preventDefault(); e.stopPropagation(); /* Add remix logic here */ }}>
+                                <Wand2 className="mr-2 h-4 w-4" />
+                                Remix
+                            </Button>
                           </CardContent>
                         </Card>
                       </Link>
