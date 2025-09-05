@@ -254,11 +254,6 @@ export default function TechniqueDetailPage() {
     });
   }
 
-  const handleSaveAndGoBack = async () => {
-    await form.handleSubmit(onSave)();
-    performNavigation();
-  };
-
   // Read-only view
   const renderReadOnlyView = () => (
     <div className="space-y-8">
@@ -522,11 +517,6 @@ export default function TechniqueDetailPage() {
           {!isEditMode && (
             <Button variant="default" size="sm" onClick={() => setIsEditMode(true)}>
               <Wand2 className="mr-2 h-4 w-4" /> Remix
-            </Button>
-          )}
-          {isEditMode && (
-             <Button variant="outline" size="sm" onClick={() => setIsEditMode(false)}>
-              <X className="mr-2 h-4 w-4"/> Cancel
             </Button>
           )}
         </div>
