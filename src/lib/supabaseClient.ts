@@ -35,6 +35,16 @@ if (!supabaseUrl || !supabaseAnonKey) {
 export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey);
 
 /**
+ * Deletes the currently authenticated user's account and all associated data.
+ * This calls a Supabase database function `delete_user_data`.
+ * @returns A promise that resolves with an error if one occurred.
+ */
+export async function deleteUserAccount(): Promise<{ error: any | null }> {
+    const { error } = await supabase.rpc('delete_user_data');
+    return { error };
+}
+
+/**
  * Fetches the currently authenticated user's profile data.
  * @returns A promise that resolves with the user object or an error.
  */

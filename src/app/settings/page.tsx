@@ -29,7 +29,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { getUserProfile, updateUserProfile } from '@/lib/supabaseClient';
+import { getUserProfile, updateUserProfile, deleteUserAccount } from '@/lib/supabaseClient';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function SettingsPage() {
@@ -40,7 +40,8 @@ export default function SettingsPage() {
   const [role, setRole] = useState('');
   const [company, setCompany] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, startTransition] = useTransition();
+  const [isSaving, startSaveTransition] = useTransition();
+  const [isDeleting, startDeleteTransition] = useTransition();
 
   useEffect(() => {
     async function loadProfile() {
@@ -65,7 +66,7 @@ export default function SettingsPage() {
   }, [router, toast]);
 
   const handleSaveChanges = async () => {
-    startTransition(async () => {
+    startSaveTransition(async () => {
       const { error } = await updateUserProfile({
         full_name: name,
         role,
@@ -84,6 +85,28 @@ export default function SettingsPage() {
           description: 'Your changes have been saved successfully.',
         });
         router.refresh();
+      }
+    });
+  };
+
+  const handleDeleteAccount = () => {
+    startDeleteTransition(async () => {
+      const { error } = await deleteUserAccount();
+
+      if (error) {
+        toast({
+          title: 'Deletion Failed',
+          description: error.message || 'Could not delete your account. Please try again.',
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'Account Deleted',
+          description: 'Your account has been permanently deleted.',
+        });
+        // Log out and redirect to home page
+        router.push('/');
+        router.refresh(); // Ensure the layout re-renders and user is logged out
       }
     });
   };
@@ -198,8 +221,10 @@ export default function SettingsPage() {
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction>Continue</AlertDialogAction>
+                  <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDeleteAccount} disabled={isDeleting}>
+                    {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Continue'}
+                  </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
