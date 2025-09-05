@@ -42,9 +42,6 @@ export default function LoginPage() {
   return (
     <main className="flex min-h-screen w-full flex-col items-center justify-center bg-background p-4">
       <div className="grid w-full max-w-5xl grid-cols-1 md:grid-cols-2">
-        <div className="relative hidden h-full md:flex items-center justify-center p-8">
-          <AnimatedGrid />
-        </div>
         <div className="flex w-full max-w-md flex-col justify-center gap-6 p-4 sm:p-6 md:p-8">
             <div className="flex items-center gap-4">
               <Logo className="h-10 w-10 text-primary" />
@@ -67,6 +64,9 @@ export default function LoginPage() {
                 Sign Up
               </Link>
             </p>
+        </div>
+        <div className="relative hidden h-full md:flex items-center justify-center p-8">
+          <AnimatedGrid />
         </div>
       </div>
     </main>
