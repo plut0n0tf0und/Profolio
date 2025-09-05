@@ -14,6 +14,17 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { ChevronLeft, Wand2, Save } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -146,19 +157,39 @@ export default function ResultPage() {
     getRequirement();
   }, [id, router, toast]);
 
+  const handleBackToEdit = () => {
+    router.push(`/requirements?id=${id}`);
+  };
+
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
        <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between border-b bg-background px-4 md:px-6">
-        <div className="flex items-center">
-          <Button variant="ghost" size="icon" className="shrink-0 md:hidden" onClick={() => router.push(`/requirements?id=${id}`)}>
-            <ChevronLeft className="h-6 w-6" />
-            <span className="sr-only">Back to Requirements</span>
-          </Button>
-          <Button variant="ghost" size="sm" className="hidden shrink-0 md:flex items-center gap-1" onClick={() => router.push(`/requirements?id=${id}`)}>
-            <ChevronLeft className="h-5 w-5" />
-            Back
-          </Button>
-        </div>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <div className="flex items-center">
+              <Button variant="ghost" size="icon" className="shrink-0 md:hidden">
+                <ChevronLeft className="h-6 w-6" />
+                <span className="sr-only">Back to Requirements</span>
+              </Button>
+              <Button variant="ghost" size="sm" className="hidden shrink-0 md:flex items-center gap-1">
+                <ChevronLeft className="h-5 w-5" />
+                Back
+              </Button>
+            </div>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Edit Requirements?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will take you back to the requirements form to make changes. Your current recommendations will be updated based on your new selections.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleBackToEdit}>Continue</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
         
         <h1 className="truncate text-center text-xl font-bold md:flex-1">
           Project Result
