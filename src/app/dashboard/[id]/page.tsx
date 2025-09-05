@@ -60,19 +60,19 @@ const FiveDProcess = ({ techniques, projectId }: { techniques: StageTechniques, 
                 {stageTechs.length > 0 ? (
                   <div className="space-y-3 p-2">
                     {stageTechs.map(technique => (
-                       <Link key={technique} href={`/dashboard/technique/${slugify(technique)}?projectId=${projectId}`} passHref>
-                        <Card className="bg-background/50 border-border/50 hover:border-primary/50 transition-all cursor-pointer">
-                          <CardContent className="flex items-center justify-between p-4">
-                            <span className="font-medium">{technique}</span>
-                            <Link href={`/dashboard/technique/${slugify(technique)}?edit=true&projectId=${projectId}`} passHref>
-                                <Button variant="default" size="sm" onClick={(e) => e.stopPropagation()}>
-                                    <Wand2 className="mr-2 h-4 w-4" />
-                                    Remix
-                                </Button>
-                            </Link>
-                          </CardContent>
-                        </Card>
-                      </Link>
+                      <Card key={technique} className="bg-background/50 border-border/50 hover:border-primary/50 transition-all">
+                        <CardContent className="flex items-center justify-between p-4">
+                          <Link href={`/dashboard/technique/${slugify(technique)}?projectId=${projectId}`} passHref>
+                            <a className="font-medium cursor-pointer hover:underline">{technique}</a>
+                          </Link>
+                          <Link href={`/dashboard/technique/${slugify(technique)}?edit=true&projectId=${projectId}`} passHref>
+                              <Button variant="default" size="sm">
+                                  <Wand2 className="mr-2 h-4 w-4" />
+                                  Remix
+                              </Button>
+                          </Link>
+                        </CardContent>
+                      </Card>
                     ))}
                   </div>
                 ) : (
