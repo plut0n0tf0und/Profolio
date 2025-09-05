@@ -74,9 +74,11 @@ export default function DashboardPage() {
             <h2 className="text-2xl font-bold">No Projects Yet</h2>
             <p className="text-muted-foreground">Click the '+' icon to add your first project.</p>
           </div>
-          <p className="text-sm text-muted-foreground">
-            {tip}
-          </p>
+          {tip && (
+            <p className="text-sm text-muted-foreground">
+              {tip}
+            </p>
+          )}
         </div>
       </main>
     </div>
