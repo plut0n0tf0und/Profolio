@@ -145,6 +145,12 @@ export default function TechniqueDetailPage() {
             overview: result.overview,
             prerequisites: result.prerequisites.map((p, i) => ({ id: `prereq-${i}`, text: p, checked: false })),
             executionSteps: result.executionSteps.map(s => ({ id: `step-${s.step}`, text: `${s.title}: ${s.description}`, checked: false })),
+            date: '',
+            duration: '',
+            teamSize: '',
+            why: '',
+            problemStatement: '',
+            role: '',
         });
       } catch (error) {
         console.error("Failed to fetch technique details:", error);
