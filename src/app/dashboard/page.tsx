@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { UserCircle, Search, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sidebar } from '@/components/Sidebar';
+import Link from 'next/link';
 
 const motivationalTips = [
   'Your UX journey starts here ✦',
@@ -58,9 +59,11 @@ export default function DashboardPage() {
           <Button variant="ghost" size="icon">
             <Search className="h-6 w-6" />
           </Button>
-          <Button variant="ghost" size="icon">
-            <Plus className="h-6 w-6" />
-          </Button>
+          <Link href="/requirements" passHref>
+            <Button variant="ghost" size="icon">
+              <Plus className="h-6 w-6" />
+            </Button>
+          </Link>
         </div>
       </header>
 
