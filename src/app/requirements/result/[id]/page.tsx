@@ -104,7 +104,7 @@ export default function ResultPage() {
     const resultData = {
       project_name: requirement.project_name || '',
       role: requirement.role || '',
-      date: requirement.date ? new Date(requirement.date).toISOString() : new Date().toISOString(),
+      date: requirement.date ? new Date(requirement.date).toISOString() : undefined,
       problem_statement: requirement.problem_statement || '',
       output_type: Array.isArray(requirement.output_type) ? requirement.output_type : [],
       outcome: Array.isArray(requirement.outcome) ? requirement.outcome : [],
@@ -115,20 +115,21 @@ export default function ResultPage() {
     const { error } = await saveOrUpdateResult(id, resultData);
   
     if (error) {
-        console.error("Supabase save error:", error);
-        toast({
-            title: 'Save Failed',
-            description: `There was a problem saving your project results: ${error.message}`,
-            className: 'px-3 py-2 text-sm border border-neutral-300 bg-neutral-50 text-neutral-900 rounded-lg shadow-md',
-        });
+      console.error("Supabase save error:", error);
+      toast({
+        title: 'Save Failed',
+        description: `There was a problem saving your project results: ${error.message}`,
+        className: 'px-3 py-2 text-sm border border-neutral-300 bg-neutral-50 text-neutral-900 rounded-lg shadow-md',
+      });
     } else {
-        toast({
-            title: 'Project Saved!',
-            description: 'Your project results have been successfully saved.',
-        });
-        router.push('/dashboard');
+      toast({
+        title: 'Project Saved!',
+        description: 'Your project results have been successfully saved.',
+      });
+      router.push('/dashboard');
     }
   }, [requirement, id, stageTechniques, toast, router]);
+  
   
 
 

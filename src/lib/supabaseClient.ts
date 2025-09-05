@@ -151,52 +151,85 @@ export async function fetchRequirementById(
 
 /**
  * Saves or updates a project result in the 'saved_results' table.
+ * This function manually checks for an existing record and then either
+ * updates it or inserts a new one, avoiding the need for a specific
+ * `onConflict` constraint in the database.
  * @param requirementId - The UUID of the original requirement.
  * @param resultData - The complete result data to save.
  * @returns A promise that resolves with the saved data or an error.
  */
 export async function saveOrUpdateResult(
-    requirementId: string,
-    resultData: Omit<Requirement, 'user_id' | 'id'>
-): Promise<{ data: Requirement | null; error: PostgrestError | null }> {
-    try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-            return { data: null, error: {
-              message: 'User not authenticated', details: '', hint: '', code: '401',
-              name: 'AuthError'
-            } };
-        }
-
-        const dataToUpsert = {
-            ...resultData,
-            user_id: user.id,
-            requirement_id: requirementId,
-        };
-
-        const { data, error } = await supabase
-            .from('saved_results')
-            .upsert(dataToUpsert, { onConflict: 'requirement_id,user_id' })
-            .select()
-            .single();
-
-        if (error) {
-          console.error("Supabase upsert error:", error);
-          throw error;
-        }
-
-        return { data, error: null };
-    } catch (error: any) {
-        return { data: null, error: error as PostgrestError };
+  requirementId: string,
+  resultData: Partial<Requirement>
+): Promise<{ data: Requirement | null; error: any | null }> {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return { data: null, error: { message: 'User not authenticated', code: '401' } };
     }
+
+    // Check if a result already exists for this requirement_id and user_id
+    const { data: existingResult, error: selectError } = await supabase
+      .from('saved_results')
+      .select('id')
+      .eq('requirement_id', requirementId)
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (selectError) {
+        console.error('Error checking for existing result:', selectError);
+        throw selectError;
+    }
+
+    // Prepare data for saving
+    const dataToSave = {
+        ...resultData,
+        user_id: user.id,
+        requirement_id: requirementId,
+      };
+
+    let responseData, responseError;
+
+    if (existingResult) {
+      // Record exists, so update it
+      const { data, error } = await supabase
+        .from('saved_results')
+        .update(dataToSave)
+        .eq('id', existingResult.id)
+        .select()
+        .single();
+      responseData = data;
+      responseError = error;
+    } else {
+      // Record does not exist, so insert it
+      const { data, error } = await supabase
+        .from('saved_results')
+        .insert(dataToSave)
+        .select()
+        .single();
+      responseData = data;
+      responseError = error;
+    }
+
+    if (responseError) {
+      throw responseError;
+    }
+
+    return { data: responseData, error: null };
+
+  } catch (error: any) {
+    console.error("Error in saveOrUpdateResult:", error);
+    return { data: null, error };
+  }
 }
+
 
 
 /**
  * Fetches all saved results for the currently authenticated user.
  * @returns A promise that resolves with an array of saved results or an error.
  */
-export async function fetchSavedResults(): Promise<{ data: Requirement[] | null; error: PostgrestError | null }> {
+export async function fetchSavedResults(): Promise<{ data: Requirement[] | null; error: PostgretError | null }> {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
         return { data: null, error: {
