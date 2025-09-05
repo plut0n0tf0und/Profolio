@@ -3,7 +3,7 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { fetchSavedResultById, Requirement } from '@/lib/supabaseClient';
+import { fetchSavedResultById, deleteSavedResult, Requirement } from '@/lib/supabaseClient';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
@@ -13,10 +13,22 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
-import { ChevronLeft, Edit, Wand2 } from 'lucide-react';
+import { ChevronLeft, Edit, Wand2, Trash2, Loader2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
+import { Separator } from '@/components/ui/separator';
 
 type StageTechniques = { [key: string]: string[] };
 
@@ -85,6 +97,7 @@ export default function ProjectDetailPage() {
   const id = params.id as string;
   const [project, setProject] = useState<Requirement | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -109,6 +122,26 @@ export default function ProjectDetailPage() {
     getProjectDetails();
   }, [id, router, toast]);
 
+  const handleDeleteProject = async () => {
+    setIsDeleting(true);
+    const { error } = await deleteSavedResult(id);
+    if (error) {
+      toast({
+        title: 'Delete Failed',
+        description: 'Could not delete the project. Please try again.',
+        variant: 'destructive',
+      });
+      setIsDeleting(false);
+    } else {
+      toast({
+        title: 'Project Deleted',
+        description: `"${project?.project_name}" has been permanently removed.`,
+      });
+      router.push('/dashboard');
+      router.refresh();
+    }
+  };
+
   const stageTechniques = useMemo(() => {
     return project?.stage_techniques || {};
   }, [project]);
@@ -129,6 +162,7 @@ export default function ProjectDetailPage() {
       <main className="container mx-auto max-w-4xl p-4 md:p-8">
         <div className="space-y-8">
           {isLoading ? <RequirementDetailSkeleton /> : project && (
+            <>
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
@@ -169,13 +203,51 @@ export default function ProjectDetailPage() {
                 </div>
               </CardContent>
             </Card>
+
+            <FiveDProcess techniques={stageTechniques} />
+            
+            <Separator />
+            
+            <Card className="border-destructive">
+                <CardHeader>
+                    <CardTitle className="text-destructive">Danger Zone</CardTitle>
+                    <CardDescription>This action is permanent and cannot be undone.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button variant="destructive">
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Delete this project
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    This will permanently delete the project &quot;{project.project_name}&quot;. This action cannot be undone.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={handleDeleteProject} disabled={isDeleting} className="bg-destructive hover:bg-destructive/90">
+                                    {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Delete'}
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                </CardContent>
+            </Card>
+            </>
           )}
 
-          {isLoading ? (
-            <RequirementDetailSkeleton />
-          ) : (
-            <FiveDProcess techniques={stageTechniques} />
+          {isLoading && !project && (
+            <>
+              <RequirementDetailSkeleton />
+              <RequirementDetailSkeleton />
+            </>
           )}
+
         </div>
       </main>
     </div>

@@ -147,7 +147,7 @@ export async function fetchRequirementsForUser(): Promise<{ data: Requirement[] 
  */
 export async function fetchRequirementById(
   id: string
-): Promise<{ data: Requirement | null; error: PostgDrestError | null }> {
+): Promise<{ data: Requirement | null; error: PostgrestError | null }> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
     return { data: null, error: {
@@ -318,4 +318,24 @@ export async function fetchSavedResultById(
     .single();
 
   return { data, error };
+}
+
+/**
+ * Deletes a saved result by its ID.
+ * @param id - The UUID of the saved result to delete.
+ * @returns A promise that resolves when the operation is complete.
+ */
+export async function deleteSavedResult(id: string): Promise<{ error: PostgrestError | null }> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return { error: { message: 'User not authenticated', details: '', hint: '', code: '401', name: '' } };
+  }
+
+  const { error } = await supabase
+    .from('saved_results')
+    .delete()
+    .eq('id', id)
+    .eq('user_id', user.id);
+
+  return { error };
 }
