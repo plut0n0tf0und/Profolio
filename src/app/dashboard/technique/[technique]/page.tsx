@@ -92,6 +92,7 @@ export default function TechniqueDetailPage() {
   
   const techniqueSlug = params.technique as string;
   const techniqueName = useMemo(() => unslugify(techniqueSlug), [techniqueSlug]);
+  const fromProjectId = searchParams.get('projectId');
 
   const [details, setDetails] = useState<TechniqueDetailsOutput | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -173,6 +174,14 @@ export default function TechniqueDetailPage() {
       title: 'Copied to clipboard!',
       description: 'Execution steps have been copied.',
     });
+  };
+  
+  const handleBackNavigation = () => {
+    if (fromProjectId) {
+      router.push(`/dashboard/${fromProjectId}`);
+    } else {
+      router.back();
+    }
   };
 
   const allStepsText = useMemo(() => {
@@ -379,7 +388,7 @@ export default function TechniqueDetailPage() {
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between border-b border-border bg-background px-4">
-        <Button variant="ghost" size="sm" onClick={() => router.push('/dashboard')} className="flex items-center gap-2">
+        <Button variant="ghost" size="sm" onClick={handleBackNavigation} className="flex items-center gap-2">
           <ChevronLeft className="h-5 w-5" />
           <span className="hidden md:inline">Back</span>
         </Button>
