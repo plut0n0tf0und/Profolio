@@ -15,7 +15,7 @@ const motivationalTips = [
   'Fail faster to succeed sooner ✦',
 ];
 
-const AnimatedPlaceholder = () => (
+const StaticPlaceholder = () => (
   <svg
     width="100"
     height="100"
@@ -24,23 +24,10 @@ const AnimatedPlaceholder = () => (
     xmlns="http://www.w3.org/2000/svg"
     className="mx-auto text-muted-foreground"
   >
-    <style>
-      {`
-        .pulse {
-          animation: pulse-animation 2s infinite;
-        }
-        @keyframes pulse-animation {
-          0% { transform: scale(0.95); opacity: 0.7; }
-          50% { transform: scale(1); opacity: 1; }
-          100% { transform: scale(0.95); opacity: 0.7; }
-        }
-      `}
-    </style>
     <path
-      className="pulse"
       d="M12 2L12 2C17.5228 2 22 6.47715 22 12V12C22 17.5228 17.5228 22 12 22V22C6.47715 22 2 17.5228 2 12V12C2 6.47715 6.47715 2 12 2V2Z"
       stroke="currentColor"
-      strokeWidth="2"
+      strokeWidth="1.5"
       strokeLinecap="round"
       strokeLinejoin="round"
     />
@@ -78,7 +65,7 @@ export default function DashboardPage() {
 
       <main className="flex flex-1 flex-col items-center justify-center p-4 text-center">
         <div className="space-y-6">
-          <AnimatedPlaceholder />
+          <StaticPlaceholder />
            <div className="space-y-2">
             <h2 className="text-2xl font-bold">No Projects Yet</h2>
             <p className="text-muted-foreground">Click the '+' icon to add your first project.</p>
