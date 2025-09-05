@@ -80,23 +80,16 @@ const sectionSchemas = {
 
 
 const outputTypes = [
-  "Presentation",
-  "Video",
-  "Interactive Prototype",
-  "UI Design",
-  "Visual Design",
-  "Motion Design",
-  "Animation",
-  "Voice Interaction",
-  "Wireframe",
-  "Information Architecture",
-  "Motion Design, Interactive Prototype",
-  "Interactive Prototype, Motion Design",
-  "UI Design, Visual Design",
-  "Presentation, Video",
-  "Presentation, UI Design",
-  "Wireframe, Presentation",
-  "Interactive Prototype, UI Design"
+    "Presentation",
+    "Video",
+    "Interactive Prototype",
+    "UI Design",
+    "Visual Design",
+    "Motion Design",
+    "Animation",
+    "Voice Interaction",
+    "Wireframe",
+    "Information Architecture",
 ];
 const outcomes = ['Qualitative', 'Quantitative', 'Insight'];
 const deviceTypes = ['Mobile', 'Desktop', 'Electronics', 'Kiosk'];
@@ -133,9 +126,10 @@ export default function RequirementsPage() {
         const { data, error } = await fetchRequirementById(id);
         if (error) {
           toast({
-            variant: 'destructive',
             title: 'Failed to load project',
             description: 'Could not fetch existing project details.',
+            className:
+              'border-destructive bg-destructive/10 text-destructive-foreground',
           });
         } else if (data) {
           form.reset({
@@ -165,19 +159,11 @@ export default function RequirementsPage() {
 
     if (!isValid) {
       toast({
-        title: (
-          <div className="flex items-center gap-2">
-            <span className="font-semibold">Hold on a sec</span>
-          </div>
-        ),
-        description: (
-          <p className="text-sm text-neutral-500">
-            Complete all fields to move ahead smoothly.
-          </p>
-        ),
-        className: "border border-neutral-300 bg-neutral-50 text-neutral-900 rounded-xl shadow-lg",
+        title: 'Validation Error',
+        description: 'Please fill in all required fields for this section.',
+        className:
+          'border-destructive bg-destructive/10 text-destructive-foreground',
       });
-      
       setIsSubmitting(false);
       return;
     }
@@ -224,9 +210,10 @@ export default function RequirementsPage() {
       }
     } catch (error: any) {
       toast({
-        variant: 'destructive',
         title: 'Uh oh! Something went wrong.',
         description: error.message || 'There was a problem saving your requirements.',
+        className:
+          'border-destructive bg-destructive/10 text-destructive-foreground',
       });
     } finally {
       setIsSubmitting(false);
@@ -236,9 +223,10 @@ export default function RequirementsPage() {
   const onFinalSubmit = () => {
     if (!requirementId) {
       toast({
-        variant: 'destructive',
         title: 'Cannot Proceed',
         description: 'Please save the final section to view recommendations.',
+        className:
+          'border-destructive bg-destructive/10 text-destructive-foreground',
       });
       return;
     }

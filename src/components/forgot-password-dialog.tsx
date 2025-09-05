@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useTransition } from 'react';
@@ -53,9 +54,10 @@ export function ForgotPasswordDialog({ open, onOpenChange }: ForgotPasswordDialo
 
       if (error) {
         toast({
-          variant: 'destructive',
           title: 'Error',
           description: error.message || 'Failed to send reset email.',
+          className:
+            'border-destructive bg-destructive/10 text-destructive-foreground',
         });
       } else {
         toast({

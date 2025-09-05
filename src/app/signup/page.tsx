@@ -1,3 +1,4 @@
+
 'use client';
 
 import { AuthForm } from '@/components/auth-form';
@@ -23,9 +24,10 @@ export default function SignupPage() {
     const error = searchParams.get('error');
     if (error) {
       toast({
-        variant: 'destructive',
         title: 'Sign Up Failed',
         description: decodeURIComponent(error),
+        className:
+          'border-destructive bg-destructive/10 text-destructive-foreground',
       });
       router.replace('/signup'); // clean up ?error= from URL
     }

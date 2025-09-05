@@ -1,3 +1,4 @@
+
 'use client';
 
 import { AuthForm } from '@/components/auth-form';
@@ -24,9 +25,10 @@ export default function LoginPage() {
     const error = params.get('error');
     if (error) {
       toast({
-        variant: 'destructive',
         title: 'Login Failed',
         description: decodeURIComponent(error),
+        className:
+          'border-destructive bg-destructive/10 text-destructive-foreground',
       });
 
       // Clean the URL so the toast won’t repeat on refresh

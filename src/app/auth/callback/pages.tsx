@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect } from 'react';
@@ -13,9 +14,10 @@ export default function CallbackPage() {
     const error = searchParams.get('error');
     if (error) {
       toast({
-        variant: 'destructive',
         title: 'Authentication Failed',
         description: decodeURIComponent(error),
+        className:
+          'border-destructive bg-destructive/10 text-destructive-foreground',
       });
       router.replace('/login'); // send back to login after showing toast
     } else {

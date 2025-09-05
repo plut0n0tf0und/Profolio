@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useTransition } from 'react';
@@ -51,9 +52,10 @@ export function PasswordStrengthInput({ field }: PasswordStrengthInputProps) {
       } catch (error) {
         console.error('Failed to suggest password:', error);
         toast({
-          variant: 'destructive',
           title: 'Error',
           description: 'Could not suggest a password. Please try again.',
+          className:
+            'border-destructive bg-destructive/10 text-destructive-foreground',
         });
       }
     });

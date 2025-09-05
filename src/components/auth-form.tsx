@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useTransition } from 'react';
@@ -82,9 +83,10 @@ export function AuthForm({ mode }: AuthFormProps) {
             const { error } = await supabase.auth.signUp(values);
             if (error) {
                 toast({
-                  variant: 'destructive',
                   title: 'Sign Up Failed',
                   description: error.message || 'An unexpected error occurred.',
+                  className:
+                    'border-destructive bg-destructive/10 text-destructive-foreground',
                 });
             } else {
                 toast({
@@ -98,9 +100,10 @@ export function AuthForm({ mode }: AuthFormProps) {
             const { error } = await supabase.auth.signInWithPassword(values);
             if (error) {
                 toast({
-                  variant: 'destructive',
                   title: 'Login Failed',
                   description: error.message || 'Invalid email or password.',
+                  className:
+                    'border-destructive bg-destructive/10 text-destructive-foreground',
                 });
               } else {
                 router.push('/dashboard');
@@ -124,9 +127,10 @@ export function AuthForm({ mode }: AuthFormProps) {
   
       if (error) {
         toast({
-          variant: 'destructive',
           title: 'Authentication Failed',
           description: error.message || `Failed to sign in with ${provider}.`,
+          className:
+            'border-destructive bg-destructive/10 text-destructive-foreground',
         });
         setSocialLoginPending(null);
         return;
@@ -137,9 +141,10 @@ export function AuthForm({ mode }: AuthFormProps) {
       }
     } catch (err) {
       toast({
-        variant: 'destructive',
         title: 'Authentication Failed',
         description: 'Unexpected error occurred.',
+        className:
+          'border-destructive bg-destructive/10 text-destructive-foreground',
       });
       setSocialLoginPending(null);
     }

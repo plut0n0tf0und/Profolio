@@ -125,9 +125,10 @@ export default function ResultPage() {
       const { data, error } = await fetchRequirementById(id);
       if (error) {
         toast({
-          variant: 'destructive',
           title: 'Error fetching requirement',
           description: error.message,
+          className:
+            'border-destructive bg-destructive/10 text-destructive-foreground',
         });
         router.push('/dashboard');
       } else {
