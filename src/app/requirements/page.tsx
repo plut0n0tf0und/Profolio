@@ -35,6 +35,17 @@ import {
 } from '@/components/ui/accordion';
 import { useToast } from '@/hooks/use-toast';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { CalendarIcon, Loader2, UserCircle, ChevronLeft } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
@@ -137,9 +148,25 @@ export default function RequirementsPage() {
             <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setSidebarOpen(true)}>
                 <UserCircle className="h-6 w-6" />
             </Button>
-            <Button variant="ghost" size="icon" onClick={() => router.back()}>
-                <ChevronLeft className="h-6 w-6" />
-            </Button>
+             <AlertDialog>
+              <AlertDialogTrigger asChild>
+                 <Button variant="ghost" size="icon">
+                    <ChevronLeft className="h-6 w-6" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you sure you want to leave?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Any changes you've made will not be saved.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => router.back()}>Continue</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
         </div>
         <h1 className="ml-4 text-xl font-bold">Define Project</h1>
       </header>
