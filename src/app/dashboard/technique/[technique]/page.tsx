@@ -379,7 +379,7 @@ export default function TechniqueDetailPage() {
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between border-b border-border bg-background px-4">
-        <Button variant="ghost" size="sm" onClick={() => router.back()} className="flex items-center gap-2">
+        <Button variant="ghost" size="sm" onClick={() => router.push('/dashboard')} className="flex items-center gap-2">
           <ChevronLeft className="h-5 w-5" />
           <span className="hidden md:inline">Back</span>
         </Button>
