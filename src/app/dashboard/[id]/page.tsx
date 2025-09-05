@@ -2,15 +2,16 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { ChevronLeft, UserCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sidebar } from '@/components/Sidebar';
 
-export default function ProjectDetailPage({ params }: { params: { id: string } }) {
+export default function ProjectDetailPage() {
   const router = useRouter();
+  const params = useParams();
   const [isSidebarOpen, setSidebarOpen] = useState(false);
-  const { id } = params;
+  const id = params.id as string;
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">

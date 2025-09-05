@@ -2,7 +2,7 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { fetchRequirementById, Requirement } from '@/lib/supabaseClient';
 import { getTechniquesForOutputs } from '@/lib/uxTechniques';
 import { useToast } from '@/hooks/use-toast';
@@ -98,10 +98,11 @@ const RequirementDetailSkeleton = () => (
 )
 
 
-export default function ResultPage({ params }: { params: { id: string } }) {
+export default function ResultPage() {
   const router = useRouter();
+  const params = useParams();
   const { toast } = useToast();
-  const { id } = params;
+  const id = params.id as string;
   const [requirement, setRequirement] = useState<Requirement | null>(null);
   const [techniques, setTechniques] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
