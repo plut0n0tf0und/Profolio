@@ -89,14 +89,7 @@ const outputTypes = [
     "Animation",
     "Voice Interaction",
     "Wireframe",
-    "Information Architecture",
-    "Motion Design, Interactive Prototype",
-    "Interactive Prototype, Motion Design",
-    "UI Design, Visual Design",
-    "Presentation, Video",
-    "Presentation, UI Design",
-    "Wireframe, Presentation",
-    "Interactive Prototype, UI Design"
+    "Information Architecture"
 ];
 const outcomes = ['Qualitative', 'Quantitative', 'Insight'];
 const deviceTypes = ['Mobile', 'Desktop', 'Electronics', 'Kiosk'];
