@@ -56,8 +56,7 @@ export function ForgotPasswordDialog({ open, onOpenChange }: ForgotPasswordDialo
         toast({
           title: 'Error',
           description: error.message || 'Failed to send reset email.',
-          className:
-            'border-destructive bg-destructive/10 text-destructive-foreground',
+          className: 'px-3 py-2 text-sm border border-neutral-300 bg-neutral-50 text-neutral-900 rounded-lg shadow-md',
         });
       } else {
         toast({

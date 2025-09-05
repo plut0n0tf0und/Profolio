@@ -26,8 +26,7 @@ export default function SignupPage() {
       toast({
         title: 'Sign Up Failed',
         description: decodeURIComponent(error),
-        className:
-          'border-destructive bg-destructive/10 text-destructive-foreground',
+        className: 'px-3 py-2 text-sm border border-neutral-300 bg-neutral-50 text-neutral-900 rounded-lg shadow-md',
       });
       router.replace('/signup'); // clean up ?error= from URL
     }

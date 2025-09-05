@@ -85,8 +85,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                 toast({
                   title: 'Sign Up Failed',
                   description: error.message || 'An unexpected error occurred.',
-                  className:
-                    'border-destructive bg-destructive/10 text-destructive-foreground',
+                  className: 'px-3 py-2 text-sm border border-neutral-300 bg-neutral-50 text-neutral-900 rounded-lg shadow-md',
                 });
             } else {
                 toast({
@@ -102,8 +101,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                 toast({
                   title: 'Login Failed',
                   description: error.message || 'Invalid email or password.',
-                  className:
-                    'border-destructive bg-destructive/10 text-destructive-foreground',
+                  className: 'px-3 py-2 text-sm border border-neutral-300 bg-neutral-50 text-neutral-900 rounded-lg shadow-md',
                 });
               } else {
                 router.push('/dashboard');
@@ -129,8 +127,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         toast({
           title: 'Authentication Failed',
           description: error.message || `Failed to sign in with ${provider}.`,
-          className:
-            'border-destructive bg-destructive/10 text-destructive-foreground',
+          className: 'px-3 py-2 text-sm border border-neutral-300 bg-neutral-50 text-neutral-900 rounded-lg shadow-md',
         });
         setSocialLoginPending(null);
         return;
@@ -143,8 +140,7 @@ export function AuthForm({ mode }: AuthFormProps) {
       toast({
         title: 'Authentication Failed',
         description: 'Unexpected error occurred.',
-        className:
-          'border-destructive bg-destructive/10 text-destructive-foreground',
+        className: 'px-3 py-2 text-sm border border-neutral-300 bg-neutral-50 text-neutral-900 rounded-lg shadow-md',
       });
       setSocialLoginPending(null);
     }

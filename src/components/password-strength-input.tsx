@@ -54,8 +54,7 @@ export function PasswordStrengthInput({ field }: PasswordStrengthInputProps) {
         toast({
           title: 'Error',
           description: 'Could not suggest a password. Please try again.',
-          className:
-            'border-destructive bg-destructive/10 text-destructive-foreground',
+          className: 'px-3 py-2 text-sm border border-neutral-300 bg-neutral-50 text-neutral-900 rounded-lg shadow-md',
         });
       }
     });

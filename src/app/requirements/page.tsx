@@ -90,6 +90,13 @@ const outputTypes = [
     "Voice Interaction",
     "Wireframe",
     "Information Architecture",
+    "Motion Design, Interactive Prototype",
+    "Interactive Prototype, Motion Design",
+    "UI Design, Visual Design",
+    "Presentation, Video",
+    "Presentation, UI Design",
+    "Wireframe, Presentation",
+    "Interactive Prototype, UI Design"
 ];
 const outcomes = ['Qualitative', 'Quantitative', 'Insight'];
 const deviceTypes = ['Mobile', 'Desktop', 'Electronics', 'Kiosk'];
@@ -128,8 +135,7 @@ export default function RequirementsPage() {
           toast({
             title: 'Failed to load project',
             description: 'Could not fetch existing project details.',
-            className:
-              'border-destructive bg-destructive/10 text-destructive-foreground',
+            className: 'px-3 py-2 text-sm border border-neutral-300 bg-neutral-50 text-neutral-900 rounded-lg shadow-md',
           });
         } else if (data) {
           form.reset({
@@ -161,8 +167,7 @@ export default function RequirementsPage() {
       toast({
         title: 'Validation Error',
         description: 'Please fill in all required fields for this section.',
-        className:
-          'border-destructive bg-destructive/10 text-destructive-foreground',
+        className: 'px-3 py-2 text-sm border border-neutral-300 bg-neutral-50 text-neutral-900 rounded-lg shadow-md',
       });
       setIsSubmitting(false);
       return;
@@ -212,8 +217,7 @@ export default function RequirementsPage() {
       toast({
         title: 'Uh oh! Something went wrong.',
         description: error.message || 'There was a problem saving your requirements.',
-        className:
-          'border-destructive bg-destructive/10 text-destructive-foreground',
+        className: 'px-3 py-2 text-sm border border-neutral-300 bg-neutral-50 text-neutral-900 rounded-lg shadow-md',
       });
     } finally {
       setIsSubmitting(false);
@@ -225,8 +229,7 @@ export default function RequirementsPage() {
       toast({
         title: 'Cannot Proceed',
         description: 'Please save the final section to view recommendations.',
-        className:
-          'border-destructive bg-destructive/10 text-destructive-foreground',
+        className: 'px-3 py-2 text-sm border border-neutral-300 bg-neutral-50 text-neutral-900 rounded-lg shadow-md',
       });
       return;
     }

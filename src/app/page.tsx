@@ -27,8 +27,7 @@ export default function LoginPage() {
       toast({
         title: 'Login Failed',
         description: decodeURIComponent(error),
-        className:
-          'border-destructive bg-destructive/10 text-destructive-foreground',
+        className: 'px-3 py-2 text-sm border border-neutral-300 bg-neutral-50 text-neutral-900 rounded-lg shadow-md',
       });
 
       // Clean the URL so the toast won’t repeat on refresh
