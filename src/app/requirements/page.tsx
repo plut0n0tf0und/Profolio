@@ -165,10 +165,19 @@ export default function RequirementsPage() {
 
     if (!isValid) {
       toast({
-        variant: 'destructive',
-        title: 'Validation Error',
-        description: 'Please fill in all required fields for this section.',
+        title: (
+          <div className="flex items-center gap-2">
+            <span className="font-semibold">Hold on a sec</span>
+          </div>
+        ),
+        description: (
+          <p className="text-sm text-neutral-500">
+            Complete all fields to move ahead smoothly.
+          </p>
+        ),
+        className: "border border-neutral-300 bg-neutral-50 text-neutral-900 rounded-xl shadow-lg",
       });
+      
       setIsSubmitting(false);
       return;
     }
