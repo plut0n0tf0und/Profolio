@@ -18,6 +18,17 @@ import { Badge } from '@/components/ui/badge';
 import { ChevronLeft, Wand2, Save } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+  } from '@/components/ui/alert-dialog';
 
 type StageTechniques = { [key: string]: string[] };
 
@@ -100,9 +111,8 @@ export default function ResultPage() {
 
   const handleSaveResult = useCallback(async () => {
     if (!requirement || !id) return;
-  
+
     const resultData = {
-      user_id: 'CURRENT_USER_ID',       // replace with actual user ID from session
       requirement_id: id,
       project_name: requirement.project_name || '',
       role: requirement.role || '',
@@ -113,26 +123,25 @@ export default function ResultPage() {
       device_type: Array.isArray(requirement.device_type) ? requirement.device_type : [],
       stage_techniques: stageTechniques || {},
     };
-  
-    console.log("Saving data to Supabase:", resultData);
-  
+
     const { error } = await saveOrUpdateResult(id, resultData);
-  
+
     if (error) {
-      console.error("Supabase save error:", error);
-      toast({
-        title: "Save Failed",
-        description: "There was a problem saving your project results. Check console for details.",
-        className: 'px-3 py-2 text-sm border border-neutral-300 bg-neutral-50 text-neutral-900 rounded-lg shadow-md',
-      });
+        console.error("Supabase save error:", error);
+        toast({
+            title: 'Save Failed',
+            description: `There was a problem saving your project results: ${error.message}`,
+            className: 'px-3 py-2 text-sm border border-neutral-300 bg-neutral-50 text-neutral-900 rounded-lg shadow-md',
+        });
     } else {
-      toast({
-        title: "Project Saved!",
-        description: "Your project results have been successfully saved.",
-      });
+        toast({
+            title: 'Project Saved!',
+            description: 'Your project results have been successfully saved.',
+        });
     }
   }, [requirement, id, stageTechniques, toast]);
-  
+
+
 
 
   useEffect(() => {
@@ -141,18 +150,18 @@ export default function ResultPage() {
     const getRequirement = async () => {
       setIsLoading(true);
       const { data, error } = await fetchRequirementById(id);
-      
+
       if (error) {
         toast({
-          title: 'Error fetching requirement',
-          description: error.message,
-          className: 'px-3 py-2 text-sm border border-neutral-300 bg-neutral-50 text-neutral-900 rounded-lg shadow-md',
+            title: 'Error Fetching Project',
+            description: 'Could not retrieve project details. Please try again.',
+            className: 'px-3 py-2 text-sm border border-neutral-300 bg-neutral-50 text-neutral-900 rounded-lg shadow-md',
         });
         router.push('/dashboard');
       } else if(data) {
         setRequirement(data);
         const recommendedTechniques = getTechniquesForOutputs(data.output_type || []);
-        
+
         const categorized: StageTechniques = Object.keys(fiveDStages).reduce((acc, stage) => {
             acc[stage] = recommendedTechniques.filter(t => fiveDStages[stage as keyof typeof fiveDStages].some(d => t.includes(d)));
             return acc;
@@ -165,22 +174,39 @@ export default function ResultPage() {
 
     getRequirement();
   }, [id, router, toast, fiveDStages]);
+  const [hasSaved, setHasSaved] = useState(false);
 
   useEffect(() => {
-    // This auto-saves when the data is loaded.
-    if (!isLoading && requirement) {
-      handleSaveResult();
+    if (!isLoading && requirement && !hasSaved) {
+      handleSaveResult().then(() => setHasSaved(true));
     }
-  }, [isLoading, requirement, handleSaveResult]);
+  }, [isLoading, requirement, hasSaved, handleSaveResult]);
+
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
-       <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center border-b bg-background px-4">
-        <Button variant="ghost" size="icon" className="shrink-0" onClick={() => router.push('/dashboard')}>
-          <ChevronLeft className="h-6 w-6" />
-          <span className="sr-only">Back</span>
-        </Button>
-        <h1 className="ml-2 flex-1 text-center text-xl font-bold">Project Result</h1>
+       <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between border-b border-border bg-background px-4">
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="ghost" size="icon" className="shrink-0">
+                <ChevronLeft className="h-6 w-6" />
+                <span className="sr-only md:not-sr-only">Back</span>
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Edit Requirements?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will take you back to the form to edit your project requirements.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={() => router.push(`/requirements?id=${id}`)}>Confirm</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+        <h1 className="ml-2 flex-1 text-center text-xl font-bold truncate">Project Result</h1>
         <Button variant="outline" size="sm" onClick={handleSaveResult} disabled={isLoading}>
           <Save className="mr-2 h-4 w-4" />
           Save
@@ -236,3 +262,5 @@ export default function ResultPage() {
     </div>
   );
 }
+
+    

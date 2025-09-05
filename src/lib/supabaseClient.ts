@@ -44,7 +44,10 @@ export async function insertRequirement(
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
-    return { data: null, error: { message: 'User not authenticated', details: '', hint: '', code: '401' } };
+    return { data: null, error: {
+      message: 'User not authenticated', details: '', hint: '', code: '401',
+      name: ''
+    } };
   }
 
   const requirementToInsert = {
@@ -73,7 +76,10 @@ export async function updateRequirement(
 ): Promise<{ data: Requirement | null; error: PostgrestError | null }> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
-      return { data: null, error: { message: 'User not authenticated', details: '', hint: '', code: '401' } };
+      return { data: null, error: {
+        message: 'User not authenticated', details: '', hint: '', code: '401',
+        name: ''
+      } };
   }
 
   const { data, error } = await supabase
@@ -95,7 +101,10 @@ export async function updateRequirement(
 export async function fetchRequirementsForUser(): Promise<{ data: Requirement[] | null; error: PostgrestError | null }> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
-    return { data: null, error: { message: 'User not authenticated', details: '', hint: '', code: '401' } };
+    return { data: null, error: {
+      message: 'User not authenticated', details: '', hint: '', code: '401',
+      name: ''
+    } };
   }
 
   const { data, error } = await supabase
@@ -118,7 +127,10 @@ export async function fetchRequirementById(
 ): Promise<{ data: Requirement | null; error: PostgrestError | null }> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
-    return { data: null, error: { message: 'User not authenticated', details: '', hint: '', code: '401' } };
+    return { data: null, error: {
+      message: 'User not authenticated', details: '', hint: '', code: '401',
+      name: ''
+    } };
   }
   
   const { data, error } = await supabase
@@ -149,7 +161,10 @@ export async function saveOrUpdateResult(
     try {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
-            return { data: null, error: { message: 'User not authenticated', details: '', hint: '', code: '401' } };
+            return { data: null, error: {
+              message: 'User not authenticated', details: '', hint: '', code: '401',
+              name: ''
+            } };
         }
 
         const dataToUpsert = {
@@ -187,7 +202,10 @@ export async function saveOrUpdateResult(
 export async function fetchSavedResults(): Promise<{ data: Requirement[] | null; error: PostgrestError | null }> {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-        return { data: null, error: { message: 'User not authenticated', details: '', hint: '', code: '401' } };
+        return { data: null, error: {
+          message: 'User not authenticated', details: '', hint: '', code: '401',
+          name: ''
+        } };
     }
 
     const { data, error } = await supabase
@@ -210,7 +228,10 @@ export async function fetchSavedResultById(
 ): Promise<{ data: Requirement | null; error: PostgrestError | null }> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
-    return { data: null, error: { message: 'User not authenticated', details: '', hint: '', code: '401' } };
+    return { data: null, error: {
+      message: 'User not authenticated', details: '', hint: '', code: '401',
+      name: ''
+    } };
   }
 
   const { data, error } = await supabase
