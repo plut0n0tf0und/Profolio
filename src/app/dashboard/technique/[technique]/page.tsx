@@ -476,7 +476,6 @@ export default function TechniqueDetailPage() {
       </Card>
       
       <div className="flex justify-end gap-4">
-        <Button type="button" variant="outline" onClick={() => setIsEditMode(false)}>Cancel</Button>
         <Button type="submit" disabled={isSaving}>
             {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save Changes'}
         </Button>
