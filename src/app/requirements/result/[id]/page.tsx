@@ -179,9 +179,9 @@ export default function ResultPage() {
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Edit Requirements?</AlertDialogTitle>
+              <AlertDialogTitle>Update Your Choices</AlertDialogTitle>
               <AlertDialogDescription>
-                This will take you back to the requirements form to make changes. Your current recommendations will be updated based on your new selections.
+                Edit your answers on the form to get new recommendations.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
