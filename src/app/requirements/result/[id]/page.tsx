@@ -1,9 +1,9 @@
 
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { fetchRequirementById, Requirement } from '@/lib/supabaseClient';
+import { fetchRequirementById, Requirement, saveOrUpdateResult } from '@/lib/supabaseClient';
 import { getTechniquesForOutputs } from '@/lib/uxTechniques';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -26,30 +26,13 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
-import { ChevronLeft, Wand2 } from 'lucide-react';
+import { ChevronLeft, Wand2, Save } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
 
-const FiveDProcess = ({ techniques }: { techniques: string[] }) => {
-  // A very simple bucketing logic for demonstration.
-  // In a real app, this could be more sophisticated.
-  const stageTechniques = useMemo(() => {
-    const discovery = ['User Interviews', 'Surveys & Questionnaires', 'Contextual Inquiry', 'Ethnographic Study', 'Field Studies', 'Stakeholder Interviews'];
-    const definition = ['Personas', 'Empathy Mapping', 'Journey Mapping', 'Problem Statement'];
-    const development = ['Wireframing (low-fidelity)', 'Interactive Prototyping', 'Card Sorting', 'Information Architecture (IA) Review'];
-    const delivery = ['Usability Testing (Lab)', 'A/B Testing', 'High-fidelity Mockups', 'Accessibility Testing'];
-    const deployment = ['Analytics / KPI Tracking', 'Session Replay', 'Feedback Surveys', 'Pilot Launch / Beta Testing'];
+type StageTechniques = { [key: string]: string[] };
 
-    return {
-      Discover: techniques.filter(t => discovery.some(d => t.includes(d))),
-      Define: techniques.filter(t => definition.some(d => t.includes(d))),
-      Develop: techniques.filter(t => development.some(d => t.includes(d))),
-      Deliver: techniques.filter(t => delivery.some(d => t.includes(d))),
-      Deploy: techniques.filter(t => deployment.some(d => t.includes(d))),
-    };
-  }, [techniques]);
-
-
+const FiveDProcess = ({ techniques }: { techniques: StageTechniques }) => {
   return (
     <Card className="w-full">
       <CardHeader>
@@ -57,8 +40,8 @@ const FiveDProcess = ({ techniques }: { techniques: string[] }) => {
         <CardDescription>Recommended UX techniques for your project.</CardDescription>
       </CardHeader>
       <CardContent>
-        <Accordion type="multiple" defaultValue={Object.keys(stageTechniques)} className="w-full">
-          {Object.entries(stageTechniques).map(([stage, stageTechs]) => (
+        <Accordion type="multiple" defaultValue={Object.keys(techniques)} className="w-full">
+          {Object.entries(techniques).map(([stage, stageTechs]) => (
             <AccordionItem value={stage} key={stage}>
               <AccordionTrigger className="text-lg font-semibold">{stage}</AccordionTrigger>
               <AccordionContent>
@@ -114,8 +97,39 @@ export default function ResultPage() {
   const { toast } = useToast();
   const id = params.id as string;
   const [requirement, setRequirement] = useState<Requirement | null>(null);
-  const [techniques, setTechniques] = useState<string[]>([]);
+  const [stageTechniques, setStageTechniques] = useState<StageTechniques>({});
   const [isLoading, setIsLoading] = useState(true);
+
+  const fiveDStages = useMemo(() => ({
+    Discover: ['User Interviews', 'Surveys & Questionnaires', 'Contextual Inquiry', 'Ethnographic Study', 'Field Studies', 'Stakeholder Interviews'],
+    Define: ['Personas', 'Empathy Mapping', 'Journey Mapping', 'Problem Statement'],
+    Develop: ['Wireframing (low-fidelity)', 'Interactive Prototyping', 'Card Sorting', 'Information Architecture (IA) Review'],
+    Deliver: ['Usability Testing (Lab)', 'A/B Testing', 'High-fidelity Mockups', 'Accessibility Testing'],
+    Deploy: ['Analytics / KPI Tracking', 'Session Replay', 'Feedback Surveys', 'Pilot Launch / Beta Testing'],
+  }), []);
+
+
+  const handleSaveResult = useCallback(async () => {
+    if (!requirement || !id) return;
+
+    const resultData = { ...requirement, stage_techniques: stageTechniques };
+
+    const { error } = await saveOrUpdateResult(id, resultData);
+
+    if (error) {
+        toast({
+            title: "Save Failed",
+            description: "There was a problem saving your project results.",
+            className: 'px-3 py-2 text-sm border border-neutral-300 bg-neutral-50 text-neutral-900 rounded-lg shadow-md',
+        });
+    } else {
+        toast({
+            title: "Project Saved!",
+            description: "Your project results have been successfully saved.",
+        });
+    }
+  }, [requirement, id, stageTechniques, toast]);
+
 
   useEffect(() => {
     if (!id) return;
@@ -123,6 +137,7 @@ export default function ResultPage() {
     const getRequirement = async () => {
       setIsLoading(true);
       const { data, error } = await fetchRequirementById(id);
+      
       if (error) {
         toast({
           title: 'Error fetching requirement',
@@ -130,44 +145,61 @@ export default function ResultPage() {
           className: 'px-3 py-2 text-sm border border-neutral-300 bg-neutral-50 text-neutral-900 rounded-lg shadow-md',
         });
         router.push('/dashboard');
-      } else {
+      } else if(data) {
         setRequirement(data);
-        if (data?.output_type) {
-          const recommendedTechniques = getTechniquesForOutputs(data.output_type);
-          setTechniques(recommendedTechniques);
-        }
+        const recommendedTechniques = getTechniquesForOutputs(data.output_type || []);
+        
+        const categorized: StageTechniques = Object.keys(fiveDStages).reduce((acc, stage) => {
+            acc[stage] = recommendedTechniques.filter(t => fiveDStages[stage as keyof typeof fiveDStages].some(d => t.includes(d)));
+            return acc;
+        }, {} as StageTechniques);
+
+        setStageTechniques(categorized);
       }
       setIsLoading(false);
     };
 
     getRequirement();
-  }, [id, router, toast]);
+  }, [id, router, toast, fiveDStages]);
+
+  useEffect(() => {
+    if (!isLoading && requirement) {
+      handleSaveResult();
+    }
+  }, [isLoading, requirement, handleSaveResult]);
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
-      <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center border-b border-border bg-background px-4">
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button variant="ghost" size="icon" className="shrink-0">
-              <ChevronLeft className="h-6 w-6" />
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Edit Requirements?</AlertDialogTitle>
-              <AlertDialogDescription>
-                Would you like to go back and edit your project requirements?
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={() => router.push(`/requirements?id=${id}`)}>
-                Edit Requirements
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-        <h1 className="ml-2 text-xl font-bold">Project Result</h1>
+      <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between border-b border-border bg-background px-4">
+          <div className='flex items-center'>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="ghost" size="icon" className="shrink-0">
+                  <ChevronLeft className="h-6 w-6" />
+                  <span className="sr-only md:not-sr-only md:ml-2">Back</span>
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Edit Requirements?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Would you like to go back and edit your project requirements?
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => router.push(`/requirements?id=${id}`)}>
+                    Edit Requirements
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+          <h1 className="ml-2 text-xl font-bold text-center flex-1">Project Result</h1>
+          <Button variant="outline" size="sm" onClick={handleSaveResult} disabled={isLoading}>
+              <Save className="mr-2 h-4 w-4" />
+              Save Project
+          </Button>
       </header>
 
       <main className="container mx-auto max-w-4xl p-4 md:p-8">
@@ -212,7 +244,7 @@ export default function ResultPage() {
           {isLoading ? (
             <RequirementDetailSkeleton />
           ) : (
-            <FiveDProcess techniques={techniques} />
+            <FiveDProcess techniques={stageTechniques} />
           )}
         </div>
       </main>

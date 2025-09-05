@@ -16,6 +16,7 @@ const RequirementSchema = z.object({
   outcome: z.array(z.string()).optional(),
   device_type: z.array(z.string()).optional(),
   project_type: z.enum(['new', 'old']).optional(),
+  stage_techniques: z.record(z.array(z.string())).optional(),
 });
 
 
@@ -135,4 +136,51 @@ export async function fetchRequirementById(
   return { data, error };
 }
 
+/**
+ * Saves or updates a project result in the 'saved_results' table.
+ * @param requirementId - The UUID of the original requirement.
+ * @param resultData - The complete result data to save.
+ * @returns A promise that resolves with the saved data or an error.
+ */
+export async function saveOrUpdateResult(
+    requirementId: string,
+    resultData: Requirement
+): Promise<{ data: Requirement | null; error: PostgrestError | null }> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+        return { data: null, error: { message: 'User not authenticated', details: '', hint: '', code: '401' } };
+    }
+
+    const dataToUpsert = {
+        ...resultData,
+        id: requirementId, // Use the requirement ID as the primary key for saved_results
+        user_id: user.id,
+    };
+
+    const { data, error } = await supabase
+        .from('saved_results')
+        .upsert(dataToUpsert)
+        .select()
+        .single();
     
+    return { data, error };
+}
+
+/**
+ * Fetches all saved results for the currently authenticated user.
+ * @returns A promise that resolves with an array of saved results or an error.
+ */
+export async function fetchSavedResults(): Promise<{ data: Requirement[] | null; error: PostgrestError | null }> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+        return { data: null, error: { message: 'User not authenticated', details: '', hint: '', code: '401' } };
+    }
+
+    const { data, error } = await supabase
+        .from('saved_results')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+    return { data, error };
+}

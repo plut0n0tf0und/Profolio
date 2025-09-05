@@ -1,3 +1,4 @@
+
 'use client';
 
 import { ChevronRight } from 'lucide-react';
@@ -19,7 +20,7 @@ interface ProjectCardProps {
 export function ProjectCard({ name, tags, onClick }: ProjectCardProps) {
   return (
     <Card
-      className="cursor-pointer rounded-xl border border-border bg-background transition-all hover:border-foreground/50"
+      className="cursor-pointer rounded-xl border border-border bg-card transition-all hover:shadow-md hover:border-foreground/20"
       onClick={onClick}
     >
       <div className="flex items-center p-4">
@@ -29,11 +30,12 @@ export function ProjectCard({ name, tags, onClick }: ProjectCardProps) {
           </CardHeader>
           <CardContent className="p-0 pt-2">
             <div className="flex flex-wrap gap-2">
-              {tags.map((tag) => (
+              {tags.slice(0, 3).map((tag) => (
                 <Badge key={tag} variant="secondary" className="font-normal">
                   {tag}
                 </Badge>
               ))}
+              {tags.length > 3 && <Badge variant="outline">+{tags.length - 3} more</Badge>}
             </div>
           </CardContent>
         </div>

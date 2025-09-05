@@ -3,10 +3,13 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { UserCircle, Search, Plus } from 'lucide-react';
+import { UserCircle, Search, Plus, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sidebar } from '@/components/Sidebar';
 import Link from 'next/link';
+import { fetchSavedResults, Requirement } from '@/lib/supabaseClient';
+import { ProjectCard } from '@/components/ProjectCard';
+import { useToast } from '@/hooks/use-toast';
 
 const motivationalTips = [
   'Your UX journey starts here ✦',
@@ -39,12 +42,32 @@ const StaticPlaceholder = () => (
 
 export default function DashboardPage() {
   const router = useRouter();
+  const { toast } = useToast();
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [tip, setTip] = useState('');
+  const [projects, setProjects] = useState<Requirement[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     setTip(motivationalTips[Math.floor(Math.random() * motivationalTips.length)]);
-  }, []);
+
+    const loadProjects = async () => {
+      setIsLoading(true);
+      const { data, error } = await fetchSavedResults();
+      if (error) {
+        toast({
+            title: 'Failed to load projects',
+            description: 'Could not fetch your saved projects. Please try again.',
+            className: 'px-3 py-2 text-sm border border-neutral-300 bg-neutral-50 text-neutral-900 rounded-lg shadow-md',
+        });
+      } else if (data) {
+        setProjects(data);
+      }
+      setIsLoading(false);
+    };
+
+    loadProjects();
+  }, [toast]);
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
@@ -67,19 +90,39 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <main className="flex flex-1 flex-col items-center justify-center p-4 text-center">
-        <div className="space-y-6">
-          <StaticPlaceholder />
-           <div className="space-y-2">
-            <h2 className="text-2xl font-bold">No Projects Yet</h2>
-            <p className="text-muted-foreground">Click the '+' icon to add your first project.</p>
-          </div>
-          {tip && (
-            <p className="text-sm text-muted-foreground">
-              {tip}
-            </p>
-          )}
-        </div>
+      <main className="flex-1 p-4">
+        {isLoading ? (
+            <div className="flex items-center justify-center h-full">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+        ) : projects.length > 0 ? (
+            <div className="mx-auto max-w-4xl space-y-4">
+                {projects.map((project) => (
+                    <ProjectCard
+                        key={project.id}
+                        id={project.id!}
+                        name={project.project_name || 'Untitled Project'}
+                        tags={[...project.output_type || [], ...project.device_type || []]}
+                        onClick={() => router.push(`/requirements/result/${project.id}`)}
+                    />
+                ))}
+            </div>
+        ) : (
+            <div className="flex h-full flex-col items-center justify-center text-center">
+                <div className="space-y-6">
+                    <StaticPlaceholder />
+                    <div className="space-y-2">
+                        <h2 className="text-2xl font-bold">No Projects Yet</h2>
+                        <p className="text-muted-foreground">Click the '+' icon to add your first project.</p>
+                    </div>
+                    {tip && (
+                        <p className="text-sm text-muted-foreground">
+                        {tip}
+                        </p>
+                    )}
+                </div>
+            </div>
+        )}
       </main>
     </div>
   );
