@@ -25,7 +25,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
-import { ChevronLeft, Edit, Wand2, Trash2, Loader2 } from 'lucide-react';
+import { ChevronLeft, Edit, Wand2, Loader2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
 import { Separator } from '@/components/ui/separator';
@@ -211,7 +211,7 @@ export default function ProjectDetailPage() {
             <div className="flex justify-start">
               <AlertDialog>
                   <AlertDialogTrigger asChild>
-                      <Button variant="outline">
+                      <Button variant="destructive">
                           Delete this project
                       </Button>
                   </AlertDialogTrigger>
@@ -224,7 +224,11 @@ export default function ProjectDetailPage() {
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                           <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
-                          <AlertDialogAction onClick={handleDeleteProject} disabled={isDeleting}>
+                          <AlertDialogAction 
+                            onClick={handleDeleteProject} 
+                            disabled={isDeleting}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
                               {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Delete'}
                           </AlertDialogAction>
                       </AlertDialogFooter>
