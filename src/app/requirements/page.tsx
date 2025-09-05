@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm, useFormState } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -107,6 +107,7 @@ const accordionItems = ['item-1', 'item-2', 'item-3', 'item-4', 'item-5'];
 export default function RequirementsPage() {
   const { toast } = useToast();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [activeAccordionItem, setActiveAccordionItem] = useState('item-1');
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -124,6 +125,39 @@ export default function RequirementsPage() {
       device_type: [],
     },
   });
+
+  useEffect(() => {
+    const id = searchParams.get('id');
+    if (id) {
+      setRequirementId(id);
+      const loadRequirement = async () => {
+        setIsSubmitting(true);
+        const { data, error } = await fetchRequirementById(id);
+        if (error) {
+          toast({
+            variant: 'destructive',
+            title: 'Failed to load project',
+            description: 'Could not fetch existing project details.',
+          });
+        } else if (data) {
+          form.reset({
+            ...data,
+            date: data.date ? new Date(data.date) : new Date(),
+            output_type: data.output_type || [],
+            outcome: data.outcome || [],
+            device_type: data.device_type || [],
+          });
+          toast({
+            title: 'Project Loaded',
+            description: 'You are now editing an existing project.',
+          });
+        }
+        setIsSubmitting(false);
+      };
+      loadRequirement();
+    }
+  }, [searchParams, form, toast]);
+
 
   const handleSaveAndNext = async (currentSection: keyof typeof sectionSchemas) => {
     setIsSubmitting(true);
@@ -147,7 +181,6 @@ export default function RequirementsPage() {
       return acc;
     }, {} as any);
     
-    // Convert date to ISO string for Supabase
     if (sectionData.date && sectionData.date instanceof Date) {
       sectionData.date = sectionData.date.toISOString();
     }
@@ -155,12 +188,10 @@ export default function RequirementsPage() {
     try {
       let savedData;
       if (requirementId) {
-        // Update existing requirement
         const { data, error } = await updateRequirement(requirementId, sectionData);
         if (error) throw error;
         savedData = data;
       } else {
-        // Create new requirement
         const { data, error } = await insertRequirement(sectionData);
         if (error) throw error;
         savedData = data;
@@ -174,12 +205,10 @@ export default function RequirementsPage() {
         description: `Section has been successfully saved.`,
       });
 
-      // Move to next section
       const currentIndex = accordionItems.indexOf(currentSection);
       if (currentIndex < accordionItems.length - 1) {
         setActiveAccordionItem(accordionItems[currentIndex + 1]);
       } else {
-        // Last section, redirect to results
         if (savedData?.id) {
             router.push(`/requirements/result/${savedData.id}`);
         } else {
@@ -228,12 +257,12 @@ export default function RequirementsPage() {
                 <AlertDialogHeader>
                   <AlertDialogTitle>Are you sure you want to leave?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Any changes you've made may not be saved.
+                    Any unsaved changes will be lost.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => router.back()}>Continue</AlertDialogAction>
+                  <AlertDialogAction onClick={() => router.push('/dashboard')}>Continue</AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
@@ -498,5 +527,3 @@ export default function RequirementsPage() {
     </div>
   );
 }
-
-    

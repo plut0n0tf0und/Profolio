@@ -14,6 +14,17 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { ChevronLeft, Wand2, UserCircle } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -142,9 +153,27 @@ export default function ResultPage() {
             <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setSidebarOpen(true)}>
                 <UserCircle className="h-6 w-6" />
             </Button>
-            <Button variant="ghost" size="icon" onClick={() => router.push('/dashboard')}>
-                <ChevronLeft className="h-6 w-6" />
-            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <ChevronLeft className="h-6 w-6" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Edit Requirements?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Would you like to go back and edit your project requirements?
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => router.push(`/requirements?id=${id}`)}>
+                    Edit Requirements
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
         </div>
         <h1 className="ml-4 text-xl font-bold">Project Result</h1>
       </header>
@@ -188,7 +217,11 @@ export default function ResultPage() {
             </Card>
           )}
 
-          <FiveDProcess techniques={techniques} />
+          {isLoading ? (
+            <RequirementDetailSkeleton />
+          ) : (
+            <FiveDProcess techniques={techniques} />
+          )}
         </div>
       </main>
     </div>
