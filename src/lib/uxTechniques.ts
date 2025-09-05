@@ -12,10 +12,10 @@ interface TechniqueDetail {
 }
 
 const allTechniques: TechniqueDetail[] = techniqueDetails;
-const fiveDStages = ["Discover", "Define", "Design", "Develop", "Deliver"];
 
 /**
- * Retrieves a filtered list of UX techniques based on the project requirements.
+ * Retrieves a filtered list of UX techniques based on a scoring system
+ * derived from the project requirements.
  * @param requirement - The user's selections for the project.
  * @returns An object where keys are 5D stages and values are arrays of recommended technique names.
  */
@@ -32,29 +32,49 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
     return recommendations;
   }
 
-  // Helper to check for array intersection or if the requirement array is empty
-  const matches = (reqArray: string[] | undefined, techArray: string[]): boolean => {
-    if (!reqArray || reqArray.length === 0) return true; // If user selected nothing, it's a match
-    return reqArray.some(item => techArray.includes(item));
-  };
-  
-  // Helper for project type check
-  const projectTypeMatches = (reqType: 'new' | 'old' | undefined, techTypes: string[]): boolean => {
-    if (!reqType) return true; // If user selected nothing, it's a match
-    return techTypes.some(techType => techType.toLowerCase() === reqType.toLowerCase());
-  }
-
   allTechniques.forEach(tech => {
-    const isMatch =
-      matches(requirement.outcome, tech.outcomes) &&
-      matches(requirement.output_type, tech.output_types) &&
-      matches(requirement.device_type, tech.device_types) &&
-      projectTypeMatches(requirement.project_type, tech.project_types);
+    let score = 0;
 
-    if (isMatch && recommendations[tech.stage]) {
-      recommendations[tech.stage].push(tech.name);
+    // Score based on outcome match
+    if (requirement.outcome && requirement.outcome.length > 0) {
+      if (requirement.outcome.some(item => tech.outcomes.includes(item))) {
+        score++;
+      }
+    }
+
+    // Score based on output type match
+    if (requirement.output_type && requirement.output_type.length > 0) {
+      if (requirement.output_type.some(item => tech.output_types.includes(item))) {
+        score++;
+      }
+    }
+    
+    // Score based on device type match
+    if (requirement.device_type && requirement.device_type.length > 0) {
+        if (requirement.device_type.some(item => tech.device_types.includes(item))) {
+            score++;
+        }
+    }
+
+    // Score based on project type match
+    if (requirement.project_type) {
+      if (tech.project_types.some(pType => pType.toLowerCase() === requirement.project_type!.toLowerCase())) {
+        score++;
+      }
+    }
+
+    // If the score is greater than 0, the technique is relevant.
+    if (score > 0 && recommendations[tech.stage]) {
+      // Avoid adding duplicates
+      if (!recommendations[tech.stage].includes(tech.name)) {
+        recommendations[tech.stage].push(tech.name);
+      }
     }
   });
+  
+  // A fallback for when no specific filters lead to recommendations
+  // If a stage has no recommendations, it might be better to show a few core techniques
+  // For now, we'll return potentially empty stages as the scoring handles relevance.
 
   return recommendations;
 }
