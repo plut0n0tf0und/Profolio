@@ -62,8 +62,8 @@ const FiveDProcess = ({ techniques, projectId }: { techniques: StageTechniques, 
                     {stageTechs.map(technique => (
                       <Card key={technique} className="bg-background/50 border-border/50 hover:border-primary/50 transition-all">
                         <CardContent className="flex items-center justify-between p-4">
-                          <Link href={`/dashboard/technique/${slugify(technique)}?projectId=${projectId}`} passHref>
-                            <a className="font-medium cursor-pointer hover:underline">{technique}</a>
+                          <Link href={`/dashboard/technique/${slugify(technique)}?projectId=${projectId}`} className="font-medium cursor-pointer hover:underline">
+                            {technique}
                           </Link>
                           <Link href={`/dashboard/technique/${slugify(technique)}?edit=true&projectId=${projectId}`} passHref>
                               <Button variant="default" size="sm">
