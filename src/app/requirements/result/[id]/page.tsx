@@ -101,17 +101,18 @@ const RequirementDetailSkeleton = () => (
 export default function ResultPage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const { toast } = useToast();
+  const { id } = params;
   const [requirement, setRequirement] = useState<Requirement | null>(null);
   const [techniques, setTechniques] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
-    if (!params.id) return;
+    if (!id) return;
 
     const getRequirement = async () => {
       setIsLoading(true);
-      const { data, error } = await fetchRequirementById(params.id);
+      const { data, error } = await fetchRequirementById(id);
       if (error) {
         toast({
           variant: 'destructive',
@@ -130,7 +131,7 @@ export default function ResultPage({ params }: { params: { id: string } }) {
     };
 
     getRequirement();
-  }, [params.id, router, toast]);
+  }, [id, router, toast]);
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
