@@ -39,8 +39,8 @@ export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey);
  * @returns A promise that resolves with the inserted data or an error.
  */
 export async function insertRequirement(
-  requirement: Omit<Requirement, 'user_id'>
-): Promise<{ data: Requirement[] | null; error: PostgrestError | null }> {
+  requirement: Omit<Requirement, 'id' | 'user_id' | 'created_at'>
+): Promise<{ data: Requirement | null; error: PostgrestError | null }> {
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) {
@@ -56,25 +56,52 @@ export async function insertRequirement(
   const { data, error } = await supabase
     .from('requirements')
     .insert([requirementToInsert])
-    .select();
+    .select()
+    .single();
 
   return { data, error };
 }
 
 
 /**
- * Fetches all requirements for a given user ID.
- * @param userId - The UUID of the user.
+ * Fetches all requirements for the currently authenticated user.
  * @returns A promise that resolves with an array of requirements or an error.
  */
-export async function fetchRequirementsByUserId(
-  userId: string
-): Promise<{ data: Requirement[] | null; error: PostgrestError | null }> {
+export async function fetchRequirementsForUser(): Promise<{ data: Requirement[] | null; error: PostgrestError | null }> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return { data: null, error: { message: 'User not authenticated', details: '', hint: '', code: '401' } };
+  }
+
   const { data, error } = await supabase
     .from('requirements')
     .select('*')
-    .eq('user_id', userId)
+    .eq('user_id', user.id)
     .order('created_at', { ascending: false });
+
+  return { data, error };
+}
+
+
+/**
+ * Fetches a single requirement by its ID.
+ * @param id - The UUID of the requirement.
+ * @returns A promise that resolves with a single requirement object or an error.
+ */
+export async function fetchRequirementById(
+  id: string
+): Promise<{ data: Requirement | null; error: PostgrestError | null }> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return { data: null, error: { message: 'User not authenticated', details: '', hint: '', code: '401' } };
+  }
+  
+  const { data, error } = await supabase
+    .from('requirements')
+    .select('*')
+    .eq('id', id)
+    .eq('user_id', user.id) // Ensure user can only fetch their own requirement
+    .single();
 
   return { data, error };
 }
