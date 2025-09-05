@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     const errorMessage = encodeURIComponent(
       'Invalid authentication request. Could not process login.'
     );
-    return NextResponse.redirect(`${origin}/login?error=${errorMessage}`);
+    return NextResponse.redirect(`${origin}/?error=${errorMessage}`);
   }
 
   const supabase = createSupabaseServerClient();
@@ -33,7 +33,7 @@ if (isLogin && data.user) {
   if (isNewUser) {
     await supabase.auth.signOut();
     const errorMessage = encodeURIComponent('This account is not registered. Please sign up.');
-    return NextResponse.redirect(`${origin}/auth/callback?error=${errorMessage}`);
+    return NextResponse.redirect(`${origin}/?error=${errorMessage}`);
   }
 }
 

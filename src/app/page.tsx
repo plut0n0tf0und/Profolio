@@ -3,46 +3,52 @@
 import { AuthForm } from '@/components/auth-form';
 import { AnimatedGrid } from '@/components/animated-grid';
 import Link from 'next/link';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
-export default function SignupPage() {
+export default function LoginPage() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const { toast } = useToast();
+  const error = searchParams.get('error');
 
   useEffect(() => {
-    const error = searchParams.get('error');
+    const params = new URLSearchParams(window.location.search);
+    const error = params.get('error');
     if (error) {
       toast({
         variant: 'destructive',
-        title: 'Sign Up Failed',
+        title: 'Login Failed',
         description: decodeURIComponent(error),
       });
-      router.replace('/signup'); // clean up ?error= from URL
+
+      // Clean the URL so the toast won’t repeat on refresh
+      const url = new URL(window.location.href);
+      url.searchParams.delete('error');
+      window.history.replaceState({}, '', url.toString());
     }
-  }, [searchParams, router, toast]);
+  }, [toast]);
+
 
   return (
     <main className="flex min-h-screen w-full items-center justify-center p-4">
       <div className="grid w-full max-w-6xl grid-cols-1 overflow-hidden rounded-lg md:grid-cols-2 bg-card shadow-lg">
         <div className="flex flex-col justify-center p-8 sm:p-12 lg:p-16">
           <h1 className="text-4xl font-black tracking-tighter sm:text-5xl lg:text-6xl font-headline">
-            Create an Account
+            Welcome Back
           </h1>
           <p className="mt-4 text-lg text-muted-foreground">
-            Sign up to get access to magical UX techniques.
+            Log in to access your dashboard.
           </p>
           <div className="mt-8">
-            <AuthForm mode="signup" />
+            <AuthForm mode="login" />
           </div>
-          <p className="mt-4 text-center text-sm text-muted-foreground">
-            Already have an account?{' '}
-            <Link href="/login" className="font-semibold text-primary hover:underline">
-              Log In
-            </Link>
-          </p>
+            <p className="mt-4 text-center text-sm text-muted-foreground">
+              Don't have an account?{' '}
+              <Link href="/signup" className="font-semibold text-primary hover:underline">
+                Sign Up
+              </Link>
+            </p>
         </div>
         <div className="relative hidden h-full md:block">
           <AnimatedGrid />
