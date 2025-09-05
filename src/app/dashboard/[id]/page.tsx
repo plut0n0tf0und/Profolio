@@ -95,9 +95,9 @@ export default function ProjectDetailPage() {
 
       if (error) {
         toast({
-          title: 'Error fetching project',
-          description: error.message,
-          className: 'px-3 py-2 text-sm border border-neutral-300 bg-neutral-50 text-neutral-900 rounded-lg shadow-md',
+            title: 'Error Fetching Project',
+            description: 'Could not retrieve project details. Please try again.',
+            className: 'px-3 py-2 text-sm border border-neutral-300 bg-neutral-50 text-neutral-900 rounded-lg shadow-md',
         });
         router.push('/dashboard');
       } else if (data) {
@@ -136,7 +136,7 @@ export default function ProjectDetailPage() {
               <CardHeader>
                 <CardTitle className="text-3xl">{project.project_name}</CardTitle>
                 <CardDescription>
-                  {project.role} &middot; Saved on {format(new Date(project.created_at!), 'PPP')}
+                  {project.role} &middot; Saved on {project.created_at ? format(new Date(project.created_at), 'PPP') : 'Date not available'}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
