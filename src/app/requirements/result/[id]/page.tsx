@@ -102,6 +102,7 @@ export default function ResultPage() {
     if (!requirement || !id) return;
   
     const resultData = {
+      requirement_id: id,
       project_name: requirement.project_name || '',
       role: requirement.role || '',
       date: requirement.date ? new Date(requirement.date).toISOString() : undefined,
@@ -129,10 +130,6 @@ export default function ResultPage() {
       router.push('/dashboard');
     }
   }, [requirement, id, stageTechniques, toast, router]);
-  
-  
-
-
 
 
   useEffect(() => {

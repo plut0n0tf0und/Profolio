@@ -152,8 +152,7 @@ export async function fetchRequirementById(
 /**
  * Saves or updates a project result in the 'saved_results' table.
  * This function manually checks for an existing record and then either
- * updates it or inserts a new one, avoiding the need for a specific
- * `onConflict` constraint in the database.
+ * updates it or inserts a new one.
  * @param requirementId - The UUID of the original requirement.
  * @param resultData - The complete result data to save.
  * @returns A promise that resolves with the saved data or an error.
@@ -223,6 +222,31 @@ export async function saveOrUpdateResult(
   }
 }
 
+/**
+ * Updates an existing saved result in the 'saved_results' table.
+ * @param id - The UUID of the saved result to update.
+ * @param updates - An object containing the fields to update.
+ * @returns A promise that resolves with the updated data or an error.
+ */
+export async function updateSavedResult(
+  id: string,
+  updates: Partial<Requirement>
+): Promise<{ data: Requirement | null; error: PostgrestError | null }> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return { data: null, error: { message: 'User not authenticated', details: '', hint: '', code: '401', name: '' } };
+  }
+
+  const { data, error } = await supabase
+    .from('saved_results')
+    .update(updates)
+    .eq('id', id)
+    .eq('user_id', user.id)
+    .select()
+    .single();
+
+  return { data, error };
+}
 
 
 /**

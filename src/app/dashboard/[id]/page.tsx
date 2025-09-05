@@ -14,7 +14,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
-import { ChevronLeft, Edit, Save, Wand2 } from 'lucide-react';
+import { ChevronLeft, Edit, Wand2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
 
@@ -116,17 +116,14 @@ export default function ProjectDetailPage() {
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between border-b border-border bg-background px-4">
-        <Button variant="ghost" size="icon" className="shrink-0" onClick={() => router.push('/dashboard')}>
-            <Edit className="h-5 w-5" />
-            <span className="sr-only">Edit</span>
+        <Button variant="ghost" size="sm" onClick={() => router.push('/dashboard')} className="flex items-center gap-2">
+            <ChevronLeft className="h-5 w-5" />
+            <span className="hidden md:inline">Back</span>
         </Button>
-        <h1 className="ml-2 text-xl font-bold text-center flex-1 truncate">
+        <h1 className="text-xl font-bold text-center flex-1 truncate">
             {isLoading ? 'Loading...' : project?.project_name || 'Project Details'}
         </h1>
-        <Button variant="outline" size="sm" disabled={isLoading}>
-            <Save className="mr-2 h-4 w-4" />
-            Save/Update
-        </Button>
+        <div className="w-20" />
       </header>
 
       <main className="container mx-auto max-w-4xl p-4 md:p-8">
@@ -134,7 +131,13 @@ export default function ProjectDetailPage() {
           {isLoading ? <RequirementDetailSkeleton /> : project && (
             <Card>
               <CardHeader>
-                <CardTitle className="text-3xl">{project.project_name}</CardTitle>
+                <div className="flex items-center justify-between">
+                    <CardTitle className="text-3xl">{project.project_name}</CardTitle>
+                    <Button variant="outline" size="sm" onClick={() => router.push(`/dashboard/${id}/edit`)}>
+                        <Edit className="mr-2 h-4 w-4" />
+                        Edit
+                    </Button>
+                </div>
                 <CardDescription>
                   {project.role} &middot; Saved on {project.created_at ? format(new Date(project.created_at), 'PPP') : 'Date not available'}
                 </CardDescription>
