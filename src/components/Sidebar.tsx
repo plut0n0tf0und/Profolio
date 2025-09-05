@@ -25,13 +25,24 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const [isDarkMode, setIsDarkMode] = useState(true);
 
   useEffect(() => {
-    const root = window.document.documentElement;
-    if (isDarkMode) {
-      root.classList.add('dark');
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+      const isDark = savedTheme === 'dark';
+      setIsDarkMode(isDark);
+      document.documentElement.classList.toggle('dark', isDark);
     } else {
-      root.classList.remove('dark');
+      // Default to dark mode if no theme is saved
+      setIsDarkMode(true);
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
     }
-  }, [isDarkMode]);
+  }, []);
+
+  const toggleTheme = (isDark: boolean) => {
+    setIsDarkMode(isDark);
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    document.documentElement.classList.toggle('dark', isDark);
+  };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -68,7 +79,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               <Switch
                 id="dark-mode"
                 checked={isDarkMode}
-                onCheckedChange={setIsDarkMode}
+                onCheckedChange={toggleTheme}
               />
             </div>
           </div>
