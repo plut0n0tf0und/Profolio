@@ -100,20 +100,20 @@ export default function ResultPage() {
 
   const handleSaveResult = useCallback(async () => {
     if (!requirement || !id) return;
-
+  
     const resultData = {
       project_name: requirement.project_name || '',
       role: requirement.role || '',
-      date: requirement.date ? new Date(requirement.date).toISOString() : null,
+      date: requirement.date ? new Date(requirement.date).toISOString() : new Date().toISOString(),
       problem_statement: requirement.problem_statement || '',
       output_type: Array.isArray(requirement.output_type) ? requirement.output_type : [],
       outcome: Array.isArray(requirement.outcome) ? requirement.outcome : [],
       device_type: Array.isArray(requirement.device_type) ? requirement.device_type : [],
       stage_techniques: stageTechniques || {},
     };
-
+  
     const { error } = await saveOrUpdateResult(id, resultData);
-
+  
     if (error) {
         console.error("Supabase save error:", error);
         toast({
@@ -129,6 +129,7 @@ export default function ResultPage() {
         router.push('/dashboard');
     }
   }, [requirement, id, stageTechniques, toast, router]);
+  
 
 
 
