@@ -1,22 +1,23 @@
 import techniquesData from '@/../data/uxTechniques.json';
 
-
 export type TechniqueMapping = Record<string, string[]>;
 
 const techniques = techniquesData as TechniqueMapping;
 
-export function getTechniquesForOutput(outputType: string): string[] {
-  if (!outputType) return [];
-  return techniques[outputType] ?? [];
+/**
+ * Retrieves the list of UX techniques for a specific 5D stage.
+ * @param stage - The name of the 5D stage (e.g., "Discover", "Define").
+ * @returns An array of technique strings for that stage, or an empty array if not found.
+ */
+export function getTechniquesForStage(stage: string): string[] {
+  if (!stage) return [];
+  return techniques[stage] ?? [];
 }
 
-export function getTechniquesForOutputs(outputTypes: string[] = []): string[] {
-  if (!Array.isArray(outputTypes)) return [];
-  const all = outputTypes.flatMap(t => {
-      // Handle combined keys like "UI Design, Visual Design"
-      const individualTypes = t.split(',').map(s => s.trim());
-      return individualTypes.flatMap(singleType => techniques[singleType] ?? []);
-  });
-  // Return unique techniques
-  return Array.from(new Set(all));
+/**
+ * Returns the entire mapping of stages to techniques.
+ * @returns The full technique mapping object.
+ */
+export function getAllTechniques(): TechniqueMapping {
+  return techniques;
 }

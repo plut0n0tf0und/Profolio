@@ -4,7 +4,7 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { fetchRequirementById, Requirement, saveOrUpdateResult } from '@/lib/supabaseClient';
-import { getTechniquesForOutputs } from '@/lib/uxTechniques';
+import { getTechniquesForStage } from '@/lib/uxTechniques';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
@@ -89,14 +89,7 @@ export default function ResultPage() {
   const [stageTechniques, setStageTechniques] = useState<StageTechniques>({});
   const [isLoading, setIsLoading] = useState(true);
 
-  const fiveDStages = useMemo(() => ({
-    Discover: ['User Interviews', 'Surveys & Questionnaires', 'Contextual Inquiry', 'Ethnographic Study', 'Field Studies', 'Stakeholder Interviews'],
-    Define: ['Personas', 'Empathy Mapping', 'Journey Mapping', 'Problem Statement'],
-    Develop: ['Wireframing (low-fidelity)', 'Interactive Prototyping', 'Card Sorting', 'Information Architecture (IA) Review'],
-    Deliver: ['Usability Testing (Lab)', 'A/B Testing', 'High-fidelity Mockups', 'Accessibility Testing'],
-    Deploy: ['Analytics / KPI Tracking', 'Session Replay', 'Feedback Surveys', 'Pilot Launch / Beta Testing'],
-  }), []);
-
+  const fiveDStages = useMemo(() => ["Discover", "Define", "Design", "Develop", "Deliver"], []);
 
   const handleSaveResult = useCallback(async () => {
     if (!requirement || !id) return;
@@ -105,7 +98,7 @@ export default function ResultPage() {
       requirement_id: id,
       project_name: requirement.project_name || '',
       role: requirement.role || '',
-      date: requirement.date ? new Date(requirement.date).toISOString() : undefined,
+      date: requirement.date ? new Date(requirement.date).toISOString() : new Date().toISOString(),
       problem_statement: requirement.problem_statement || '',
       output_type: Array.isArray(requirement.output_type) ? requirement.output_type : [],
       outcome: Array.isArray(requirement.outcome) ? requirement.outcome : [],
@@ -120,7 +113,7 @@ export default function ResultPage() {
       toast({
         title: 'Save Failed',
         description: `There was a problem saving your project results: ${error.message}`,
-        className: 'px-3 py-2 text-sm border border-neutral-300 bg-neutral-50 text-neutral-900 rounded-lg shadow-md',
+        variant: 'destructive',
       });
     } else {
       toast({
@@ -143,15 +136,14 @@ export default function ResultPage() {
         toast({
             title: 'Error Fetching Project',
             description: 'Could not retrieve project details. Please try again.',
-            className: 'px-3 py-2 text-sm border border-neutral-300 bg-neutral-50 text-neutral-900 rounded-lg shadow-md',
+            variant: 'destructive',
         });
         router.push('/dashboard');
       } else if(data) {
         setRequirement(data);
-        const recommendedTechniques = getTechniquesForOutputs(data.output_type || []);
-
-        const categorized: StageTechniques = Object.keys(fiveDStages).reduce((acc, stage) => {
-            acc[stage] = recommendedTechniques.filter(t => fiveDStages[stage as keyof typeof fiveDStages].some(d => t.includes(d)));
+        
+        const categorized: StageTechniques = fiveDStages.reduce((acc, stage) => {
+            acc[stage] = getTechniquesForStage(stage);
             return acc;
         }, {} as StageTechniques);
 
@@ -171,7 +163,7 @@ export default function ResultPage() {
             <ChevronLeft className="h-6 w-6" />
             <span className="sr-only">Back</span>
         </Button>
-        <Button variant="ghost" size="sm" className="hidden shrink-0 md:flex" onClick={() => router.push('/dashboard')}>
+        <Button variant="ghost" size="sm" className="hidden shrink-0 md:flex items-center gap-2" onClick={() => router.push('/dashboard')}>
             <ChevronLeft className="h-5 w-5" />
             Back
         </Button>
