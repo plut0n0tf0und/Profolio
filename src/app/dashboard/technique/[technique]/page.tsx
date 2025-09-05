@@ -59,9 +59,20 @@ const techniqueRemixSchema = z.object({
     checked: z.boolean(),
   })).optional(),
   attachments: z.object({
-    files: z.array(z.object({ id: z.string(), value: z.any() })).optional(),
-    links: z.array(z.object({ id: z.string(), value: z.string() })).optional(),
-    notes: z.array(z.object({ id: z.string(), value: z.string() })).optional(),
+    files: z.array(z.object({ 
+      id: z.string(), 
+      description: z.string(), 
+      value: z.any() 
+    })).optional(),
+    links: z.array(z.object({ 
+      id: z.string(), 
+      description: z.string(), 
+      value: z.string() 
+    })).optional(),
+    notes: z.array(z.object({ 
+      id: z.string(), 
+      value: z.string() 
+    })).optional(),
   }).optional(),
 });
 
@@ -397,7 +408,8 @@ export default function TechniqueDetailPage() {
                 <FormLabel>Files (Images, PDFs)</FormLabel>
                 <div className="mt-2 space-y-2">
                     {fileFields.map((field, index) => (
-                        <div key={field.id} className="flex items-center gap-2">
+                        <div key={field.id} className="flex flex-col sm:flex-row items-center gap-2">
+                            <Input {...form.register(`attachments.files.${index}.description`)} placeholder="File description..." className="flex-1"/>
                             <Input type="file" {...form.register(`attachments.files.${index}.value`)} className="flex-1"/>
                             <Button type="button" variant="ghost" size="icon" onClick={() => removeFile(index)}>
                                 <Trash2 className="h-4 w-4 text-destructive" />
@@ -405,7 +417,7 @@ export default function TechniqueDetailPage() {
                         </div>
                     ))}
                 </div>
-                <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => appendFile({ id: `file-${Date.now()}`, value: null })}>
+                <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => appendFile({ id: `file-${Date.now()}`, description: '', value: null })}>
                     <PlusCircle className="mr-2 h-4 w-4"/> Add File
                 </Button>
             </div>
@@ -415,7 +427,8 @@ export default function TechniqueDetailPage() {
                 <FormLabel>Links</FormLabel>
                 <div className="mt-2 space-y-2">
                     {linkFields.map((field, index) => (
-                        <div key={field.id} className="flex items-center gap-2">
+                        <div key={field.id} className="flex flex-col sm:flex-row items-center gap-2">
+                            <Input {...form.register(`attachments.links.${index}.description`)} placeholder="Link description..." className="flex-1"/>
                             <Input {...form.register(`attachments.links.${index}.value`)} placeholder="https://example.com" className="flex-1"/>
                             <Button type="button" variant="ghost" size="icon" onClick={() => removeLink(index)}>
                                 <Trash2 className="h-4 w-4 text-destructive" />
@@ -423,7 +436,7 @@ export default function TechniqueDetailPage() {
                         </div>
                     ))}
                 </div>
-                <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => appendLink({ id: `link-${Date.now()}`, value: '' })}>
+                <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => appendLink({ id: `link-${Date.now()}`, description: '', value: '' })}>
                     <PlusCircle className="mr-2 h-4 w-4"/> Add Link
                 </Button>
             </div>
