@@ -39,6 +39,7 @@ import { CalendarIcon, Loader2 } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { getTechniquesForOutputs } from "@/lib/uxTechniques";
 
 const formSchema = z.object({
   project_name: z.string().min(1, 'Project name is required.'),

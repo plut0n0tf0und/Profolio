@@ -1,1 +1,119 @@
-{}
+{
+    "Presentation": [
+      "User Interviews",
+      "Surveys & Questionnaires",
+      "Contextual Inquiry",
+      "Ethnographic Study",
+      "Diary Studies",
+      "Focus Groups",
+      "Stakeholder Interviews",
+      "Personas",
+      "Empathy Mapping",
+      "Journey Mapping",
+      "Service Blueprinting",
+      "Task Analysis",
+      "Cognitive Walkthrough",
+      "Heuristic Evaluation",
+      "Competitive Benchmarking / Analysis",
+      "Content Audit",
+      "Design Sprint",
+      "Co-design Workshop",
+      "Participatory Design",
+      "Clickstream Analysis",
+      "Session Replay",
+      "Analytics / KPI Tracking",
+      "Usability Benchmarking",
+      "Accessibility Testing",
+      "Accessibility Audit (WCAG)",
+      "Inclusive Design Review",
+      "Content Strategy Workshops",
+      "Technical Feasibility Review",
+      "Requirements Gathering",
+      "Field Studies",
+      "Context Mapping",
+      "Semantic Differential Scales",
+      "Sentiment Analysis (reviews/comments)",
+      "Error & Exception Analysis",
+      "Behavioral Analytics (event funnels)",
+      "Retention Cohort Analysis",
+      "Usability Heuristic Checklist",
+      "Content Usability Testing",
+      "Localization & Internationalization Review",
+      "Security & Privacy Usability Review",
+      "Stakeholder Alignment Workshops",
+      "Guerrilla Testing"
+    ],
+    "Video": [
+      "User Interviews",
+      "Ethnographic Study",
+      "Focus Groups",
+      "Field Studies",
+      "Facial Expression Analysis",
+      "Content Usability Testing"
+    ],
+    "Interactive Prototype": [
+      "Usability Testing (Lab)",
+      "Remote Usability Testing",
+      "Interactive Prototyping",
+      "Design Sprint",
+      "First Click Testing",
+      "Prototype Walkthroughs",
+      "User Onboarding Flow Testing",
+      "Touch & Gesture Testing (mobile)",
+      "Voice Interaction Prototyping",
+      "Micro-interaction Prototyping",
+      "Pilot Launch / Beta Testing"
+    ],
+    "UI Design": [
+      "Usability Testing (Lab)",
+      "Remote Usability Testing",
+      "A/B Testing",
+      "Interactive Prototyping",
+      "High-fidelity Mockups",
+      "Accessibility Testing",
+      "User Onboarding Flow Testing",
+      "Microcopy Testing",
+      "Eye Tracking Studies",
+      "Design System Audit",
+      "Style Guide / Visual Language Exploration",
+      "Visual A/B / Split Visual Tests",
+      "Localization & Internationalization Review",
+      "Pilot Launch / Beta Testing"
+    ],
+    "Visual Design": [
+      "A/B Testing",
+      "High-fidelity Mockups",
+      "Heatmaps",
+      "Design System Audit",
+      "Style Guide / Visual Language Exploration",
+      "Visual A/B / Split Visual Tests"
+    ],
+    "Wireframe": [
+      "Card Sorting",
+      "Task Analysis",
+      "Information Architecture (IA) Review",
+      "Wireframing (low-fidelity)",
+      "Paper Prototyping",
+      "Remote Card Sorting",
+      "First Click Testing",
+      "Information Architecture Card Sort",
+      "Guerrilla Testing"
+    ],
+    "Information Architecture": [
+      "Tree Testing",
+      "Tree Reconstruction"
+    ],
+    "Motion Design": [
+      "Touch & Gesture Testing (mobile)",
+      "Eye Tracking Studies",
+      "Motion & Interaction Testing",
+      "Micro-interaction Prototyping"
+    ],
+    "Voice Interaction": [
+      "Voice Interaction Prototyping"
+    ],
+    "Animation": [
+      "Motion & Interaction Testing"
+    ]
+  }
+  
