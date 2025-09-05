@@ -16,22 +16,23 @@ const motivationalTips = [
 ];
 
 const StaticPlaceholder = () => (
-  <svg
-    width="100"
-    height="100"
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    className="mx-auto text-muted-foreground"
-  >
-    <path
-      d="M12 2L12 2C17.5228 2 22 6.47715 22 12V12C22 17.5228 17.5228 22 12 22V22C6.47715 22 2 17.5228 2 12V12C2 6.47715 6.47715 2 12 2V2Z"
+    <svg
+      width="100"
+      height="100"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className="mx-auto text-muted-foreground"
       stroke="currentColor"
-      strokeWidth="1.5"
+      strokeWidth="1"
       strokeLinecap="round"
       strokeLinejoin="round"
-    />
-  </svg>
+    >
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <rect x="7" y="7" width="10" height="5" rx="1" />
+      <line x1="7" y1="16" x2="17" y2="16" />
+      <line x1="7" y1="14" x2="12" y2="14" />
+    </svg>
 );
 
 
