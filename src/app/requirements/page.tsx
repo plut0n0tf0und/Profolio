@@ -256,7 +256,7 @@ export default function RequirementsPage() {
         </div>
         <h1 className="ml-4 text-xl font-bold">Define Project</h1>
       </header>
-      <main className="container mx-auto max-w-2xl p-4 py-8 md:p-8">
+      <main className="container mx-auto max-w-3xl p-4 py-8 md:p-8">
       <Card className="w-full">
         <CardHeader>
           <CardTitle className="text-3xl">Define Your Project</CardTitle>
