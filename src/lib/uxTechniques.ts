@@ -14,8 +14,8 @@ interface TechniqueDetail {
 const allTechniques: TechniqueDetail[] = techniqueDetails;
 
 /**
- * Retrieves a filtered list of UX techniques based on a scoring system
- * derived from the project requirements.
+ * Retrieves a filtered list of UX techniques based on strict matching
+ * of the project requirements.
  * @param requirement - The user's selections for the project.
  * @returns An object where keys are 5D stages and values are arrays of recommended technique names.
  */
@@ -33,48 +33,34 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
   }
 
   allTechniques.forEach(tech => {
-    let score = 0;
+    // Helper function to check for array intersection
+    const doArraysIntersect = (arr1: string[] | undefined, arr2: string[]) => {
+      if (!arr1 || arr1.length === 0) return false;
+      if (arr2.length === 0) return false; // A technique with no specified outcomes can't match a requirement with outcomes.
+      return arr1.some(item => arr2.includes(item));
+    };
 
-    // Score based on outcome match
-    if (requirement.outcome && requirement.outcome.length > 0) {
-      if (requirement.outcome.some(item => tech.outcomes.includes(item))) {
-        score++;
-      }
-    }
+    // Project type must match exactly.
+    const projectTypeMatch = requirement.project_type
+      ? tech.project_types.some(pType => pType.toLowerCase() === requirement.project_type!.toLowerCase())
+      : false;
 
-    // Score based on output type match
-    if (requirement.output_type && requirement.output_type.length > 0) {
-      if (requirement.output_type.some(item => tech.output_types.includes(item))) {
-        score++;
-      }
-    }
-    
-    // Score based on device type match
-    if (requirement.device_type && requirement.device_type.length > 0) {
-        if (requirement.device_type.some(item => tech.device_types.includes(item))) {
-            score++;
-        }
-    }
+    // At least one Output Type must match.
+    const outputTypeMatch = doArraysIntersect(requirement.output_type, tech.output_types);
 
-    // Score based on project type match
-    if (requirement.project_type) {
-      if (tech.project_types.some(pType => pType.toLowerCase() === requirement.project_type!.toLowerCase())) {
-        score++;
-      }
-    }
+    // At least one Outcome must match.
+    const outcomeMatch = doArraysIntersect(requirement.outcome, tech.outcomes);
 
-    // If the score is greater than 0, the technique is relevant.
-    if (score > 0 && recommendations[tech.stage]) {
-      // Avoid adding duplicates
-      if (!recommendations[tech.stage].includes(tech.name)) {
+    // At least one Device Type must match.
+    const deviceTypeMatch = doArraysIntersect(requirement.device_type, tech.device_types);
+
+    // All conditions must be met to recommend the technique.
+    if (projectTypeMatch && outputTypeMatch && outcomeMatch && deviceTypeMatch) {
+      if (recommendations[tech.stage] && !recommendations[tech.stage].includes(tech.name)) {
         recommendations[tech.stage].push(tech.name);
       }
     }
   });
-  
-  // A fallback for when no specific filters lead to recommendations
-  // If a stage has no recommendations, it might be better to show a few core techniques
-  // For now, we'll return potentially empty stages as the scoring handles relevance.
 
   return recommendations;
 }
