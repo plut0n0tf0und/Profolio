@@ -77,8 +77,7 @@ const RequirementDetailSkeleton = () => (
       <Skeleton className="h-10 w-full" />
     </div>
   </div>
-)
-
+);
 
 export default function ResultPage() {
   const router = useRouter();
@@ -124,7 +123,6 @@ export default function ResultPage() {
     }
   }, [requirement, id, stageTechniques, toast, router]);
 
-
   useEffect(() => {
     if (!id) return;
 
@@ -141,7 +139,7 @@ export default function ResultPage() {
         router.push('/dashboard');
       } else if(data) {
         setRequirement(data);
-        
+
         const categorized: StageTechniques = fiveDStages.reduce((acc, stage) => {
             acc[stage] = getTechniquesForStage(stage);
             return acc;
@@ -155,29 +153,35 @@ export default function ResultPage() {
     getRequirement();
   }, [id, router, toast, fiveDStages]);
 
-
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
-       <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between border-b border-border bg-background px-4">
-        <Button variant="ghost" size="icon" className="shrink-0 md:hidden" onClick={() => router.push('/dashboard')}>
+       <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between border-b bg-background px-4 md:px-6">
+        <div className="flex items-center">
+          <Button variant="ghost" size="icon" className="shrink-0 md:hidden" onClick={() => router.push('/dashboard')}>
             <ChevronLeft className="h-6 w-6" />
-            <span className="sr-only">Back</span>
-        </Button>
-        <Button variant="ghost" size="sm" className="hidden shrink-0 md:flex items-center gap-2" onClick={() => router.push('/dashboard')}>
+            <span className="sr-only">Back to Dashboard</span>
+          </Button>
+          <Button variant="ghost" size="sm" className="hidden shrink-0 md:flex items-center gap-1" onClick={() => router.push('/dashboard')}>
             <ChevronLeft className="h-5 w-5" />
             Back
-        </Button>
+          </Button>
+        </div>
+        
+        <h1 className="truncate text-center text-xl font-bold md:flex-1">
+          Project Result
+        </h1>
 
-        <h1 className="ml-2 flex-1 text-center text-xl font-bold truncate">Project Result</h1>
-        <Button variant="outline" size="sm" onClick={handleSaveResult} disabled={isLoading}>
-          <Save className="mr-2 h-4 w-4" />
-          Save
-        </Button>
+        <div className="flex items-center justify-end" style={{ minWidth: '80px' }}>
+          <Button variant="outline" size="sm" onClick={handleSaveResult} disabled={isLoading}>
+            <Save className="mr-2 h-4 w-4" />
+            Save
+          </Button>
+        </div>
       </header>
 
       <main className="container mx-auto max-w-4xl p-4 md:p-8">
         <div className="space-y-8">
-           {isLoading ? <RequirementDetailSkeleton /> : requirement && (
+          {isLoading ? <RequirementDetailSkeleton /> : requirement && (
             <Card>
               <CardHeader>
                 <CardTitle className="text-3xl">{requirement.project_name}</CardTitle>
@@ -190,26 +194,26 @@ export default function ResultPage() {
                   <h4 className="font-semibold mb-2">Problem Statement</h4>
                   <p className="text-muted-foreground">{requirement.problem_statement || 'N/A'}</p>
                 </div>
-                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                        <h4 className="font-semibold mb-2">Output Types</h4>
-                        <div className="flex flex-wrap gap-2">
-                           {requirement.output_type?.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
-                        </div>
-                    </div>
-                     <div>
-                        <h4 className="font-semibold mb-2">Outcomes</h4>
-                        <div className="flex flex-wrap gap-2">
-                           {requirement.outcome?.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
-                        </div>
-                    </div>
-                     <div>
-                        <h4 className="font-semibold mb-2">Device Types</h4>
-                        <div className="flex flex-wrap gap-2">
-                           {requirement.device_type?.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
-                        </div>
-                    </div>
-                 </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                      <h4 className="font-semibold mb-2">Output Types</h4>
+                      <div className="flex flex-wrap gap-2">
+                         {requirement.output_type?.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
+                      </div>
+                  </div>
+                  <div>
+                      <h4 className="font-semibold mb-2">Outcomes</h4>
+                      <div className="flex flex-wrap gap-2">
+                         {requirement.outcome?.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
+                      </div>
+                  </div>
+                  <div>
+                      <h4 className="font-semibold mb-2">Device Types</h4>
+                      <div className="flex flex-wrap gap-2">
+                         {requirement.device_type?.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
+                      </div>
+                  </div>
+               </div>
               </CardContent>
             </Card>
           )}
