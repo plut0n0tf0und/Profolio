@@ -106,9 +106,10 @@ export default function ResultPage() {
     const { error } = await saveOrUpdateResult(id, resultData);
 
     if (error) {
+        console.error("Supabase save error:", error);
         toast({
             title: "Save Failed",
-            description: "There was a problem saving your project results.",
+            description: "There was a problem saving your project results. Check console for details.",
             className: 'px-3 py-2 text-sm border border-neutral-300 bg-neutral-50 text-neutral-900 rounded-lg shadow-md',
         });
     } else {
@@ -160,16 +161,16 @@ export default function ResultPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
-      <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between border-b border-border bg-background px-4">
-          <Button variant="ghost" size="icon" className="shrink-0" onClick={() => router.push('/dashboard')}>
-            <ChevronLeft className="h-6 w-6" />
-            <span className="sr-only">Back</span>
-          </Button>
-          <h1 className="ml-2 text-xl font-bold text-center flex-1">Project Result</h1>
-          <Button variant="outline" size="sm" onClick={handleSaveResult} disabled={isLoading}>
-              <Save className="mr-2 h-4 w-4" />
-              Save
-          </Button>
+       <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center border-b bg-background px-4">
+        <Button variant="ghost" size="icon" className="shrink-0" onClick={() => router.push('/dashboard')}>
+          <ChevronLeft className="h-6 w-6" />
+          <span className="sr-only">Back</span>
+        </Button>
+        <h1 className="ml-2 flex-1 text-center text-xl font-bold">Project Result</h1>
+        <Button variant="outline" size="sm" onClick={handleSaveResult} disabled={isLoading}>
+          <Save className="mr-2 h-4 w-4" />
+          Save
+        </Button>
       </header>
 
       <main className="container mx-auto max-w-4xl p-4 md:p-8">
@@ -179,7 +180,7 @@ export default function ResultPage() {
               <CardHeader>
                 <CardTitle className="text-3xl">{requirement.project_name}</CardTitle>
                 <CardDescription>
-                  {requirement.role} &middot; Created on {format(new Date(requirement.date), 'PPP')}
+                  {requirement.role} &middot; Created on {requirement.date ? format(new Date(requirement.date), 'PPP') : 'Date not available'}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
