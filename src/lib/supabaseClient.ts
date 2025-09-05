@@ -253,7 +253,7 @@ export async function updateSavedResult(
  * Fetches all saved results for the currently authenticated user.
  * @returns A promise that resolves with an array of saved results or an error.
  */
-export async function fetchSavedResults(): Promise<{ data: Requirement[] | null; error: PostgretError | null }> {
+export async function fetchSavedResults(): Promise<{ data: Requirement[] | null; error: PostgrestError | null }> {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
         return { data: null, error: {

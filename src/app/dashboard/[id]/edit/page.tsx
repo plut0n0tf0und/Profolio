@@ -3,10 +3,10 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { fetchSavedResultById, updateSavedResult, Requirement } from '@/lib/supabaseClient';
+import { fetchSavedResultById, updateSavedResult } from '@/lib/supabaseClient';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -20,12 +20,6 @@ const editFormSchema = z.object({
   project_name: z.string().min(1, "Project name is required."),
   role: z.string().min(1, "Role is required."),
   problem_statement: z.string().min(1, "Problem statement is required."),
-  stage_techniques: z.record(z.string()).transform((val) => {
-    // Transform textarea strings into string arrays
-    return Object.fromEntries(
-      Object.entries(val).map(([key, value]) => [key, value.split('\n').map(s => s.trim()).filter(Boolean)])
-    );
-  }),
 });
 
 type EditFormData = z.infer<typeof editFormSchema>;
@@ -45,15 +39,6 @@ const EditPageSkeleton = () => (
             <Skeleton className="h-8 w-1/5" />
             <Skeleton className="h-24 w-full" />
         </div>
-        <Card>
-            <CardHeader>
-                <Skeleton className="h-8 w-1/3" />
-            </CardHeader>
-            <CardContent className="space-y-4">
-                <Skeleton className="h-24 w-full" />
-                <Skeleton className="h-24 w-full" />
-            </CardContent>
-        </Card>
         <Skeleton className="h-12 w-full" />
     </div>
 );
@@ -79,15 +64,7 @@ export default function EditProjectPage() {
         toast({ title: 'Error', description: 'Failed to load project details.' });
         router.push('/dashboard');
       } else {
-        const transformedData = {
-          ...data,
-          stage_techniques: data.stage_techniques 
-            ? Object.fromEntries(
-              Object.entries(data.stage_techniques).map(([key, value]) => [key, (value as string[]).join('\n')])
-            )
-            : {},
-        };
-        form.reset(transformedData as any);
+        form.reset(data as any);
       }
       setIsLoading(false);
     };
@@ -174,30 +151,6 @@ export default function EditProjectPage() {
                 </FormItem>
               )}
             />
-
-            <Card>
-                <CardHeader>
-                    <CardTitle>5D Design Process Techniques</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                    {Object.keys(form.getValues('stage_techniques') || {}).map((stage) => (
-                         <FormField
-                            key={stage}
-                            control={form.control}
-                            name={`stage_techniques.${stage}` as any}
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel className="text-lg font-semibold">{stage}</FormLabel>
-                                    <FormControl>
-                                        <Textarea rows={4} {...field} placeholder={`One technique per line for the ${stage} stage.`} />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                    ))}
-                </CardContent>
-            </Card>
 
             <Button type="submit" className="w-full" disabled={isSaving}>
               {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save Changes'}
