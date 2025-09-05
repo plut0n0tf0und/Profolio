@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useForm, useFormState } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { insertRequirement, fetchRequirementById, updateRequirement } from '@/lib/supabaseClient';
@@ -46,11 +46,10 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { CalendarIcon, Loader2, UserCircle, ChevronLeft } from 'lucide-react';
+import { CalendarIcon, Loader2, ChevronLeft } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { Sidebar } from '@/components/Sidebar';
 
 const formSchema = z.object({
   project_name: z.string().min(1, 'Project name is required.'),
@@ -109,7 +108,6 @@ export default function RequirementsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [activeAccordionItem, setActiveAccordionItem] = useState('item-1');
-  const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [requirementId, setRequirementId] = useState<string | null>(null);
 
@@ -241,12 +239,8 @@ export default function RequirementsPage() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
-      <Sidebar isOpen={isSidebarOpen} onClose={() => setSidebarOpen(false)} />
       <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center border-b border-border bg-background px-4">
         <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setSidebarOpen(true)}>
-                <UserCircle className="h-6 w-6" />
-            </Button>
              <AlertDialog>
               <AlertDialogTrigger asChild>
                  <Button variant="ghost" size="icon">

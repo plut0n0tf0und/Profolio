@@ -1,26 +1,19 @@
 
 'use client';
 
-import { useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { ChevronLeft, UserCircle } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Sidebar } from '@/components/Sidebar';
 
 export default function ProjectDetailPage() {
   const router = useRouter();
   const params = useParams();
-  const [isSidebarOpen, setSidebarOpen] = useState(false);
   const id = params.id as string;
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
-      <Sidebar isOpen={isSidebarOpen} onClose={() => setSidebarOpen(false)} />
       <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center border-b border-border bg-background px-4">
         <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setSidebarOpen(true)}>
-                <UserCircle className="h-6 w-6" />
-            </Button>
             <Button variant="ghost" size="icon" onClick={() => router.back()}>
                 <ChevronLeft className="h-6 w-6" />
             </Button>
