@@ -18,17 +18,6 @@ import { Badge } from '@/components/ui/badge';
 import { ChevronLeft, Wand2, Save } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-  } from '@/components/ui/alert-dialog';
 
 type StageTechniques = { [key: string]: string[] };
 
@@ -113,7 +102,6 @@ export default function ResultPage() {
     if (!requirement || !id) return;
 
     const resultData = {
-      requirement_id: id,
       project_name: requirement.project_name || '',
       role: requirement.role || '',
       date: requirement.date ? new Date(requirement.date).toISOString() : null,
@@ -138,8 +126,9 @@ export default function ResultPage() {
             title: 'Project Saved!',
             description: 'Your project results have been successfully saved.',
         });
+        router.push('/dashboard');
     }
-  }, [requirement, id, stageTechniques, toast]);
+  }, [requirement, id, stageTechniques, toast, router]);
 
 
 
@@ -174,38 +163,20 @@ export default function ResultPage() {
 
     getRequirement();
   }, [id, router, toast, fiveDStages]);
-  const [hasSaved, setHasSaved] = useState(false);
-
-  useEffect(() => {
-    if (!isLoading && requirement && !hasSaved) {
-      handleSaveResult().then(() => setHasSaved(true));
-    }
-  }, [isLoading, requirement, hasSaved, handleSaveResult]);
 
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
        <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between border-b border-border bg-background px-4">
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button variant="ghost" size="icon" className="shrink-0">
-                <ChevronLeft className="h-6 w-6" />
-                <span className="sr-only md:not-sr-only">Back</span>
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Edit Requirements?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This will take you back to the form to edit your project requirements.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={() => router.push(`/requirements?id=${id}`)}>Confirm</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        <Button variant="ghost" size="icon" className="shrink-0 md:hidden" onClick={() => router.push('/dashboard')}>
+            <ChevronLeft className="h-6 w-6" />
+            <span className="sr-only">Back</span>
+        </Button>
+        <Button variant="ghost" size="sm" className="hidden shrink-0 md:flex" onClick={() => router.push('/dashboard')}>
+            <ChevronLeft className="h-5 w-5" />
+            Back
+        </Button>
+
         <h1 className="ml-2 flex-1 text-center text-xl font-bold truncate">Project Result</h1>
         <Button variant="outline" size="sm" onClick={handleSaveResult} disabled={isLoading}>
           <Save className="mr-2 h-4 w-4" />
@@ -262,5 +233,3 @@ export default function ResultPage() {
     </div>
   );
 }
-
-    

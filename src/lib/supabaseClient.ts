@@ -17,6 +17,7 @@ const RequirementSchema = z.object({
   device_type: z.array(z.string()).optional(),
   project_type: z.enum(['new', 'old']).optional(),
   stage_techniques: z.record(z.array(z.string())).optional(),
+  requirement_id: z.string().optional(), // For saved_results table
 });
 
 
@@ -156,28 +157,21 @@ export async function fetchRequirementById(
  */
 export async function saveOrUpdateResult(
     requirementId: string,
-    resultData: Requirement
+    resultData: Omit<Requirement, 'user_id' | 'id'>
 ): Promise<{ data: Requirement | null; error: PostgrestError | null }> {
     try {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
             return { data: null, error: {
               message: 'User not authenticated', details: '', hint: '', code: '401',
-              name: ''
+              name: 'AuthError'
             } };
         }
 
         const dataToUpsert = {
+            ...resultData,
             user_id: user.id,
             requirement_id: requirementId,
-            project_name: resultData.project_name || '',
-            role: resultData.role || '',
-            date: resultData.date ? new Date(resultData.date).toISOString() : null,
-            problem_statement: resultData.problem_statement || '',
-            output_type: Array.isArray(resultData.output_type) ? resultData.output_type : [],
-            outcome: Array.isArray(resultData.outcome) ? resultData.outcome : [],
-            device_type: Array.isArray(resultData.device_type) ? resultData.device_type : [],
-            stage_techniques: resultData.stage_techniques || {},
         };
 
         const { data, error } = await supabase
@@ -186,7 +180,10 @@ export async function saveOrUpdateResult(
             .select()
             .single();
 
-        if (error) throw error;
+        if (error) {
+          console.error("Supabase upsert error:", error);
+          throw error;
+        }
 
         return { data, error: null };
     } catch (error: any) {
