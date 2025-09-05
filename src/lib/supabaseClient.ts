@@ -145,32 +145,40 @@ export async function fetchRequirementById(
 export async function saveOrUpdateResult(
     requirementId: string,
     resultData: Requirement
-): Promise<{ data: Requirement | null; error: PostgrestError | null }> {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-        return { data: null, error: { message: 'User not authenticated', details: '', hint: '', code: '401' } };
+): Promise<{ data: Requirement | null; error: PostgrestError | any | null }> {
+    try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+            return { data: null, error: { message: 'User not authenticated', details: '', hint: '', code: '401' } };
+        }
+
+        const dataToUpsert = {
+            ...resultData,
+            id: requirementId, // Use the requirement ID as the primary key for saved_results
+            user_id: user.id,
+        };
+
+        const { data, error } = await supabase
+            .from('saved_results')
+            .upsert(dataToUpsert, { onConflict: 'id' })
+            .select()
+            .single();
+        
+        if (error) {
+          throw error;
+        }
+
+        return { data, error: null };
+    } catch (error: any) {
+        return { data: null, error };
     }
-
-    const dataToUpsert = {
-        ...resultData,
-        id: requirementId, // Use the requirement ID as the primary key for saved_results
-        user_id: user.id,
-    };
-
-    const { data, error } = await supabase
-        .from('saved_results')
-        .upsert(dataToUpsert, { onConflict: 'id' })
-        .select()
-        .single();
-    
-    return { data, error };
 }
 
 /**
  * Fetches all saved results for the currently authenticated user.
  * @returns A promise that resolves with an array of saved results or an error.
  */
-export async function fetchSavedResults(): Promise<{ data: Requirement[] | null; error: PostgrestError | null }> {
+export async function fetchSavedResults(): Promise<{ data: Requirement[] | null; error: PostgretError | null }> {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
         return { data: null, error: { message: 'User not authenticated', details: '', hint: '', code: '401' } };
@@ -193,7 +201,7 @@ export async function fetchSavedResults(): Promise<{ data: Requirement[] | null;
  */
 export async function fetchSavedResultById(
   id: string
-): Promise<{ data: Requirement | null; error: PostgrestError | null }> {
+): Promise<{ data: Requirement | null; error: PostgretError | null }> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
     return { data: null, error: { message: 'User not authenticated', details: '', hint: '', code: '401' } };
