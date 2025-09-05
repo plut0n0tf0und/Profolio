@@ -1,6 +1,6 @@
 
 import { createBrowserClient } from '@supabase/ssr';
-import type { PostgrestError } from '@supabase/supabase-js';
+import type { PostgrestError, User } from '@supabase/supabase-js';
 import * as z from 'zod';
 
 // Zod schema for validation, matches the form schema
@@ -33,6 +33,28 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey);
+
+/**
+ * Fetches the currently authenticated user's profile data.
+ * @returns A promise that resolves with the user object or an error.
+ */
+export async function getUserProfile(): Promise<{ user: User | null; error: any | null }> {
+    const { data: { user }, error } = await supabase.auth.getUser();
+    return { user, error };
+}
+
+/**
+ * Updates the user's metadata.
+ * @param updates - An object containing the metadata fields to update.
+ * @returns A promise that resolves with the updated user data or an error.
+ */
+export async function updateUserProfile(updates: { full_name?: string; role?: string; company?: string; }): Promise<{ data: any | null; error: any | null }> {
+    const { data, error } = await supabase.auth.updateUser({
+        data: updates,
+    });
+    return { data, error };
+}
+
 
 /**
  * Inserts a new requirement into the Supabase 'requirements' table.
@@ -125,7 +147,7 @@ export async function fetchRequirementsForUser(): Promise<{ data: Requirement[] 
  */
 export async function fetchRequirementById(
   id: string
-): Promise<{ data: Requirement | null; error: PostgrestError | null }> {
+): Promise<{ data: Requirement | null; error: PostgDrestError | null }> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) {
     return { data: null, error: {

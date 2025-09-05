@@ -1,7 +1,8 @@
+
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabaseClient';
+import { supabase, getUserProfile } from '@/lib/supabaseClient';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -12,17 +13,29 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { LogOut, Settings, Moon } from 'lucide-react';
+import { LogOut, Settings, Moon, UserCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { Skeleton } from './ui/skeleton';
 
 interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
+function deriveNameFromEmail(email: string): string {
+  const namePart = email.split('@')[0];
+  return namePart
+    .split(/[._-]/)
+    .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+}
+
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const router = useRouter();
   const [isDarkMode, setIsDarkMode] = useState(true);
+  const [userName, setUserName] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
@@ -31,12 +44,25 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       setIsDarkMode(isDark);
       document.documentElement.classList.toggle('dark', isDark);
     } else {
-      // Default to dark mode if no theme is saved
       setIsDarkMode(true);
       document.documentElement.classList.add('dark');
       localStorage.setItem('theme', 'dark');
     }
-  }, []);
+    
+    async function loadProfile() {
+      setIsLoading(true);
+      const { user } = await getUserProfile();
+      if (user) {
+        setUserName(user.user_metadata?.full_name || deriveNameFromEmail(user.email || ''));
+      }
+      setIsLoading(false);
+    }
+
+    if (isOpen) {
+        loadProfile();
+    }
+
+  }, [isOpen]);
 
   const toggleTheme = (isDark: boolean) => {
     setIsDarkMode(isDark);
@@ -57,10 +83,21 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent side="left" className="flex w-[280px] flex-col bg-background">
-        <SheetHeader>
+        <SheetHeader className="text-left">
           <SheetTitle className="text-2xl font-bold">Menu</SheetTitle>
         </SheetHeader>
-        <div className="mt-8 flex flex-1 flex-col">
+        <div className="flex items-center gap-3 py-4">
+            <UserCircle className="h-10 w-10 text-muted-foreground" />
+            <div className="flex flex-col">
+                {isLoading ? (
+                     <Skeleton className="h-5 w-32" />
+                ) : (
+                    <span className="font-semibold">{userName || 'User'}</span>
+                )}
+            </div>
+        </div>
+
+        <div className="flex flex-1 flex-col">
           <div className="flex-1 space-y-4">
             <Button
               variant="ghost"
