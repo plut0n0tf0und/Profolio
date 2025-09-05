@@ -104,6 +104,13 @@ export default function TechniqueDetailPage() {
   const form = useForm<TechniqueRemixData>({
     resolver: zodResolver(techniqueRemixSchema),
     defaultValues: {
+      date: '',
+      duration: '',
+      teamSize: '',
+      why: '',
+      overview: '',
+      problemStatement: '',
+      role: '',
       prerequisites: [],
       executionSteps: [],
     }
