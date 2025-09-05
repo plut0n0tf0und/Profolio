@@ -103,7 +103,7 @@ export default function DashboardPage() {
                         id={project.id!}
                         name={project.project_name || 'Untitled Project'}
                         tags={[...project.output_type || [], ...project.device_type || []]}
-                        onClick={() => router.push(`/requirements/result/${project.id}`)}
+                        onClick={() => router.push(`/dashboard/${project.id}`)}
                     />
                 ))}
             </div>

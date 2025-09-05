@@ -159,7 +159,7 @@ export async function saveOrUpdateResult(
 
     const { data, error } = await supabase
         .from('saved_results')
-        .upsert(dataToUpsert)
+        .upsert(dataToUpsert, { onConflict: 'id' })
         .select()
         .single();
     
@@ -183,4 +183,28 @@ export async function fetchSavedResults(): Promise<{ data: Requirement[] | null;
         .order('created_at', { ascending: false });
 
     return { data, error };
+}
+
+
+/**
+ * Fetches a single saved result by its ID from the 'saved_results' table.
+ * @param id - The UUID of the saved result.
+ * @returns A promise that resolves with a single result object or an error.
+ */
+export async function fetchSavedResultById(
+  id: string
+): Promise<{ data: Requirement | null; error: PostgrestError | null }> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return { data: null, error: { message: 'User not authenticated', details: '', hint: '', code: '401' } };
+  }
+
+  const { data, error } = await supabase
+    .from('saved_results')
+    .select('*')
+    .eq('id', id)
+    .eq('user_id', user.id)
+    .single();
+
+  return { data, error };
 }

@@ -14,17 +14,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { ChevronLeft, Wand2, Save } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -163,6 +152,7 @@ export default function ResultPage() {
   }, [id, router, toast, fiveDStages]);
 
   useEffect(() => {
+    // This auto-saves when the data is loaded.
     if (!isLoading && requirement) {
       handleSaveResult();
     }
@@ -171,34 +161,14 @@ export default function ResultPage() {
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between border-b border-border bg-background px-4">
-          <div className='flex items-center'>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="ghost" size="icon" className="shrink-0">
-                  <ChevronLeft className="h-6 w-6" />
-                  <span className="sr-only md:not-sr-only md:ml-2">Back</span>
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Edit Requirements?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Would you like to go back and edit your project requirements?
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => router.push(`/requirements?id=${id}`)}>
-                    Edit Requirements
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </div>
+          <Button variant="ghost" size="icon" className="shrink-0" onClick={() => router.push('/dashboard')}>
+            <ChevronLeft className="h-6 w-6" />
+            <span className="sr-only">Back</span>
+          </Button>
           <h1 className="ml-2 text-xl font-bold text-center flex-1">Project Result</h1>
           <Button variant="outline" size="sm" onClick={handleSaveResult} disabled={isLoading}>
               <Save className="mr-2 h-4 w-4" />
-              Save Project
+              Save
           </Button>
       </header>
 

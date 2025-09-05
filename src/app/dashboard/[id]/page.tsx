@@ -1,32 +1,178 @@
 
 'use client';
 
+import { useEffect, useState, useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { ChevronLeft } from 'lucide-react';
+import { fetchSavedResultById, Requirement } from '@/lib/supabaseClient';
+import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
+import { Badge } from '@/components/ui/badge';
+import { ChevronLeft, Edit, Save, Wand2 } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { format } from 'date-fns';
+
+type StageTechniques = { [key: string]: string[] };
+
+const FiveDProcess = ({ techniques }: { techniques: StageTechniques }) => {
+  return (
+    <Card className="w-full">
+      <CardHeader>
+        <CardTitle>5D Design Process</CardTitle>
+        <CardDescription>Recommended UX techniques for your project.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Accordion type="multiple" defaultValue={Object.keys(techniques)} className="w-full">
+          {Object.entries(techniques).map(([stage, stageTechs]) => (
+            <AccordionItem value={stage} key={stage}>
+              <AccordionTrigger className="text-lg font-semibold">{stage}</AccordionTrigger>
+              <AccordionContent>
+                {stageTechs.length > 0 ? (
+                  <div className="space-y-3 p-2">
+                    {stageTechs.map(technique => (
+                      <Card key={technique}>
+                        <CardContent className="flex items-center justify-between p-4">
+                          <span className="font-medium">{technique}</span>
+                          <Button variant="ghost" size="sm">
+                            <Wand2 className="mr-2 h-4 w-4" />
+                            Remix
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="p-2 text-muted-foreground">No specific techniques recommended for this stage based on your selections.</p>
+                )}
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
+      </CardContent>
+    </Card>
+  );
+};
+
+const RequirementDetailSkeleton = () => (
+  <div className="space-y-6">
+    <div className="space-y-2">
+      <Skeleton className="h-8 w-3/4" />
+      <Skeleton className="h-5 w-1/4" />
+    </div>
+    <div className="space-y-2">
+      <Skeleton className="h-4 w-1/5" />
+      <Skeleton className="h-4 w-1/5" />
+      <Skeleton className="h-4 w-1/5" />
+    </div>
+    <div className="space-y-4">
+      <Skeleton className="h-10 w-full" />
+      <Skeleton className="h-10 w-full" />
+      <Skeleton className="h-10 w-full" />
+    </div>
+  </div>
+);
 
 export default function ProjectDetailPage() {
   const router = useRouter();
   const params = useParams();
+  const { toast } = useToast();
   const id = params.id as string;
+  const [project, setProject] = useState<Requirement | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (!id) return;
+
+    const getProjectDetails = async () => {
+      setIsLoading(true);
+      const { data, error } = await fetchSavedResultById(id);
+
+      if (error) {
+        toast({
+          title: 'Error fetching project',
+          description: error.message,
+          className: 'px-3 py-2 text-sm border border-neutral-300 bg-neutral-50 text-neutral-900 rounded-lg shadow-md',
+        });
+        router.push('/dashboard');
+      } else if (data) {
+        setProject(data);
+      }
+      setIsLoading(false);
+    };
+
+    getProjectDetails();
+  }, [id, router, toast]);
+
+  const stageTechniques = useMemo(() => {
+    return project?.stage_techniques || {};
+  }, [project]);
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
-      <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center border-b border-border bg-background px-4">
-        <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" onClick={() => router.back()}>
-                <ChevronLeft className="h-6 w-6" />
-            </Button>
-        </div>
-        <h1 className="ml-4 text-xl font-bold">Project {id}</h1>
+      <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between border-b border-border bg-background px-4">
+        <Button variant="ghost" size="icon" className="shrink-0" onClick={() => router.push('/dashboard')}>
+            <Edit className="h-5 w-5" />
+            <span className="sr-only">Edit</span>
+        </Button>
+        <h1 className="ml-2 text-xl font-bold text-center flex-1 truncate">
+            {isLoading ? 'Loading...' : project?.project_name || 'Project Details'}
+        </h1>
+        <Button variant="outline" size="sm" disabled={isLoading}>
+            <Save className="mr-2 h-4 w-4" />
+            Save/Update
+        </Button>
       </header>
 
-      <main className="flex flex-1 flex-col items-center justify-center p-4 text-center">
-        <div className="space-y-2">
-          <h2 className="text-3xl font-bold">Project Details</h2>
-          <p className="text-muted-foreground">
-            Details for project with ID: {id} will be displayed here.
-          </p>
+      <main className="container mx-auto max-w-4xl p-4 md:p-8">
+        <div className="space-y-8">
+          {isLoading ? <RequirementDetailSkeleton /> : project && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-3xl">{project.project_name}</CardTitle>
+                <CardDescription>
+                  {project.role} &middot; Saved on {format(new Date(project.created_at!), 'PPP')}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <h4 className="font-semibold mb-2">Problem Statement</h4>
+                  <p className="text-muted-foreground">{project.problem_statement || 'N/A'}</p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <h4 className="font-semibold mb-2">Output Types</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {project.output_type?.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold mb-2">Outcomes</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {project.outcome?.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold mb-2">Device Types</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {project.device_type?.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {isLoading ? (
+            <RequirementDetailSkeleton />
+          ) : (
+            <FiveDProcess techniques={stageTechniques} />
+          )}
         </div>
       </main>
     </div>
