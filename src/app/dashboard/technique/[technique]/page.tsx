@@ -58,6 +58,11 @@ const techniqueRemixSchema = z.object({
     text: z.string(),
     checked: z.boolean(),
   })).optional(),
+  attachments: z.object({
+    files: z.array(z.object({ id: z.string(), value: z.any() })).optional(),
+    links: z.array(z.object({ id: z.string(), value: z.string() })).optional(),
+    notes: z.array(z.object({ id: z.string(), value: z.string() })).optional(),
+  }).optional(),
 });
 
 type TechniqueRemixData = z.infer<typeof techniqueRemixSchema>;
@@ -114,6 +119,11 @@ export default function TechniqueDetailPage() {
       role: '',
       prerequisites: [],
       executionSteps: [],
+      attachments: {
+        files: [],
+        links: [],
+        notes: [],
+      },
     }
   });
 
@@ -125,6 +135,21 @@ export default function TechniqueDetailPage() {
   const { fields: stepFields, append: appendStep, remove: removeStep } = useFieldArray({
     control: form.control,
     name: "executionSteps",
+  });
+
+  const { fields: fileFields, append: appendFile, remove: removeFile } = useFieldArray({
+    control: form.control,
+    name: "attachments.files",
+  });
+  
+  const { fields: linkFields, append: appendLink, remove: removeLink } = useFieldArray({
+    control: form.control,
+    name: "attachments.links",
+  });
+
+  const { fields: noteFields, append: appendNote, remove: removeNote } = useFieldArray({
+    control: form.control,
+    name: "attachments.notes",
   });
 
   useEffect(() => {
@@ -152,6 +177,11 @@ export default function TechniqueDetailPage() {
             why: '',
             problemStatement: '',
             role: '',
+            attachments: {
+              files: [],
+              links: [],
+              notes: [],
+            },
         });
       } catch (error) {
         console.error("Failed to fetch technique details:", error);
@@ -359,21 +389,62 @@ export default function TechniqueDetailPage() {
       {/* Attachments Section */}
       <Card>
         <CardHeader>
-          <CardTitle>References & Attachments</CardTitle>
+            <CardTitle>References & Attachments</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <FormItem>
-            <FormLabel>Upload Files (Images, PDFs)</FormLabel>
-            <Input type="file" multiple />
-          </FormItem>
-          <FormItem>
-            <FormLabel>Add Link</FormLabel>
-            <Input placeholder="https://example.com" />
-          </FormItem>
-           <FormItem>
-            <FormLabel>Add Text Note</FormLabel>
-            <Textarea placeholder="Paste or type notes here..." />
-          </FormItem>
+        <CardContent className="space-y-6">
+            {/* Files */}
+            <div>
+                <FormLabel>Files (Images, PDFs)</FormLabel>
+                <div className="mt-2 space-y-2">
+                    {fileFields.map((field, index) => (
+                        <div key={field.id} className="flex items-center gap-2">
+                            <Input type="file" {...form.register(`attachments.files.${index}.value`)} className="flex-1"/>
+                            <Button type="button" variant="ghost" size="icon" onClick={() => removeFile(index)}>
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                        </div>
+                    ))}
+                </div>
+                <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => appendFile({ id: `file-${Date.now()}`, value: null })}>
+                    <PlusCircle className="mr-2 h-4 w-4"/> Add File
+                </Button>
+            </div>
+            
+            {/* Links */}
+            <div>
+                <FormLabel>Links</FormLabel>
+                <div className="mt-2 space-y-2">
+                    {linkFields.map((field, index) => (
+                        <div key={field.id} className="flex items-center gap-2">
+                            <Input {...form.register(`attachments.links.${index}.value`)} placeholder="https://example.com" className="flex-1"/>
+                            <Button type="button" variant="ghost" size="icon" onClick={() => removeLink(index)}>
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                        </div>
+                    ))}
+                </div>
+                <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => appendLink({ id: `link-${Date.now()}`, value: '' })}>
+                    <PlusCircle className="mr-2 h-4 w-4"/> Add Link
+                </Button>
+            </div>
+
+            {/* Notes */}
+            <div>
+                <FormLabel>Text Notes</FormLabel>
+                <div className="mt-2 space-y-2">
+                    {noteFields.map((field, index) => (
+                        <div key={field.id} className="flex items-center gap-2">
+                            <Textarea {...form.register(`attachments.notes.${index}.value`)} placeholder="Paste or type notes here..." className="flex-1"/>
+                            <Button type="button" variant="ghost" size="icon" onClick={() => removeNote(index)}>
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                        </div>
+                    ))}
+                </div>
+                 <Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => appendNote({ id: `note-${Date.now()}`, value: '' })}>
+                    <PlusCircle className="mr-2 h-4 w-4"/> Add Note
+                </Button>
+            </div>
         </CardContent>
       </Card>
       
