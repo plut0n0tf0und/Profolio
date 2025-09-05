@@ -35,11 +35,12 @@ import {
 } from '@/components/ui/accordion';
 import { useToast } from '@/hooks/use-toast';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
-import { CalendarIcon, Loader2 } from 'lucide-react';
+import { CalendarIcon, Loader2, UserCircle, ChevronLeft } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { getTechniquesForOutputs } from "@/lib/uxTechniques";
+import { Sidebar } from '@/components/Sidebar';
 
 const formSchema = z.object({
   project_name: z.string().min(1, 'Project name is required.'),
@@ -86,6 +87,8 @@ export default function RequirementsPage() {
   const { toast } = useToast();
   const router = useRouter();
   const [activeAccordionItem, setActiveAccordionItem] = useState('item-1');
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
+
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -127,8 +130,21 @@ export default function RequirementsPage() {
   };
 
   return (
-    <div className="container mx-auto max-w-2xl p-4 py-8 md:p-8">
-       <Card className="w-full">
+    <div className="flex min-h-screen flex-col bg-background text-foreground">
+      <Sidebar isOpen={isSidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center border-b border-border bg-background px-4">
+        <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setSidebarOpen(true)}>
+                <UserCircle className="h-6 w-6" />
+            </Button>
+            <Button variant="ghost" size="icon" onClick={() => router.back()}>
+                <ChevronLeft className="h-6 w-6" />
+            </Button>
+        </div>
+        <h1 className="ml-4 text-xl font-bold">Define Project</h1>
+      </header>
+      <main className="container mx-auto max-w-2xl p-4 py-8 md:p-8">
+      <Card className="w-full">
         <CardHeader>
           <CardTitle className="text-3xl">Define Your Project</CardTitle>
           <CardDescription>
@@ -378,6 +394,7 @@ export default function RequirementsPage() {
           </Form>
         </CardContent>
       </Card>
+      </main>
     </div>
   );
 }
