@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useTransition } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { useForm, useFieldArray, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -13,12 +13,14 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ChevronLeft, Check, Clipboard, ExternalLink, Wand2, PlusCircle, Trash2, X } from 'lucide-react';
+import { ChevronLeft, Check, Clipboard, ExternalLink, Wand2, PlusCircle, Trash2, X, Loader2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+
 
 const unslugify = (slug: string) => {
   if (!slug) return '';
@@ -113,6 +115,8 @@ export default function TechniqueDetailPage() {
   const [details, setDetails] = useState<TechniqueDetailsOutput | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [isSaving, startSaveTransition] = useTransition();
+  const [isBackAlertOpen, setIsBackAlertOpen] = useState(false);
 
   const staticDetails = useMemo(() => {
     return allTechniqueDetails.find(t => t.name.toLowerCase() === techniqueName.toLowerCase());
@@ -177,7 +181,6 @@ export default function TechniqueDetailPage() {
       try {
         const result = await getTechniqueDetails({ techniqueName });
         setDetails(result);
-        // Populate form with fetched details
         form.reset({
             overview: result.overview,
             prerequisites: result.prerequisites.map((p, i) => ({ id: `prereq-${i}`, text: p, checked: false })),
@@ -217,11 +220,19 @@ export default function TechniqueDetailPage() {
     });
   };
   
-  const handleBackNavigation = () => {
+  const performNavigation = () => {
     if (fromProjectId) {
       router.push(`/dashboard/${fromProjectId}`);
     } else {
       router.back();
+    }
+  };
+
+  const handleBackNavigation = () => {
+    if (isEditMode) {
+      setIsBackAlertOpen(true);
+    } else {
+      performNavigation();
     }
   };
 
@@ -231,14 +242,21 @@ export default function TechniqueDetailPage() {
   }, [details]);
   
   const onSave = (data: TechniqueRemixData) => {
-    console.log("Saving data:", data);
-    // Here you would integrate with Supabase to save the remixed technique
-    toast({
-      title: 'Project Saved!',
-      description: 'Your remixed technique has been saved to your project.'
+    startSaveTransition(() => {
+      console.log("Saving data:", data);
+      // Here you would integrate with Supabase to save the remixed technique
+      toast({
+        title: 'Project Saved!',
+        description: 'Your remixed technique has been saved to your project.'
+      });
+      setIsEditMode(false);
     });
-    setIsEditMode(false);
   }
+
+  const handleSaveAndGoBack = async () => {
+    await form.handleSubmit(onSave)();
+    performNavigation();
+  };
 
   // Read-only view
   const renderReadOnlyView = () => (
@@ -463,13 +481,39 @@ export default function TechniqueDetailPage() {
       
       <div className="flex justify-end gap-4">
         <Button type="button" variant="outline" onClick={() => setIsEditMode(false)}>Cancel</Button>
-        <Button type="submit">Save Changes</Button>
+        <Button type="submit" disabled={isSaving}>
+            {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save Changes'}
+        </Button>
       </div>
     </form>
     </FormProvider>
   );
 
   return (
+    <>
+    <AlertDialog open={isBackAlertOpen} onOpenChange={setIsBackAlertOpen}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>You have unsaved changes</AlertDialogTitle>
+                <AlertDialogDescription>
+                    Do you want to save your changes before leaving?
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <Button variant="outline" onClick={() => {
+                    setIsBackAlertOpen(false);
+                    performNavigation();
+                }}>
+                    Discard
+                </Button>
+                <AlertDialogAction onClick={handleSaveAndGoBack}>
+                    Save & Go Back
+                </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+    </AlertDialog>
+
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between border-b border-border bg-background px-4">
         <Button variant="ghost" size="sm" onClick={handleBackNavigation} className="flex items-center gap-2">
@@ -501,5 +545,6 @@ export default function TechniqueDetailPage() {
         )}
       </main>
     </div>
+    </>
   );
 }
