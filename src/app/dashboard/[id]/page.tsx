@@ -33,17 +33,17 @@ import { Separator } from '@/components/ui/separator';
 
 type StageTechniques = { [key: string]: string[] };
 
+const slugify = (text: string) => {
+  return text.toString().toLowerCase()
+    .replace(/\s+/g, '-')           // Replace spaces with -
+    .replace(/[^\w-]+/g, '')       // Remove all non-word chars
+    .replace(/--+/g, '-')         // Replace multiple - with single -
+    .replace(/^-+/, '')             // Trim - from start of text
+    .replace(/-+$/, '');            // Trim - from end of text
+};
+
 const FiveDProcess = ({ techniques, projectId }: { techniques: StageTechniques, projectId: string }) => {
   const router = useRouter();
-
-  const slugify = (text: string) => {
-    return text.toString().toLowerCase()
-      .replace(/\s+/g, '-')           // Replace spaces with -
-      .replace(/[^\w-]+/g, '')       // Remove all non-word chars
-      .replace(/--+/g, '-')         // Replace multiple - with single -
-      .replace(/^-+/, '')             // Trim - from start of text
-      .replace(/-+$/, '');            // Trim - from end of text
-  };
 
   return (
     <Card className="w-full border-border/50 shadow-lg">
@@ -64,10 +64,12 @@ const FiveDProcess = ({ techniques, projectId }: { techniques: StageTechniques, 
                         <Card className="bg-background/50 border-border/50 hover:border-primary/50 transition-all cursor-pointer">
                           <CardContent className="flex items-center justify-between p-4">
                             <span className="font-medium">{technique}</span>
-                             <Button variant="ghost" size="sm" onClick={(e) => { e.preventDefault(); e.stopPropagation(); /* Add remix logic here */ }}>
-                                <Wand2 className="mr-2 h-4 w-4" />
-                                Remix
-                            </Button>
+                            <Link href={`/dashboard/technique/${slugify(technique)}?edit=true`} passHref>
+                                <Button variant="default" size="sm" onClick={(e) => e.stopPropagation()}>
+                                    <Wand2 className="mr-2 h-4 w-4" />
+                                    Remix
+                                </Button>
+                            </Link>
                           </CardContent>
                         </Card>
                       </Link>

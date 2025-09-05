@@ -3,6 +3,7 @@
 
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import Link from 'next/link';
 import { fetchRequirementById, Requirement, saveOrUpdateResult } from '@/lib/supabaseClient';
 import { getFilteredTechniques } from '@/lib/uxTechniques';
 import { useToast } from '@/hooks/use-toast';
@@ -32,6 +33,15 @@ import { format } from 'date-fns';
 
 type StageTechniques = { [key: string]: string[] };
 
+const slugify = (text: string) => {
+  return text.toString().toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^\w-]+/g, '')
+    .replace(/--+/g, '-')
+    .replace(/^-+/, '')
+    .replace(/-+$/, '');
+};
+
 const FiveDProcess = ({ techniques }: { techniques: StageTechniques }) => {
   return (
     <Card className="w-full">
@@ -50,11 +60,15 @@ const FiveDProcess = ({ techniques }: { techniques: StageTechniques }) => {
                     {stageTechs.map(technique => (
                       <Card key={technique}>
                         <CardContent className="flex items-center justify-between p-4">
-                          <span className="font-medium">{technique}</span>
-                          <Button variant="ghost" size="sm">
-                            <Wand2 className="mr-2 h-4 w-4" />
-                            Remix
-                          </Button>
+                          <Link href={`/dashboard/technique/${slugify(technique)}`} passHref>
+                            <span className="font-medium cursor-pointer hover:underline">{technique}</span>
+                          </Link>
+                           <Link href={`/dashboard/technique/${slugify(technique)}?edit=true`} passHref>
+                              <Button variant="default" size="sm">
+                                <Wand2 className="mr-2 h-4 w-4" />
+                                Remix
+                              </Button>
+                           </Link>
                         </CardContent>
                       </Card>
                     ))}
