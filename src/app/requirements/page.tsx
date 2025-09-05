@@ -60,12 +60,23 @@ const formSchema = z.object({
 });
 
 const outputTypes = [
-  'Mobile App',
-  'Web App',
-  'Website',
-  'Information Architecture',
-  'Wireframe',
-  'Prototype',
+  "Presentation",
+  "Video",
+  "Interactive Prototype",
+  "UI Design",
+  "Visual Design",
+  "Motion Design",
+  "Animation",
+  "Voice Interaction",
+  "Wireframe",
+  "Information Architecture",
+  "Motion Design, Interactive Prototype",
+  "Interactive Prototype, Motion Design",
+  "UI Design, Visual Design",
+  "Presentation, Video",
+  "Presentation, UI Design",
+  "Wireframe, Presentation",
+  "Interactive Prototype, UI Design"
 ];
 const outcomes = ['Qualitative', 'Quantitative', 'Insight'];
 const deviceTypes = ['Mobile', 'Desktop', 'Electronics', 'Kiosk'];
