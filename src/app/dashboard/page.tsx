@@ -1,19 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { UserCircle, Search, Plus } from 'lucide-react';
+import { UserCircle, Search, Plus, LayoutGrid } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sidebar } from '@/components/Sidebar';
 import { ProjectCard } from '@/components/ProjectCard';
-
-const projects = [
-  { id: '1', name: 'QuantumLeap CRM', tags: ['Wireframe', 'Mobile', 'SaaS'] },
-  { id: '2', name: 'Nova Financials', tags: ['Quantitative', 'Web App'] },
-  { id: '3', name: 'Zenith Health Tracker', tags: ['Mobile', 'User Research'] },
-  { id: '4', name: 'Apex E-commerce', tags: ['Web App', 'A/B Testing'] },
-  { id: '5', name: 'Serenity AI', tags: ['AI', 'UX Writing'] },
-];
 
 const motivationalTips = [
   'Your UX journey starts here ✦',
@@ -26,6 +18,11 @@ const motivationalTips = [
 export default function DashboardPage() {
   const router = useRouter();
   const [isSidebarOpen, setSidebarOpen] = useState(false);
+  const [tip, setTip] = useState('');
+
+  useEffect(() => {
+    setTip(motivationalTips[Math.floor(Math.random() * motivationalTips.length)]);
+  }, []);
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
@@ -46,21 +43,17 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <main className="flex-1 overflow-y-auto p-4">
+      <main className="flex flex-1 flex-col items-center justify-center p-4 text-center">
         <div className="space-y-4">
-          {projects.map((project) => (
-            <ProjectCard
-              key={project.id}
-              {...project}
-              onClick={() => router.push(`/dashboard/${project.id}`)}
-            />
-          ))}
+          <LayoutGrid className="mx-auto h-12 w-12 text-muted-foreground" />
+          <h2 className="text-2xl font-bold">No Projects Yet</h2>
+          <p className="text-muted-foreground">Click the '+' icon to add your first project.</p>
         </div>
       </main>
 
       <footer className="flex h-14 shrink-0 items-center justify-center border-t border-border px-4">
         <p className="text-sm text-muted-foreground">
-          {motivationalTips[Math.floor(Math.random() * motivationalTips.length)]}
+          {tip}
         </p>
       </footer>
     </div>

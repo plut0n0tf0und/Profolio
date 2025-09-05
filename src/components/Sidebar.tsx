@@ -45,42 +45,45 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent side="left" className="w-[280px] bg-background">
+      <SheetContent side="left" className="flex w-[280px] flex-col bg-background">
         <SheetHeader>
           <SheetTitle className="text-2xl font-bold">Menu</SheetTitle>
         </SheetHeader>
-        <div className="mt-8 flex flex-col space-y-4">
-          <Button
-            variant="ghost"
-            className="justify-start gap-3 text-lg"
-            onClick={navigateToSettings}
-          >
-            <Settings className="h-5 w-5" />
-            Settings
-          </Button>
+        <div className="mt-8 flex flex-1 flex-col">
+          <div className="flex-1 space-y-4">
+            <Button
+              variant="ghost"
+              className="w-full justify-start gap-3 text-lg"
+              onClick={navigateToSettings}
+            >
+              <Settings className="h-5 w-5" />
+              Settings
+            </Button>
 
-          <div className="flex items-center justify-between px-4 py-2">
-            <Label htmlFor="dark-mode" className="flex items-center gap-3 text-lg">
-              <Moon className="h-5 w-5" />
-              Dark Mode
-            </Label>
-            <Switch
-              id="dark-mode"
-              checked={isDarkMode}
-              onCheckedChange={setIsDarkMode}
-            />
+            <div className="flex items-center justify-between px-4 py-2">
+              <Label htmlFor="dark-mode" className="flex items-center gap-3 text-lg">
+                <Moon className="h-5 w-5" />
+                Dark Mode
+              </Label>
+              <Switch
+                id="dark-mode"
+                checked={isDarkMode}
+                onCheckedChange={setIsDarkMode}
+              />
+            </div>
           </div>
 
-          <Separator />
-
-          <Button
-            variant="ghost"
-            className="justify-start gap-3 text-lg text-destructive hover:text-destructive"
-            onClick={handleLogout}
-          >
-            <LogOut className="h-5 w-5" />
-            Sign Out
-          </Button>
+          <div className="mt-auto">
+            <Separator className="my-4" />
+            <Button
+              variant="ghost"
+              className="w-full justify-start gap-3 text-lg text-destructive hover:text-destructive"
+              onClick={handleLogout}
+            >
+              <LogOut className="h-5 w-5" />
+              Sign Out
+            </Button>
+          </div>
         </div>
       </SheetContent>
     </Sheet>
