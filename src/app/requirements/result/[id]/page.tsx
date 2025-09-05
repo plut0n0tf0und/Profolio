@@ -146,30 +146,28 @@ export default function ResultPage() {
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center border-b border-border bg-background px-4">
-        <div className="flex items-center gap-2">
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <ChevronLeft className="h-6 w-6" />
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Edit Requirements?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Would you like to go back and edit your project requirements?
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => router.push(`/requirements?id=${id}`)}>
-                    Edit Requirements
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-        </div>
-        <h1 className="ml-4 text-xl font-bold">Project Result</h1>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="ghost" size="icon" className="shrink-0">
+              <ChevronLeft className="h-6 w-6" />
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Edit Requirements?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Would you like to go back and edit your project requirements?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={() => router.push(`/requirements?id=${id}`)}>
+                Edit Requirements
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+        <h1 className="ml-2 text-xl font-bold">Project Result</h1>
       </header>
 
       <main className="container mx-auto max-w-4xl p-4 md:p-8">

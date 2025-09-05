@@ -220,28 +220,26 @@ export default function RequirementsPage() {
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center border-b border-border bg-background px-4">
-        <div className="flex items-center gap-2">
-             <AlertDialog>
-              <AlertDialogTrigger asChild>
-                 <Button variant="ghost" size="icon">
-                    <ChevronLeft className="h-6 w-6" />
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Are you sure you want to leave?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Any unsaved changes will be lost.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => router.push('/dashboard')}>Continue</AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-        </div>
-        <h1 className="ml-4 text-xl font-bold">Define Project</h1>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="ghost" size="icon" className="shrink-0">
+              <ChevronLeft className="h-6 w-6" />
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you sure you want to leave?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Any unsaved changes will be lost.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={() => router.push('/dashboard')}>Continue</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+        <h1 className="ml-2 text-xl font-bold">Define Project</h1>
       </header>
       <main className="container mx-auto max-w-3xl flex-1 p-4 md:p-8">
       <Card className="w-full">
