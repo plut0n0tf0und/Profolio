@@ -211,7 +211,7 @@ export default function ProjectDetailPage() {
             <div className="flex justify-start">
               <AlertDialog>
                   <AlertDialogTrigger asChild>
-                      <Button variant="destructive">
+                      <Button variant="destructive-outline">
                           Delete this project
                       </Button>
                   </AlertDialogTrigger>
