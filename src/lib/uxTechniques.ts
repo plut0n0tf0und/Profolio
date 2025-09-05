@@ -12,6 +12,11 @@ export function getTechniquesForOutput(outputType: string): string[] {
 
 export function getTechniquesForOutputs(outputTypes: string[] = []): string[] {
   if (!Array.isArray(outputTypes)) return [];
-  const all = outputTypes.flatMap(t => techniques[t] ?? []);
+  const all = outputTypes.flatMap(t => {
+      // Handle combined keys like "UI Design, Visual Design"
+      const individualTypes = t.split(',').map(s => s.trim());
+      return individualTypes.flatMap(singleType => techniques[singleType] ?? []);
+  });
+  // Return unique techniques
   return Array.from(new Set(all));
 }

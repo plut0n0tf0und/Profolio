@@ -1,9 +1,10 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { fetchRequirementById, Requirement } from '@/lib/supabaseClient';
+import { getTechniquesForOutputs } from '@/lib/uxTechniques';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
@@ -18,45 +19,63 @@ import { ChevronLeft, Wand2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
 
-const FiveDProcess = () => (
-  <Card className="w-full">
-    <CardHeader>
-      <CardTitle>5D Design Process</CardTitle>
-      <CardDescription>Recommended UX techniques for your project.</CardDescription>
-    </CardHeader>
-    <CardContent>
-      <Accordion type="single" collapsible className="w-full">
-        {['Discover', 'Define', 'Develop', 'Deliver', 'Deploy'].map((stage) => (
-          <AccordionItem value={stage} key={stage}>
-            <AccordionTrigger className="text-lg font-semibold">{stage}</AccordionTrigger>
-            <AccordionContent>
-              <div className="space-y-3 p-2">
-                <Card>
-                  <CardContent className="flex items-center justify-between p-4">
-                    <span className="font-medium">Placeholder Technique</span>
-                    <Button variant="ghost" size="sm">
-                      <Wand2 className="mr-2 h-4 w-4" />
-                      Remix
-                    </Button>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="flex items-center justify-between p-4">
-                    <span className="font-medium">Another Technique</span>
-                    <Button variant="ghost" size="sm">
-                      <Wand2 className="mr-2 h-4 w-4" />
-                      Remix
-                    </Button>
-                  </CardContent>
-                </Card>
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-        ))}
-      </Accordion>
-    </CardContent>
-  </Card>
-);
+const FiveDProcess = ({ techniques }: { techniques: string[] }) => {
+  // A very simple bucketing logic for demonstration.
+  // In a real app, this could be more sophisticated.
+  const stageTechniques = useMemo(() => {
+    const discovery = ['User Interviews', 'Surveys & Questionnaires', 'Contextual Inquiry', 'Ethnographic Study', 'Field Studies', 'Stakeholder Interviews'];
+    const definition = ['Personas', 'Empathy Mapping', 'Journey Mapping', 'Problem Statement'];
+    const development = ['Wireframing (low-fidelity)', 'Interactive Prototyping', 'Card Sorting', 'Information Architecture (IA) Review'];
+    const delivery = ['Usability Testing (Lab)', 'A/B Testing', 'High-fidelity Mockups', 'Accessibility Testing'];
+    const deployment = ['Analytics / KPI Tracking', 'Session Replay', 'Feedback Surveys', 'Pilot Launch / Beta Testing'];
+
+    return {
+      Discover: techniques.filter(t => discovery.some(d => t.includes(d))),
+      Define: techniques.filter(t => definition.some(d => t.includes(d))),
+      Develop: techniques.filter(t => development.some(d => t.includes(d))),
+      Deliver: techniques.filter(t => delivery.some(d => t.includes(d))),
+      Deploy: techniques.filter(t => deployment.some(d => t.includes(d))),
+    };
+  }, [techniques]);
+
+
+  return (
+    <Card className="w-full">
+      <CardHeader>
+        <CardTitle>5D Design Process</CardTitle>
+        <CardDescription>Recommended UX techniques for your project.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Accordion type="multiple" defaultValue={Object.keys(stageTechniques)} className="w-full">
+          {Object.entries(stageTechniques).map(([stage, stageTechs]) => (
+            <AccordionItem value={stage} key={stage}>
+              <AccordionTrigger className="text-lg font-semibold">{stage}</AccordionTrigger>
+              <AccordionContent>
+                {stageTechs.length > 0 ? (
+                  <div className="space-y-3 p-2">
+                    {stageTechs.map(technique => (
+                      <Card key={technique}>
+                        <CardContent className="flex items-center justify-between p-4">
+                          <span className="font-medium">{technique}</span>
+                          <Button variant="ghost" size="sm">
+                            <Wand2 className="mr-2 h-4 w-4" />
+                            Remix
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="p-2 text-muted-foreground">No specific techniques recommended for this stage based on your selections.</p>
+                )}
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
+      </CardContent>
+    </Card>
+  );
+};
 
 const RequirementDetailSkeleton = () => (
   <div className="space-y-6">
@@ -82,6 +101,7 @@ export default function ResultPage({ params }: { params: { id: string } }) {
   const router = useRouter();
   const { toast } = useToast();
   const [requirement, setRequirement] = useState<Requirement | null>(null);
+  const [techniques, setTechniques] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -99,6 +119,10 @@ export default function ResultPage({ params }: { params: { id: string } }) {
         router.push('/dashboard');
       } else {
         setRequirement(data);
+        if (data?.output_type) {
+          const recommendedTechniques = getTechniquesForOutputs(data.output_type);
+          setTechniques(recommendedTechniques);
+        }
       }
       setIsLoading(false);
     };
@@ -154,7 +178,7 @@ export default function ResultPage({ params }: { params: { id: string } }) {
             </Card>
           )}
 
-          <FiveDProcess />
+          <FiveDProcess techniques={techniques} />
         </div>
       </main>
     </div>
