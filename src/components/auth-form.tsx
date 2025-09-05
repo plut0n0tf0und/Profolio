@@ -25,7 +25,7 @@ import {
   CardFooter,
 } from '@/components/ui/card';
 import { PasswordStrengthInput } from './password-strength-input';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabaseClient';
 import { ForgotPasswordDialog } from './forgot-password-dialog';
 
 const loginSchema = z.object({
