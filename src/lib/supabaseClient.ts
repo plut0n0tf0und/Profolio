@@ -24,6 +24,84 @@ const RequirementSchema = z.object({
 // Define the type for a single requirement based on your schema
 export type Requirement = z.infer<typeof RequirementSchema>;
 
+// Schema for the remixed technique form data
+const TechniqueRemixSchema = z.object({
+    id: z.string().uuid().optional(),
+    user_id: z.string().uuid().optional(),
+    project_id: z.string().uuid().optional(),
+    created_at: z.string().optional(),
+    technique_name: z.string(),
+    date: z.string().optional(),
+    duration: z.string().optional(),
+    teamSize: z.string().optional(),
+    why: z.string().optional(),
+    overview: z.string().optional(),
+    problemStatement: z.string().optional(),
+    role: z.string().optional(),
+    prerequisites: z.array(z.object({
+        id: z.string(),
+        text: z.string(),
+        checked: z.boolean(),
+    })),
+    executionSteps: z.array(z.object({
+        id: z.string(),
+        text: z.string(),
+        checked: z.boolean(),
+    })),
+    attachments: z.object({
+        files: z.array(z.object({
+            id: z.string(),
+            description: z.string(),
+            value: z.any() // Storing file data might be complex, often URLs are stored after upload.
+        })),
+        links: z.array(z.object({
+            id: z.string(),
+            description: z.string(),
+            value: z.string()
+        })),
+        notes: z.array(z.object({
+            id: z.string(),
+            value: z.string()
+        })),
+    }),
+});
+
+export type RemixedTechnique = z.infer<typeof TechniqueRemixSchema>;
+
+/*
+ SQL to create the remixed_techniques table in Supabase:
+
+ CREATE TABLE public.remixed_techniques (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL,
+  project_id uuid NULL,
+  technique_name text NOT NULL,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  date text NULL,
+  duration text NULL,
+  teamSize text NULL,
+  why text NULL,
+  overview text NULL,
+  problemStatement text NULL,
+  "role" text NULL,
+  prerequisites jsonb NULL,
+  executionSteps jsonb NULL,
+  attachments jsonb NULL,
+  CONSTRAINT remixed_techniques_pkey PRIMARY KEY (id),
+  CONSTRAINT remixed_techniques_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE,
+  CONSTRAINT remixed_techniques_project_id_fkey FOREIGN KEY (project_id) REFERENCES public.saved_results(id) ON DELETE SET NULL
+);
+
+ALTER TABLE public.remixed_techniques ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow users to manage their own remixed techniques"
+ON public.remixed_techniques
+FOR ALL
+TO authenticated
+USING (auth.uid() = user_id);
+
+*/
+
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -349,3 +427,67 @@ export async function deleteSavedResult(id: string): Promise<{ error: PostgrestE
 
   return { error };
 }
+
+/**
+ * Saves or updates a remixed technique.
+ * @param techniqueData - The data for the remixed technique.
+ * @returns The saved or updated technique data.
+ */
+export async function saveOrUpdateRemixedTechnique(
+  techniqueData: Partial<RemixedTechnique> & { id?: string }
+): Promise<{ data: RemixedTechnique | null; error: any | null }> {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return { data: null, error: { message: 'User not authenticated', code: '401' } };
+    }
+
+    const dataToSave = { ...techniqueData, user_id: user.id };
+
+    if (techniqueData.id) {
+      // Update existing record
+      const { data, error } = await supabase
+        .from('remixed_techniques')
+        .update(dataToSave)
+        .eq('id', techniqueData.id)
+        .eq('user_id', user.id)
+        .select()
+        .single();
+      return { data, error };
+    } else {
+      // Insert new record
+      const { data, error } = await supabase
+        .from('remixed_techniques')
+        .insert(dataToSave)
+        .select()
+        .single();
+      return { data, error };
+    }
+  } catch (error: any) {
+    console.error("Error in saveOrUpdateRemixedTechnique:", error);
+    return { data: null, error };
+  }
+}
+
+/**
+ * Fetches a single remixed technique by its ID.
+ * @param id - The UUID of the remixed technique.
+ * @returns A promise that resolves with the technique data or an error.
+ */
+export async function fetchRemixedTechniqueById(id: string): Promise<{ data: RemixedTechnique | null; error: PostgrestError | null }> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+        return { data: null, error: { message: 'User not authenticated', details: '', hint: '', code: '401', name: '' } };
+    }
+
+    const { data, error } = await supabase
+        .from('remixed_techniques')
+        .select('*')
+        .eq('id', id)
+        .eq('user_id', user.id)
+        .single();
+
+    return { data, error };
+}
+
+    

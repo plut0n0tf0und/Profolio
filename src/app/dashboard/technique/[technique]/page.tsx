@@ -7,13 +7,14 @@ import { useForm, useFieldArray, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { getTechniqueDetails, TechniqueDetailsOutput } from '@/ai/flows/get-technique-details';
+import { saveOrUpdateRemixedTechnique } from '@/lib/supabaseClient';
 import allTechniqueDetails from '@/data/uxTechniqueDetails.json';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ChevronLeft, Check, Clipboard, ExternalLink, Wand2, PlusCircle, Trash2, X, Loader2 } from 'lucide-react';
+import { ChevronLeft, Check, Clipboard, ExternalLink, Wand2, PlusCircle, Trash2, Eye, Loader2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -43,6 +44,8 @@ const SectionCard = ({ title, children, action, noPadding }: { title: string, ch
 );
 
 const techniqueRemixSchema = z.object({
+  technique_name: z.string(),
+  project_id: z.string().nullable(),
   date: z.string(),
   duration: z.string(),
   teamSize: z.string(),
@@ -114,6 +117,7 @@ export default function TechniqueDetailPage() {
   const fromProjectId = searchParams.get('projectId');
 
   const [details, setDetails] = useState<TechniqueDetailsOutput | null>(null);
+  const [remixedTechniqueId, setRemixedTechniqueId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditMode, setIsEditMode] = useState(false);
   const [isSaving, startSaveTransition] = useTransition();
@@ -126,6 +130,8 @@ export default function TechniqueDetailPage() {
   const form = useForm<TechniqueRemixData>({
     resolver: zodResolver(techniqueRemixSchema),
     defaultValues: {
+      technique_name: techniqueName,
+      project_id: fromProjectId,
       date: '',
       duration: '',
       teamSize: '',
@@ -176,6 +182,7 @@ export default function TechniqueDetailPage() {
 
   useEffect(() => {
     if (!techniqueName) return;
+    form.setValue('technique_name', techniqueName);
 
     const fetchDetails = async () => {
       setIsLoading(true);
@@ -183,6 +190,8 @@ export default function TechniqueDetailPage() {
         const result = await getTechniqueDetails({ techniqueName });
         setDetails(result);
         form.reset({
+            technique_name: techniqueName,
+            project_id: fromProjectId,
             overview: result.overview,
             prerequisites: result.prerequisites.map((p, i) => ({ id: `prereq-${i}`, text: p, checked: false })),
             executionSteps: result.executionSteps.map(s => ({ id: `step-${s.step}`, text: `${s.title}: ${s.description}`, checked: false })),
@@ -211,7 +220,7 @@ export default function TechniqueDetailPage() {
     };
 
     fetchDetails();
-  }, [techniqueName, toast, form]);
+  }, [techniqueName, toast, form, fromProjectId]);
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -231,16 +240,29 @@ export default function TechniqueDetailPage() {
 
   const handleDiscard = () => {
     setIsEditMode(false);
+    setIsBackAlertOpen(false);
     // Potentially reset form state here if needed, though unmounting/remounting might handle it
-    // form.reset(originalData); 
+    // For now, just switching mode should be enough
   };
 
   const handleBackNavigation = () => {
-    if (isEditMode) {
+    if (isEditMode && form.formState.isDirty) {
       setIsBackAlertOpen(true);
     } else {
       performNavigation();
     }
+  };
+
+  const handlePreview = () => {
+      if (!remixedTechniqueId) {
+          toast({
+              title: 'Please Save Your Work',
+              description: 'You must save your changes before you can preview the portfolio.',
+              variant: 'destructive'
+          });
+          return;
+      }
+      router.push(`/dashboard/portfolio/${remixedTechniqueId}`);
   };
 
   const allStepsText = useMemo(() => {
@@ -249,14 +271,30 @@ export default function TechniqueDetailPage() {
   }, [details]);
   
   const onSave = (data: TechniqueRemixData) => {
-    startSaveTransition(() => {
-      console.log("Saving data:", data);
-      // Here you would integrate with Supabase to save the remixed technique
-      toast({
-        title: 'Project Saved!',
-        description: 'Your remixed technique has been saved to your project.'
-      });
-      setIsEditMode(false);
+    startSaveTransition(async () => {
+        const payload = {
+            ...data,
+            id: remixedTechniqueId ?? undefined,
+        };
+
+      const { data: savedData, error } = await saveOrUpdateRemixedTechnique(payload);
+      
+      if (error) {
+        toast({
+          title: 'Save Failed',
+          description: error.message || 'Could not save the remixed technique. Please try again.',
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'Changes Saved!',
+          description: 'Your remixed technique has been saved.'
+        });
+        if (savedData?.id) {
+            setRemixedTechniqueId(savedData.id);
+            form.reset(data); // to reset dirty state
+        }
+      }
     });
   }
 
@@ -518,10 +556,15 @@ export default function TechniqueDetailPage() {
         <h1 className="text-xl font-bold text-center flex-1 truncate px-4">
           {isEditMode ? `Remix: ${techniqueName}` : techniqueName}
         </h1>
-        <div className="w-24 flex justify-end">
+        <div className="w-48 flex justify-end gap-2">
           {!isEditMode && (
             <Button variant="default" size="sm" onClick={() => setIsEditMode(true)}>
               <Wand2 className="mr-2 h-4 w-4" /> Remix
+            </Button>
+          )}
+          {isEditMode && (
+            <Button variant="outline" size="sm" onClick={handlePreview}>
+              <Eye className="mr-2 h-4 w-4" /> Preview
             </Button>
           )}
         </div>
@@ -538,3 +581,5 @@ export default function TechniqueDetailPage() {
     </>
   );
 }
+
+    
