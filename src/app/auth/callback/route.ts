@@ -20,7 +20,6 @@ export async function GET(request: NextRequest) {
 
 // inside GET()
 if (error) {
-  console.error('Error exchanging code for session:', error);
   const errorMessage = encodeURIComponent('Authentication failed. Please try again.');
   return NextResponse.redirect(`${origin}/auth/callback?error=${errorMessage}`);
 }
