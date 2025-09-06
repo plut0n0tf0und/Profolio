@@ -1,11 +1,12 @@
 
 'use client';
 
-import { useEffect, useState, useMemo, useTransition } from 'react';
+import { useEffect, useState, useMemo, useTransition, useRef } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { useForm, useFieldArray, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { toPng } from 'html-to-image';
 import { getTechniqueDetails, TechniqueDetailsOutput } from '@/ai/flows/get-technique-details';
 import { saveOrUpdateRemixedTechnique, fetchRemixedTechniqueById } from '@/lib/supabaseClient';
 import allTechniqueDetails from '@/data/uxTechniqueDetails.json';
@@ -14,7 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ChevronLeft, Check, Clipboard, ExternalLink, Wand2, PlusCircle, Trash2, Eye, Loader2, Save } from 'lucide-react';
+import { ChevronLeft, Check, Clipboard, ExternalLink, Wand2, PlusCircle, Trash2, Eye, Loader2, Save, Share2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -124,6 +125,9 @@ export default function TechniqueDetailPage() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [isSaving, startSaveTransition] = useTransition();
   const [isBackAlertOpen, setIsBackAlertOpen] = useState(false);
+  const [isSharing, startShareTransition] = useTransition();
+
+  const shareableContentRef = useRef<HTMLDivElement>(null);
 
   const staticDetails = useMemo(() => {
     return allTechniqueDetails.find(t => t.name.toLowerCase() === techniqueName.toLowerCase());
@@ -274,6 +278,27 @@ export default function TechniqueDetailPage() {
       performNavigation();
     }
   };
+  
+  const handleShare = () => {
+    if (!shareableContentRef.current) return;
+    startShareTransition(async () => {
+        try {
+            const dataUrl = await toPng(shareableContentRef.current!, { 
+                cacheBust: true,
+                backgroundColor: document.documentElement.classList.contains('dark') ? '#171717' : '#f8f9fa',
+                pixelRatio: 2,
+            });
+            const link = document.createElement('a');
+            link.download = `${techniqueSlug}-description.png`;
+            link.href = dataUrl;
+            link.click();
+            toast({ title: 'Image downloaded!', description: 'Your technique description has been saved as a PNG.' });
+        } catch (err) {
+            console.error('Failed to create image', err);
+            toast({ title: 'Error', description: 'Could not generate image for sharing.', variant: 'destructive' });
+        }
+    });
+  };
 
   const allStepsText = useMemo(() => {
     if (!details?.executionSteps) return '';
@@ -315,7 +340,7 @@ export default function TechniqueDetailPage() {
 
   // Read-only view
   const renderReadOnlyView = () => (
-    <div className="space-y-8">
+    <div className="space-y-8" ref={shareableContentRef}>
       <Card className="overflow-hidden">
           <CardHeader>
               <CardTitle className="text-3xl font-bold">{techniqueName}</CardTitle>
@@ -568,17 +593,23 @@ export default function TechniqueDetailPage() {
         </h1>
         <div className="w-auto flex justify-end gap-2" style={{minWidth: '150px'}}>
           {!isEditMode ? (
-            <Button variant="default" size="sm" onClick={() => {
-                const url = new URL(window.location.href);
-                url.searchParams.set('edit', 'true');
-                if (remixedTechniqueId) {
-                    url.searchParams.set('remixId', remixedTechniqueId);
-                }
-                router.push(url.toString());
-                setIsEditMode(true);
-            }}>
-              <Wand2 className="mr-2 h-4 w-4" /> Remix
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={handleShare} disabled={isSharing}>
+                  {isSharing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Share2 className="mr-2 h-4 w-4" />}
+                  Share
+              </Button>
+              <Button variant="default" size="sm" onClick={() => {
+                  const url = new URL(window.location.href);
+                  url.searchParams.set('edit', 'true');
+                  if (remixedTechniqueId) {
+                      url.searchParams.set('remixId', remixedTechniqueId);
+                  }
+                  router.push(url.toString());
+                  setIsEditMode(true);
+              }}>
+                <Wand2 className="mr-2 h-4 w-4" /> Remix
+              </Button>
+            </div>
           ) : (
              <Button 
                 onClick={form.handleSubmit(onSaveAndPreview)}
