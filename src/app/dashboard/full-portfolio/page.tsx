@@ -1,12 +1,74 @@
 
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, Construction } from 'lucide-react';
+import { ChevronLeft, Loader2, FileText } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
+import { fetchAllRemixedTechniquesForUser } from '@/lib/supabaseClient';
+import { generateFullPortfolio, FullPortfolioOutput, EnrichedRemixedTechnique } from '@/ai/flows/generate-full-portfolio';
+
+const PortfolioSkeleton = () => (
+    <div className="space-y-8">
+        <Card>
+            <CardContent className="flex flex-col items-center justify-center gap-4 p-8">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <p className="text-muted-foreground">AI is building your full portfolio...</p>
+                <p className="text-sm text-center text-muted-foreground/80">This may take a moment. The AI is analyzing all your remixed techniques to create a professional summary.</p>
+            </CardContent>
+        </Card>
+    </div>
+);
+
+const Section = ({ title, children }: { title: string, children: React.ReactNode }) => (
+    <div className="space-y-3">
+        <h3 className="text-2xl font-bold tracking-tight">{title}</h3>
+        <div className="text-muted-foreground text-base leading-relaxed">{children}</div>
+    </div>
+);
+
 
 export default function FullPortfolioPage() {
   const router = useRouter();
+  const { toast } = useToast();
+  const [portfolio, setPortfolio] = useState<FullPortfolioOutput | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const generate = async () => {
+      setIsLoading(true);
+      try {
+        const { data, error } = await fetchAllRemixedTechniquesForUser();
+        if (error || !data || data.length === 0) {
+            toast({ title: 'No Content', description: 'You have not remixed any techniques yet. Remix a technique to see it here.', variant: 'destructive'});
+            setPortfolio({ projects: [] }); // Set to empty to stop loading
+            setIsLoading(false);
+            return;
+        }
+
+        const enrichedData: EnrichedRemixedTechnique[] = data.map(item => ({
+            ...item,
+            // The table join gives us the project name directly.
+            // If saved_results is null, it means it's a standalone remix not linked to a project.
+            project_name: (item.saved_results as any)?.project_name || 'Standalone Work'
+        }));
+        
+        const generatedPortfolio = await generateFullPortfolio(enrichedData);
+        setPortfolio(generatedPortfolio);
+
+      } catch (aiError: any) {
+        console.error("AI Generation Error:", aiError);
+        toast({ title: 'AI Error', description: `Failed to generate portfolio: ${aiError.message}`, variant: 'destructive' });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    generate();
+  }, [toast]);
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
@@ -20,14 +82,81 @@ export default function FullPortfolioPage() {
         </h1>
         <div className="w-20" />
       </header>
-      <main className="flex flex-1 items-center justify-center p-4">
-        <div className="text-center space-y-4">
-          <Construction className="mx-auto h-16 w-16 text-muted-foreground" />
-          <h2 className="text-2xl font-bold">Coming Soon!</h2>
-          <p className="text-muted-foreground">
-            This page will display a comprehensive view of all your remixed techniques.
-          </p>
-        </div>
+      <main className="container mx-auto max-w-4xl p-4 md:p-8">
+        {isLoading ? (
+          <PortfolioSkeleton />
+        ) : portfolio && portfolio.projects.length > 0 ? (
+          <div className="space-y-12">
+            {portfolio.projects.map((project, projIndex) => (
+              <Card key={projIndex} className="border-border/50 shadow-lg">
+                <CardHeader>
+                    <CardTitle className="text-4xl font-black">{project.projectName}</CardTitle>
+                    <CardDescription className="flex flex-wrap gap-x-4 gap-y-2 pt-2">
+                        {project.tags.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
+                    </CardDescription>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 text-sm text-muted-foreground">
+                        <div><strong>Date:</strong> {project.meta.date || 'N/A'}</div>
+                        <div><strong>Duration:</strong> {project.meta.duration || 'N/A'}</div>
+                        <div><strong>Team Size:</strong> {project.meta.teamSize || 'N/A'}</div>
+                        <div><strong>Role:</strong> {project.meta.role || 'N/A'}</div>
+                    </div>
+                </CardHeader>
+                <CardContent className="space-y-8">
+                    <Separator/>
+                    <Section title="Why & Problem Statement">
+                        <p>{project.whyAndProblem}</p>
+                    </Section>
+                    <Section title="Introduction">
+                        <p>{project.introduction}</p>
+                    </Section>
+                    <Section title="Approach">
+                        <ul className="list-disc list-outside pl-5 space-y-2">
+                            {project.approach.map((item, i) => <li key={i}>{item}</li>)}
+                        </ul>
+                    </Section>
+                    <Section title="Prerequisites">
+                        <div className="space-y-4">
+                            {project.prerequisites.map((tech, i) => (
+                                <div key={i}>
+                                    <h4 className="font-semibold text-lg">{tech.techniqueName}</h4>
+                                    <ul className="list-disc list-outside pl-5 space-y-2 mt-1">
+                                        {tech.items.map((item, j) => <li key={j}>{item}</li>)}
+                                    </ul>
+                                </div>
+                            ))}
+                        </div>
+                    </Section>
+                    <Section title="Execution Steps">
+                        <div className="space-y-4">
+                            {project.executionSteps.map((tech, i) => (
+                                <div key={i}>
+                                    <h4 className="font-semibold text-lg">{tech.techniqueName}</h4>
+                                    <ol className="list-decimal list-outside pl-5 space-y-2 mt-1">
+                                        {tech.items.map((item, j) => <li key={j}>{item}</li>)}
+                                    </ol>
+                                </div>
+                            ))}
+                        </div>
+                    </Section>
+                    <Section title="Impact on Design">
+                        <p>{project.impactOnDesign}</p>
+                    </Section>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center text-center space-y-4 rounded-lg border border-dashed p-8">
+            <FileText className="mx-auto h-12 w-12 text-muted-foreground" />
+            <h2 className="text-2xl font-bold">No Portfolio Content</h2>
+            <p className="text-muted-foreground">
+              You haven't remixed any techniques yet. Once you remix a technique from a project, it will appear here.
+            </p>
+            <Button onClick={() => router.push('/dashboard')}>
+              Back to Dashboard
+            </Button>
+          </div>
+        )}
       </main>
     </div>
   );

@@ -64,6 +64,8 @@ const TechniqueRemixSchema = z.object({
             value: z.string()
         })),
     }),
+    // This is for joining data, not a real column in remixed_techniques
+    saved_results: z.any().optional(),
 });
 
 export type RemixedTechnique = z.infer<typeof TechniqueRemixSchema>;
@@ -489,6 +491,32 @@ export async function fetchRemixedTechniqueById(id: string): Promise<{ data: Rem
 
     return { data, error };
 }
+
+/**
+ * Fetches all remixed techniques for the current user, joining with project names.
+ * @returns A promise that resolves with an array of remixed techniques or an error.
+ */
+export async function fetchAllRemixedTechniquesForUser(): Promise<{ data: RemixedTechnique[] | null; error: PostgrestError | null }> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+        return { data: null, error: { message: 'User not authenticated', details: '', hint: '', code: '401', name: '' } };
+    }
+
+    // Join remixed_techniques with saved_results to get the project name
+    const { data, error } = await supabase
+        .from('remixed_techniques')
+        .select(`
+            *,
+            saved_results (
+                project_name
+            )
+        `)
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+    return { data, error };
+}
+
 
 /**
  * Fetches all remixed techniques associated with a specific project ID.

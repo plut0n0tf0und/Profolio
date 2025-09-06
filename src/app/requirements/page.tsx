@@ -239,7 +239,7 @@ export default function RequirementsPage() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-        <h1 className="ml-2 text-xl font-bold">Define Project</h1>
+        <h1 className="ml-2 text-xl ">Back</h1>
       </header>
       <main className="container mx-auto max-w-3xl flex-1 p-4 md:p-8">
       <Card className="w-full">
