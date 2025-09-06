@@ -411,8 +411,8 @@ export async function fetchSavedResultById(
 }
 
 /**
- * Deletes a saved result by its ID.
- * @param id - The UUID of the saved result to delete.
+ * Deletes a saved result and its associated remixed techniques.
+ * @param id - The UUID of the saved result (project) to delete.
  * @returns A promise that resolves when the operation is complete.
  */
 export async function deleteSavedResult(id: string): Promise<{ error: PostgrestError | null }> {
@@ -421,13 +421,26 @@ export async function deleteSavedResult(id: string): Promise<{ error: PostgrestE
     return { error: { message: 'User not authenticated', details: '', hint: '', code: '401', name: '' } };
   }
 
-  const { error } = await supabase
+  // 1. Delete all remixed techniques associated with this project
+  const { error: techniquesError } = await supabase
+    .from('remixed_techniques')
+    .delete()
+    .eq('project_id', id)
+    .eq('user_id', user.id);
+
+  if (techniquesError) {
+    console.error('Error deleting associated techniques:', techniquesError);
+    return { error: techniquesError };
+  }
+
+  // 2. Delete the main project from saved_results
+  const { error: projectError } = await supabase
     .from('saved_results')
     .delete()
     .eq('id', id)
     .eq('user_id', user.id);
 
-  return { error };
+  return { error: projectError };
 }
 
 /**
