@@ -28,7 +28,7 @@ export function AnimatedGrid() {
 
   return (
     <div
-      className="relative flex h-full w-full items-center justify-center overflow-hidden bg-background p-4 [perspective:1000px]"
+      className="relative flex h-full w-full items-center justify-center overflow-hidden bg-black p-4 [perspective:1000px]"
       onMouseMove={handleMouseMove}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
