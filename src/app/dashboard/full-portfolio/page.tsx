@@ -235,7 +235,7 @@ export default function FullPortfolioPage() {
                   </Section>
                   <Section title="Impact on Design">
                     <ul className="list-disc list-outside pl-5 space-y-2">
-                        {project.impactOnDesign.map((item, i) => <li key={i}>{item}</li>)}
+                        {project.impactOnDesign.map((item, i) => <li keyi>{item}</li>)}
                      </ul>
                   </Section>
                 </CardContent>
