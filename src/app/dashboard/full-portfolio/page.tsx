@@ -82,17 +82,20 @@ export default function FullPortfolioPage() {
   }, [toast]);
 
   const handleExport = () => {
-    if (!portfolioRef.current) {
+    const content = portfolioRef.current;
+    if (!content) {
         toast({ title: 'Error', description: 'Could not find portfolio content to export.' });
         return;
     }
 
     startExportTransition(async () => {
         try {
-            const dataUrl = await toPng(portfolioRef.current!, { 
+            const dataUrl = await toPng(content, { 
                 cacheBust: true,
-                pixelRatio: 2, // Higher pixel ratio for better quality
-                backgroundColor: document.documentElement.classList.contains('dark') ? '#0A0A0A' : '#FAFAFA' // Match background
+                pixelRatio: 2,
+                backgroundColor: document.documentElement.classList.contains('dark') ? '#0A0A0A' : '#FFFFFF',
+                width: content.offsetWidth,
+                height: content.scrollHeight,
             });
 
             const pdf = new jsPDF({
@@ -104,37 +107,32 @@ export default function FullPortfolioPage() {
             const pdfWidth = pdf.internal.pageSize.getWidth();
             const pdfHeight = pdf.internal.pageSize.getHeight();
             
-            const img = new Image();
-            img.src = dataUrl;
-            img.onload = () => {
-                const imgWidth = img.width;
-                const imgHeight = img.height;
-                const ratio = imgWidth / imgHeight;
-                
-                let finalImgWidth, finalImgHeight;
+            const contentWidth = content.offsetWidth;
+            const contentHeight = content.scrollHeight;
+            const ratio = contentWidth / contentHeight;
+            
+            const imgWidth = pdfWidth;
+            const imgHeight = imgWidth / ratio;
+            
+            let heightLeft = imgHeight;
+            let position = 0;
+            
+            pdf.addImage(dataUrl, 'PNG', 0, position, imgWidth, imgHeight);
+            heightLeft -= pdfHeight;
 
-                if (imgWidth > imgHeight) {
-                    finalImgWidth = pdfWidth;
-                    finalImgHeight = pdfWidth / ratio;
-                } else {
-                    finalImgHeight = pdfHeight;
-                    finalImgWidth = pdfHeight * ratio;
-                }
-                
-                // If the height is still too large, scale by height
-                if(finalImgHeight > pdfHeight) {
-                  finalImgHeight = pdfHeight;
-                  finalImgWidth = pdfHeight * ratio;
-                }
-
-                pdf.addImage(dataUrl, 'PNG', 0, 0, finalImgWidth, finalImgHeight);
-                pdf.save('profolio-export.pdf');
-
-                toast({
-                    title: 'Export Successful!',
-                    description: 'Your portfolio has been downloaded as a PDF.',
-                });
+            while (heightLeft > 0) {
+              position = heightLeft - imgHeight;
+              pdf.addPage();
+              pdf.addImage(dataUrl, 'PNG', 0, position, imgWidth, imgHeight);
+              heightLeft -= pdfHeight;
             }
+
+            pdf.save('profolio-export.pdf');
+
+            toast({
+                title: 'Export Successful!',
+                description: 'Your portfolio has been downloaded as a PDF.',
+            });
 
         } catch (error) {
             console.error('Export Error:', error);
@@ -173,7 +171,7 @@ export default function FullPortfolioPage() {
         ) : portfolio && portfolio.projects.length > 0 ? (
           <div ref={portfolioRef} className="space-y-12 bg-background p-4">
             {portfolio.projects.map((project, projIndex) => (
-              <Card key={projIndex} className="border-border/50 shadow-lg">
+              <Card key={projIndex} className="border-border/50 shadow-lg break-inside-avoid">
                 <CardHeader>
                   <CardTitle className="text-4xl font-black">{project.projectName}</CardTitle>
                   <CardDescription className="flex flex-wrap gap-x-4 gap-y-2 pt-2">
@@ -214,7 +212,7 @@ export default function FullPortfolioPage() {
                    <Section title="Prerequisites">
                       <div className="space-y-4">
                         {project.prerequisites.map((item, i) => (
-                          <div key={i}>
+                          <div key={i} className="break-inside-avoid">
                             <h4 className="font-semibold">{item.technique}</h4>
                             <ul className="list-disc list-outside pl-5 space-y-1 mt-1">
                               {item.bullets.map((bullet, j) => <li key={j}>{bullet}</li>)}
@@ -226,7 +224,7 @@ export default function FullPortfolioPage() {
                   <Section title="Execution Steps">
                       <div className="space-y-4">
                         {project.executionSteps.map((item, i) => (
-                          <div key={i}>
+                          <div key={i} className="break-inside-avoid">
                             <h4 className="font-semibold">{item.technique}</h4>
                             <ul className="list-disc list-outside pl-5 space-y-1 mt-1">
                               {item.bullets.map((bullet, j) => <li key={j}>{bullet}</li>)}
