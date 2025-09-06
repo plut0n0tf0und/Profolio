@@ -13,6 +13,15 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 
+const slugify = (text: string) => {
+    if (!text) return '';
+    return text.toString().toLowerCase()
+      .replace(/\s+/g, '-')           // Replace spaces with -
+      .replace(/[^\w-]+/g, '')       // Remove all non-word chars
+      .replace(/--+/g, '-')         // Replace multiple - with single -
+      .replace(/^-+/, '')             // Trim - from start of text
+      .replace(/-+$/, '');            // Trim - from end of text
+};
 
 const PortfolioSkeleton = () => (
     <div className="space-y-8">
@@ -80,10 +89,17 @@ export default function PortfolioPage() {
         toast({ title: 'Coming Soon!', description: 'PDF/PNG export functionality will be implemented soon.'});
     }
 
+    const handleBackToEditor = () => {
+        if (!technique) return;
+        const techniqueSlug = slugify(technique.technique_name);
+        const projectIdQuery = technique.project_id ? `&projectId=${technique.project_id}` : '';
+        router.push(`/dashboard/technique/${techniqueSlug}?edit=true&remixId=${id}${projectIdQuery}`);
+    };
+
     return (
         <div className="flex min-h-screen flex-col bg-background text-foreground">
             <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between border-b border-border bg-background px-4">
-                <Button variant="ghost" size="sm" onClick={() => router.back()} className="flex items-center gap-2">
+                <Button variant="ghost" size="sm" onClick={handleBackToEditor} className="flex items-center gap-2">
                     <ChevronLeft className="h-5 w-5" />
                     <span className="hidden md:inline">Back to Editor</span>
                 </Button>
@@ -202,4 +218,5 @@ export default function PortfolioPage() {
             </main>
         </div>
     );
-}
+
+    

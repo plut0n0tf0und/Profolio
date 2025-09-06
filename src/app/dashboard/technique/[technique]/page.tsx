@@ -7,7 +7,7 @@ import { useForm, useFieldArray, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { getTechniqueDetails, TechniqueDetailsOutput } from '@/ai/flows/get-technique-details';
-import { saveOrUpdateRemixedTechnique } from '@/lib/supabaseClient';
+import { saveOrUpdateRemixedTechnique, fetchRemixedTechniqueById } from '@/lib/supabaseClient';
 import allTechniqueDetails from '@/data/uxTechniqueDetails.json';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -115,9 +115,11 @@ export default function TechniqueDetailPage() {
   const techniqueSlug = params.technique as string;
   const techniqueName = useMemo(() => unslugify(techniqueSlug), [techniqueSlug]);
   const fromProjectId = searchParams.get('projectId');
+  const remixedTechniqueIdFromUrl = searchParams.get('remixId');
+
 
   const [details, setDetails] = useState<TechniqueDetailsOutput | null>(null);
-  const [remixedTechniqueId, setRemixedTechniqueId] = useState<string | null>(null);
+  const [remixedTechniqueId, setRemixedTechniqueId] = useState<string | null>(remixedTechniqueIdFromUrl);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditMode, setIsEditMode] = useState(false);
   const [isSaving, startSaveTransition] = useTransition();
@@ -183,8 +185,21 @@ export default function TechniqueDetailPage() {
   useEffect(() => {
     if (!techniqueName) return;
     form.setValue('technique_name', techniqueName);
+    
+    async function loadRemixedData() {
+        if (!remixedTechniqueIdFromUrl) return;
+        setIsLoading(true);
+        const { data, error } = await fetchRemixedTechniqueById(remixedTechniqueIdFromUrl);
+        if (error || !data) {
+            toast({ title: 'Error', description: 'Could not load your saved work.' });
+            setRemixedTechniqueId(null);
+        } else {
+            form.reset(data);
+        }
+        setIsLoading(false);
+    }
 
-    const fetchDetails = async () => {
+    async function fetchDefaultDetails() {
       setIsLoading(true);
       try {
         const result = await getTechniqueDetails({ techniqueName });
@@ -218,9 +233,13 @@ export default function TechniqueDetailPage() {
         setIsLoading(false);
       }
     };
-
-    fetchDetails();
-  }, [techniqueName, toast, form, fromProjectId]);
+    
+    if (remixedTechniqueIdFromUrl) {
+        loadRemixedData();
+    } else {
+        fetchDefaultDetails();
+    }
+  }, [techniqueName, remixedTechniqueIdFromUrl, toast, form, fromProjectId]);
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -241,8 +260,11 @@ export default function TechniqueDetailPage() {
   const handleDiscard = () => {
     setIsEditMode(false);
     setIsBackAlertOpen(false);
-    // Potentially reset form state here if needed, though unmounting/remounting might handle it
-    // For now, just switching mode should be enough
+    if (!remixedTechniqueId) {
+        // If it was a new remix, reset to default, otherwise we keep the saved data
+        // This is handled by the useEffect re-triggering fetchDefaultDetails
+        router.replace(`/dashboard/technique/${techniqueSlug}`);
+    }
   };
 
   const handleBackNavigation = () => {
@@ -290,10 +312,12 @@ export default function TechniqueDetailPage() {
           title: 'Changes Saved!',
           description: 'Your remixed technique has been saved.'
         });
-        if (savedData?.id) {
+        if (savedData?.id && !remixedTechniqueId) {
             setRemixedTechniqueId(savedData.id);
-            form.reset(data); // to reset dirty state
+            // Update URL without reloading page to include the new ID
+            router.replace(`${window.location.pathname}?edit=true&remixId=${savedData.id}${fromProjectId ? `&projectId=${fromProjectId}`: ''}`);
         }
+        form.reset(data); // to reset dirty state
       }
     });
   }
