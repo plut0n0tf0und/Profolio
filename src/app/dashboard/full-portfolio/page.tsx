@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, Loader2, FileText, FileUp } from 'lucide-react';
@@ -11,6 +11,8 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { fetchAllRemixedTechniquesForUser } from '@/lib/supabaseClient';
 import { generateFullPortfolio, FullPortfolioOutput, EnrichedRemixedTechnique } from '@/ai/flows/generate-full-portfolio';
+import { toPng } from 'html-to-image-fix';
+import jsPDF from 'jspdf';
 
 const PortfolioSkeleton = () => (
   <div className="space-y-8">
@@ -39,6 +41,8 @@ export default function FullPortfolioPage() {
   const { toast } = useToast();
   const [portfolio, setPortfolio] = useState<FullPortfolioOutput | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isExporting, startExportTransition] = useTransition();
+  const portfolioRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const generate = async () => {
@@ -78,9 +82,68 @@ export default function FullPortfolioPage() {
   }, [toast]);
 
   const handleExport = () => {
-    toast({
-      title: 'Coming Soon!',
-      description: 'PDF export functionality will be available in a future update.',
+    if (!portfolioRef.current) {
+        toast({ title: 'Error', description: 'Could not find portfolio content to export.' });
+        return;
+    }
+
+    startExportTransition(async () => {
+        try {
+            const dataUrl = await toPng(portfolioRef.current!, { 
+                cacheBust: true,
+                pixelRatio: 2, // Higher pixel ratio for better quality
+                backgroundColor: document.documentElement.classList.contains('dark') ? '#0A0A0A' : '#FAFAFA' // Match background
+            });
+
+            const pdf = new jsPDF({
+                orientation: 'portrait',
+                unit: 'px',
+                format: 'a4'
+            });
+
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = pdf.internal.pageSize.getHeight();
+            
+            const img = new Image();
+            img.src = dataUrl;
+            img.onload = () => {
+                const imgWidth = img.width;
+                const imgHeight = img.height;
+                const ratio = imgWidth / imgHeight;
+                
+                let finalImgWidth, finalImgHeight;
+
+                if (imgWidth > imgHeight) {
+                    finalImgWidth = pdfWidth;
+                    finalImgHeight = pdfWidth / ratio;
+                } else {
+                    finalImgHeight = pdfHeight;
+                    finalImgWidth = pdfHeight * ratio;
+                }
+                
+                // If the height is still too large, scale by height
+                if(finalImgHeight > pdfHeight) {
+                  finalImgHeight = pdfHeight;
+                  finalImgWidth = pdfHeight * ratio;
+                }
+
+                pdf.addImage(dataUrl, 'PNG', 0, 0, finalImgWidth, finalImgHeight);
+                pdf.save('profolio-export.pdf');
+
+                toast({
+                    title: 'Export Successful!',
+                    description: 'Your portfolio has been downloaded as a PDF.',
+                });
+            }
+
+        } catch (error) {
+            console.error('Export Error:', error);
+            toast({
+                title: 'Export Failed',
+                description: 'An error occurred while exporting your portfolio.',
+                variant: 'destructive',
+            });
+        }
     });
   };
 
@@ -98,8 +161,8 @@ export default function FullPortfolioPage() {
         </Button>
         <h1 className="text-xl font-bold text-center flex-1 truncate">Full Portfolio</h1>
         <div className="w-auto flex justify-end gap-2">
-            <Button onClick={handleExport} variant="outline" disabled={isLoading}>
-                <FileUp className="mr-2 h-4 w-4" />
+            <Button onClick={handleExport} variant="outline" disabled={isLoading || isExporting}>
+                {isExporting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileUp className="mr-2 h-4 w-4" />}
                 Export
             </Button>
         </div>
@@ -108,7 +171,7 @@ export default function FullPortfolioPage() {
         {isLoading ? (
           <PortfolioSkeleton />
         ) : portfolio && portfolio.projects.length > 0 ? (
-          <div className="space-y-12">
+          <div ref={portfolioRef} className="space-y-12 bg-background p-4">
             {portfolio.projects.map((project, projIndex) => (
               <Card key={projIndex} className="border-border/50 shadow-lg">
                 <CardHeader>
