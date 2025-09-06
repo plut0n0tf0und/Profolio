@@ -65,7 +65,7 @@ const FiveDProcess = ({ techniques, projectId }: { techniques: StageTechniques, 
                               {technique}
                             </Link>
                             <Link href={`/dashboard/technique/${slugify(technique)}?edit=true&projectId=${projectId}`} passHref>
-                                <Button variant="default" size="sm">
+                                <Button variant="outline" size="sm">
                                     <Wand2 className="mr-2 h-4 w-4" />
                                     Remix
                                 </Button>
