@@ -6,7 +6,7 @@ import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { useForm, useFieldArray, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { toPng } from 'html-to-image';
+import { toPng } from 'html-to-image-fix';
 import { getTechniqueDetails, TechniqueDetailsOutput } from '@/ai/flows/get-technique-details';
 import { saveOrUpdateRemixedTechnique, fetchRemixedTechniqueById } from '@/lib/supabaseClient';
 import allTechniqueDetails from '@/data/uxTechniqueDetails.json';
@@ -285,7 +285,7 @@ export default function TechniqueDetailPage() {
         try {
             const dataUrl = await toPng(shareableContentRef.current!, { 
                 cacheBust: true,
-                backgroundColor: document.documentElement.classList.contains('dark') ? '#171717' : '#f8f9fa',
+                backgroundColor: document.documentElement.classList.contains('dark') ? '#171717' : '#ffffff',
                 pixelRatio: 2,
             });
             const link = document.createElement('a');
