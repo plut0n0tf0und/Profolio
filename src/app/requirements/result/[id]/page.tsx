@@ -210,12 +210,6 @@ export default function ResultPage() {
         </h1>
 
         <div className="flex items-center justify-end gap-2" style={{ minWidth: '80px' }}>
-          <Link href="/dashboard/full-portfolio" passHref>
-            <Button variant="outline" size="sm" disabled={isLoading}>
-                <Eye className="mr-2 h-4 w-4" />
-                View Full Portfolio
-            </Button>
-          </Link>
           <Button variant="default" size="sm" onClick={handleSaveResult} disabled={isLoading}>
             <Save className="mr-2 h-4 w-4" />
             Save
@@ -224,6 +218,14 @@ export default function ResultPage() {
       </header>
 
       <main className="container mx-auto max-w-4xl p-4 md:p-8">
+        <div className="flex justify-end mb-6">
+          <Link href="/dashboard/full-portfolio" passHref>
+            <Button variant="outline" size="sm" disabled={isLoading}>
+                <Eye className="mr-2 h-4 w-4" />
+                View Full Portfolio
+            </Button>
+          </Link>
+        </div>
         <div className="space-y-8">
           {isLoading ? <RequirementDetailSkeleton /> : requirement && (
             <Card>
