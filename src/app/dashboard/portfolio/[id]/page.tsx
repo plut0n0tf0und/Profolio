@@ -8,7 +8,7 @@ import { generatePortfolio, PortfolioOutput } from '@/ai/flows/generate-portfoli
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { ChevronLeft, Edit, Download, Loader2, FileText, Link as LinkIcon } from 'lucide-react';
+import { ChevronLeft, Download, Loader2, FileText, Link as LinkIcon } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -98,13 +98,13 @@ export default function PortfolioPage() {
 
     const handleDone = () => {
         if (technique?.project_id) {
-            router.push(`/dashboard/${technique.project_id}`);
-            // This tells Next.js to re-fetch data on the server for the navigated page.
+            // This tells Next.js to re-fetch data on the server for the page we are about to visit.
             router.refresh();
+            router.push(`/dashboard/${technique.project_id}`);
         } else {
             // Fallback if no project_id is associated.
-            router.push('/dashboard');
             router.refresh();
+            router.push('/dashboard');
         }
     };
 
