@@ -13,19 +13,20 @@ import { z } from 'zod';
 import type { RemixedTechnique } from '@/lib/supabaseClient';
 
 const FullPortfolioInputSchema = z.array(z.object({
-  project_id: z.string().nullable().optional(),
-  project_name: z.string(), // Added for grouping
-  technique_name: z.string(),
-  date: z.string().optional(),
-  duration: z.string().optional(),
-  teamSize: z.string().optional(),
-  why: z.string().optional(),
-  overview: z.string().optional(),
-  problemStatement: z.string().optional(),
-  role: z.string().optional(),
-  prerequisites: z.array(z.object({ text: z.string(), checked: z.boolean() })).optional(),
-  executionSteps: z.array(z.object({ text: z.string(), checked: z.boolean() })).optional(),
+    project_id: z.string().nullable().optional(),
+    project_name: z.string(),
+    technique_name: z.string(),
+    date: z.string().optional(),
+    duration: z.string().optional(),
+    teamSize: z.string().optional(),
+    why: z.string().optional(),
+    overview: z.string().optional(),
+    problemStatement: z.string().optional(),
+    role: z.string().optional(),
+    prerequisites: z.array(z.object({ text: z.string(), checked: z.boolean() })).optional(),
+    executionSteps: z.array(z.object({ text: z.string(), checked: z.boolean() })).optional(),
 }));
+
 export type FullPortfolioInput = z.infer<typeof FullPortfolioInputSchema>;
 
 const ProjectPortfolioSchema = z.object({
@@ -54,7 +55,7 @@ export type FullPortfolioOutput = z.infer<typeof FullPortfolioOutputSchema>;
 export type EnrichedRemixedTechnique = RemixedTechnique & { project_name: string };
 
 export async function generateFullPortfolio(input: EnrichedRemixedTechnique[]): Promise<FullPortfolioOutput> {
-  const flowInput = input.map(item => ({
+  const flowInput: FullPortfolioInput = input.map(item => ({
     project_id: item.project_id,
     project_name: item.project_name,
     technique_name: item.technique_name,
@@ -88,8 +89,8 @@ Follow these instructions carefully for each project group:
 3.  **meta**: Synthesize the project-level metadata. For date and duration, try to create a reasonable aggregate. Use the most common role.
 4.  **whyAndProblem**: Combine the 'why' and 'problemStatement' from all techniques into one clear, professional paragraph.
 5.  **introduction**: Write a powerful introduction summarizing the project's purpose and your role.
-6.  **approach**: CRITICAL: Do NOT list every single prerequisite and execution step. Instead, SYNTHESIZE these steps from all techniques into a high-level, narrative paragraph describing the overall process. For example, instead of listing 10 steps for user interviews, you would say "The process began with conducting in-depth user interviews to uncover pain points, followed by affinity mapping to synthesize the findings into key themes. These insights directly informed the creation of new wireframes and a clickable prototype, which was then validated through usability testing sessions." This should be a compact, readable summary of the entire process.
-7.  **impactOnDesign**: Write a new, compelling paragraph that summarizes the overall impact of all the work on the final design. This is the "so what?" of the project.
+6. **approach**: Write a professionally written, high-level summary of the overall approach taken in a single paragraph. This should synthesize the key activities from prerequisites and execution steps from ALL techniques into a fluid narrative. Do NOT use a list. For example, mention key methods like "Conducted user interviews to define personas, which informed the creation of new wireframes and a clickable prototype for usability testing."
+7. **impactOnDesign**: Write a professional paragraph summarizing the combined impact of all techniques on the project's final design and outcomes.
 
 Ensure all descriptions of actions and outcomes are written in the past tense. The final output must be a single JSON object containing a list of these structured project portfolios.
 `,
