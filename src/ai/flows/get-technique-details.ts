@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview An AI agent that provides detailed information about a UX technique.
@@ -49,12 +50,12 @@ const prompt = ai.definePrompt({
   output: { schema: TechniqueDetailsOutputSchema },
   prompt: `You are a world-class UX research expert and content creator. Your task is to provide a detailed, practical, and easy-to-understand guide for the UX technique: "{{techniqueName}}".
 
-Generate the content based on the following structure. Be concise but comprehensive. Use lists where appropriate. For resource links, provide realistic-looking but placeholder URLs (e.g., https://example.com/template/survey).
+Generate the content based on the following structure. Be concise but comprehensive. Use lists where appropriate. For resource links, provide real, publicly accessible URLs to high-quality resources. For templates, look for examples on Google Docs, Miro, or similar collaborative tools. For guides, link to reputable sources like Nielsen Norman Group, Medium articles from design leaders, or official documentation.
 
 **Overview**: A brief, engaging overview of what the technique is and why it's valuable.
 **Prerequisites**: What needs to be prepared or defined before starting? (e.g., "Clear research goals", "Target user group defined").
 **Execution Steps**: A numbered, step-by-step guide on how to perform the technique. Each step should have a title and a brief description.
-**Resource Links**: Provide helpful links.
+**Resource Links**: Provide helpful, real-world links.
   - **Create**: Links to templates or tools to get started (e.g., "Survey Template", "Prototype Tool").
   - **Guides**: Links to in-depth articles or best practices.
 **Effort & Timing**: A realistic estimate of the time and effort involved (e.g., "Low effort, 1-2 days" or "High effort, 2-3 weeks").
