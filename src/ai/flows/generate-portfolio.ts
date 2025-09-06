@@ -9,7 +9,7 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
+import { z } from 'zod';
 import type { RemixedTechnique } from '@/lib/supabaseClient';
 
 // We redefine the input schema here for the AI flow, based on RemixedTechnique
@@ -61,7 +61,7 @@ const prompt = ai.definePrompt({
   output: { schema: PortfolioOutputSchema },
   prompt: `You are a world-class UX portfolio writer. Your task is to transform the user's raw notes about a UX project into a polished, professional case study section.
 
-You will receive JSON data about a specific UX technique the user applied. Your job is to restructure, rewrite, and enhance this information to be clear, compelling, and ready for a portfolio.
+You will receive JSON data about a specific UX technique the user applied. Your job is to restructure, rewrite, and enhance this information to be clear, compelling, and ready for a portfolio. Ensure all descriptions of actions and outcomes are written in the past tense, as if describing a completed project.
 
 Here is the user's data:
 Technique Name: {{technique_name}}
@@ -88,11 +88,11 @@ Based on this, generate the complete JSON output. Follow these instructions care
 1.  **title**: Use the 'technique_name' as the main title.
 2.  **tags**: Infer these from the project context. You are not given these directly. Make educated guesses.
 3.  **meta**: Extract the date, duration, and teamSize directly.
-4.  **why**: Rewrite the 'why' section to be concise and professional.
-5.  **overview**: Rewrite the user's 'overview' into a powerful summary. Focus on actions and outcomes. If the overview is sparse, synthesize one from the problem statement and role.
+4.  **why**: Rewrite the 'why' section to be concise and professional, using past tense (e.g., "This technique was chosen because...").
+5.  **overview**: Rewrite the user's 'overview' into a powerful summary. Focus on actions taken and outcomes achieved, written in the past tense. If the overview is sparse, synthesize one from the problem statement and role.
 6.  **problemStatement**: Rewrite the user's problem statement to be sharp and clear for an external audience.
-7.  **roleAndResponsibilities**: Based on the user's 'role' and the tasks implied by the execution steps, create a bulleted list of 3-4 key responsibilities.
-8.  **impactOnDesign**: Write a new paragraph describing the likely impact of this technique's findings on the project's design. This is the "so what?" of the story.
+7.  **roleAndResponsibilities**: Based on the user's 'role' and the tasks implied by the execution steps, create a bulleted list of 3-4 key responsibilities, described in the past tense (e.g., "Led user research...", "Analyzed findings...").
+8.  **impactOnDesign**: Write a new paragraph describing the impact of this technique's findings on the project's design. This is the "so what?" of the story. Use past tense to describe how findings influenced the design.
 9.  **prerequisites & executionSteps**: Copy these directly from the input. Do not change them.
 `,
 });
