@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, Loader2, FileText } from 'lucide-react';
+import { ChevronLeft, Loader2, FileText, Download } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
@@ -77,6 +77,13 @@ export default function FullPortfolioPage() {
     generate();
   }, [toast]);
 
+  const handleExport = () => {
+    toast({
+      title: 'Coming Soon!',
+      description: 'PDF export functionality will be available in a future update.',
+    });
+  };
+
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between border-b border-border bg-background px-4">
@@ -90,7 +97,12 @@ export default function FullPortfolioPage() {
           <span className="hidden md:inline">Back</span>
         </Button>
         <h1 className="text-xl font-bold text-center flex-1 truncate">Full Portfolio</h1>
-        <div className="w-20" />
+        <div className="w-auto flex justify-end gap-2">
+            <Button onClick={handleExport} variant="outline" disabled={isLoading}>
+                <Download className="mr-2 h-4 w-4" />
+                Export
+            </Button>
+        </div>
       </header>
       <main className="container mx-auto max-w-4xl p-4 md:p-8">
         {isLoading ? (
