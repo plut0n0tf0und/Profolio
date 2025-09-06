@@ -4,7 +4,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import { fetchSavedResultById, deleteSavedResult, Requirement, fetchRemixedTechniquesByProjectId, RemixedTechnique } from '@/lib/supabaseClient';
+import { fetchSavedResultById, deleteSavedResult, Requirement } from '@/lib/supabaseClient';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
@@ -26,7 +26,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
-import { ChevronLeft, Edit, Wand2, Loader2, CheckCircle } from 'lucide-react';
+import { ChevronLeft, Edit, Wand2, Loader2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
 import { Separator } from '@/components/ui/separator';
@@ -42,14 +42,7 @@ const slugify = (text: string) => {
     .replace(/-+$/, '');            // Trim - from end of text
 };
 
-const FiveDProcess = ({ techniques, projectId, remixedTechniques }: { techniques: StageTechniques, projectId: string, remixedTechniques: RemixedTechnique[] }) => {
-  const router = useRouter();
-  const remixedTechniqueNames = useMemo(() => remixedTechniques.map(rt => rt.technique_name), [remixedTechniques]);
-
-  const getRemixedId = (techniqueName: string) => {
-    return remixedTechniques.find(rt => rt.technique_name === techniqueName)?.id;
-  }
-
+const FiveDProcess = ({ techniques, projectId }: { techniques: StageTechniques, projectId: string }) => {
   return (
     <Card className="w-full border-border/50 shadow-lg">
       <CardHeader>
@@ -65,28 +58,18 @@ const FiveDProcess = ({ techniques, projectId, remixedTechniques }: { techniques
                 {stageTechs.length > 0 ? (
                   <div className="space-y-3 p-2">
                     {stageTechs.map(technique => {
-                      const isRemixed = remixedTechniqueNames.includes(technique);
-                      const remixedId = getRemixedId(technique);
-
                       return (
                         <Card key={technique} className="bg-background/50 border-border/50 hover:border-primary/50 transition-all">
                           <CardContent className="flex items-center justify-between p-4">
                              <Link href={`/dashboard/technique/${slugify(technique)}?projectId=${projectId}`} className="font-medium cursor-pointer hover:underline">
                               {technique}
                             </Link>
-                            {isRemixed && remixedId ? (
-                                <Button variant="secondary" size="sm" onClick={() => router.push(`/dashboard/portfolio/${remixedId}`)}>
-                                    <CheckCircle className="mr-2 h-4 w-4 text-green-500" />
-                                    Remixed
+                            <Link href={`/dashboard/technique/${slugify(technique)}?edit=true&projectId=${projectId}`} passHref>
+                                <Button variant="default" size="sm">
+                                    <Wand2 className="mr-2 h-4 w-4" />
+                                    Remix
                                 </Button>
-                            ) : (
-                                <Link href={`/dashboard/technique/${slugify(technique)}?edit=true&projectId=${projectId}`} passHref>
-                                    <Button variant="default" size="sm">
-                                        <Wand2 className="mr-2 h-4 w-4" />
-                                        Remix
-                                    </Button>
-                                </Link>
-                            )}
+                            </Link>
                           </CardContent>
                         </Card>
                       )
@@ -129,7 +112,6 @@ export default function ProjectDetailPage() {
   const { toast } = useToast();
   const id = params.id as string;
   const [project, setProject] = useState<Requirement | null>(null);
-  const [remixedTechniques, setRemixedTechniques] = useState<RemixedTechnique[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -139,24 +121,17 @@ export default function ProjectDetailPage() {
     const getProjectData = async () => {
       setIsLoading(true);
       
-      const [projectResult, remixedResult] = await Promise.all([
-        fetchSavedResultById(id),
-        fetchRemixedTechniquesByProjectId(id)
-      ]);
+      const { data: projectData, error: projectError } = await fetchSavedResultById(id);
 
-      const { data: projectData, error: projectError } = projectResult;
-      const { data: remixedData, error: remixedError } = remixedResult;
-
-      if (projectError || remixedError) {
+      if (projectError) {
         toast({
             title: 'Error Fetching Project Data',
-            description: projectError?.message || remixedError?.message || 'Could not retrieve project details.',
+            description: projectError?.message || 'Could not retrieve project details.',
             variant: 'destructive',
         });
         router.push('/dashboard');
       } else if (projectData) {
         setProject(projectData);
-        setRemixedTechniques(remixedData || []);
       }
       setIsLoading(false);
     };
@@ -246,7 +221,7 @@ export default function ProjectDetailPage() {
               </CardContent>
             </Card>
 
-            <FiveDProcess techniques={stageTechniques} projectId={id} remixedTechniques={remixedTechniques} />
+            <FiveDProcess techniques={stageTechniques} projectId={id} />
             
             <Separator />
             

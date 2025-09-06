@@ -98,11 +98,9 @@ export default function PortfolioPage() {
 
     const handleDone = () => {
         if (technique?.project_id) {
-            // This tells Next.js to re-fetch data on the server for the page we are about to visit.
             router.refresh();
             router.push(`/dashboard/${technique.project_id}`);
         } else {
-            // Fallback if no project_id is associated.
             router.refresh();
             router.push('/dashboard');
         }
