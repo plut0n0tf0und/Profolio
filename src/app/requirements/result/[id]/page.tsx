@@ -27,7 +27,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
-import { ChevronLeft, Wand2, Save } from 'lucide-react';
+import { ChevronLeft, Wand2, Save, Eye } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
 
@@ -42,7 +42,7 @@ const slugify = (text: string) => {
     .replace(/-+$/, '');
 };
 
-const FiveDProcess = ({ techniques }: { techniques: StageTechniques }) => {
+const FiveDProcess = ({ techniques, projectId }: { techniques: StageTechniques, projectId: string }) => {
   return (
     <Card className="w-full">
       <CardHeader>
@@ -58,17 +58,17 @@ const FiveDProcess = ({ techniques }: { techniques: StageTechniques }) => {
                 {stageTechs.length > 0 ? (
                   <div className="space-y-3 p-2">
                     {stageTechs.map(technique => (
-                      <Card key={technique}>
+                      <Card key={technique} className="bg-background/50 border-border/50 hover:border-primary/50 transition-all">
                         <CardContent className="flex items-center justify-between p-4">
-                          <Link href={`/dashboard/technique/${slugify(technique)}`} passHref>
-                            <span className="font-medium cursor-pointer hover:underline">{technique}</span>
+                           <Link href={`/dashboard/technique/${slugify(technique)}?projectId=${projectId}`} className="font-medium cursor-pointer hover:underline">
+                            {technique}
                           </Link>
-                           <Link href={`/dashboard/technique/${slugify(technique)}?edit=true`} passHref>
-                              <Button variant="default" size="sm">
-                                <Wand2 className="mr-2 h-4 w-4" />
-                                Remix
+                          <Link href={`/dashboard/technique/${slugify(technique)}?edit=true&projectId=${projectId}`} passHref>
+                              <Button variant="outline" size="sm">
+                                  <Wand2 className="mr-2 h-4 w-4" />
+                                  Remix
                               </Button>
-                           </Link>
+                          </Link>
                         </CardContent>
                       </Card>
                     ))}
@@ -209,8 +209,14 @@ export default function ResultPage() {
           Project Result
         </h1>
 
-        <div className="flex items-center justify-end" style={{ minWidth: '80px' }}>
-          <Button variant="outline" size="sm" onClick={handleSaveResult} disabled={isLoading}>
+        <div className="flex items-center justify-end gap-2" style={{ minWidth: '80px' }}>
+          <Link href="/dashboard/full-portfolio" passHref>
+            <Button variant="outline" size="sm" disabled={isLoading}>
+                <Eye className="mr-2 h-4 w-4" />
+                View Full Portfolio
+            </Button>
+          </Link>
+          <Button variant="default" size="sm" onClick={handleSaveResult} disabled={isLoading}>
             <Save className="mr-2 h-4 w-4" />
             Save
           </Button>
@@ -259,7 +265,7 @@ export default function ResultPage() {
           {isLoading ? (
             <RequirementDetailSkeleton />
           ) : (
-            <FiveDProcess techniques={stageTechniques} />
+            <FiveDProcess techniques={stageTechniques} projectId={id} />
           )}
         </div>
       </main>
