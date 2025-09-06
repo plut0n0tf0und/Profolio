@@ -33,7 +33,7 @@ export default function LoginPage() {
 
 
   return (
-    <main className="flex min-h-screen w-full flex-col items-center justify-center bg-background p-4">
+    <main className="flex min-h-screen w-full flex-col items-center justify-center bg-black p-4">
       <div className="grid w-full max-w-5xl grid-cols-1 md:grid-cols-2">
         <div className="flex w-full max-w-md flex-col justify-center gap-6 p-4 sm:p-6 md:p-8">
             <div className="flex items-center gap-4">

@@ -229,6 +229,12 @@ export default function TechniqueDetailPage() {
     }
   };
 
+  const handleDiscard = () => {
+    setIsEditMode(false);
+    // Potentially reset form state here if needed, though unmounting/remounting might handle it
+    // form.reset(originalData); 
+  };
+
   const handleBackNavigation = () => {
     if (isEditMode) {
       setIsBackAlertOpen(true);
@@ -496,7 +502,7 @@ export default function TechniqueDetailPage() {
             </AlertDialogHeader>
             <AlertDialogFooter>
                 <AlertDialogCancel>Keep Editing</AlertDialogCancel>
-                <AlertDialogAction onClick={performNavigation}>
+                <AlertDialogAction onClick={handleDiscard}>
                     Discard
                 </AlertDialogAction>
             </AlertDialogFooter>

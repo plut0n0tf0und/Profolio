@@ -70,12 +70,12 @@ export default function DashboardPage() {
   }, [toast]);
 
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
+    <div className="flex min-h-screen flex-col bg-grey-900 text-foreground">
       <Sidebar isOpen={isSidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between border-b border-border bg-background px-4">
-        <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(true)}>
-          <UserCircle className="h-6 w-6" />
+        <Button variant="ghost" size="icon" className="h-10 w-10" onClick={() => setSidebarOpen(true)}>
+          <UserCircle className="h-14 w-14" />
         </Button>
         <h1 className="text-xl font-bold">List of Projects</h1>
         <div className="flex items-center gap-2">
