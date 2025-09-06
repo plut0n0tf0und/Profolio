@@ -8,7 +8,7 @@ import { generatePortfolio, PortfolioOutput } from '@/ai/flows/generate-portfoli
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { ChevronLeft, Download, Loader2, FileText, Link as LinkIcon } from 'lucide-react';
+import { Edit, Download, Loader2, FileText, Link as LinkIcon } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -110,8 +110,8 @@ export default function PortfolioPage() {
         <div className="flex min-h-screen flex-col bg-background text-foreground">
             <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between border-b border-border bg-background px-4">
                 <Button variant="ghost" size="sm" onClick={handleBackToEditor} className="flex items-center gap-2">
-                    <ChevronLeft className="h-5 w-5" />
-                    <span className="hidden md:inline">Back to Editor</span>
+                    <Edit className="h-5 w-5" />
+                    <span className="hidden md:inline">Edit</span>
                 </Button>
                 <h1 className="text-xl font-bold text-center flex-1 truncate">
                     Portfolio Preview
@@ -234,3 +234,5 @@ export default function PortfolioPage() {
 
     
 
+
+}
