@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft, Loader2, FileText, Download } from 'lucide-react';
+import { ChevronLeft, Loader2, FileText, FileUp } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
@@ -99,7 +99,7 @@ export default function FullPortfolioPage() {
         <h1 className="text-xl font-bold text-center flex-1 truncate">Full Portfolio</h1>
         <div className="w-auto flex justify-end gap-2">
             <Button onClick={handleExport} variant="outline" disabled={isLoading}>
-                <Download className="mr-2 h-4 w-4" />
+                <FileUp className="mr-2 h-4 w-4" />
                 Export
             </Button>
         </div>
