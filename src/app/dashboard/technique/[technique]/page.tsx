@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ChevronLeft, Check, Clipboard, ExternalLink, Wand2, PlusCircle, Trash2, Eye, Loader2 } from 'lucide-react';
+import { ChevronLeft, Check, Clipboard, ExternalLink, Wand2, PlusCircle, Trash2, Eye, Loader2, Save } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -263,7 +263,7 @@ export default function TechniqueDetailPage() {
     if (!remixedTechniqueId) {
         // If it was a new remix, reset to default, otherwise we keep the saved data
         // This is handled by the useEffect re-triggering fetchDefaultDetails
-        router.replace(`/dashboard/technique/${techniqueSlug}`);
+        router.replace(`/dashboard/technique/${techniqueSlug}${fromProjectId ? `?projectId=${fromProjectId}`: ''}`);
     }
   };
 
@@ -275,52 +275,43 @@ export default function TechniqueDetailPage() {
     }
   };
 
-  const handlePreview = () => {
-      if (!remixedTechniqueId) {
-          toast({
-              title: 'Please Save Your Work',
-              description: 'You must save your changes before you can preview the portfolio.',
-              variant: 'destructive'
-          });
-          return;
-      }
-      router.push(`/dashboard/portfolio/${remixedTechniqueId}`);
-  };
-
   const allStepsText = useMemo(() => {
     if (!details?.executionSteps) return '';
     return details.executionSteps.map(s => `${s.step}. ${s.title}: ${s.description}`).join('\n');
   }, [details]);
   
-  const onSave = (data: TechniqueRemixData) => {
+  const onSaveAndPreview = (data: TechniqueRemixData) => {
     startSaveTransition(async () => {
-        const payload = {
-            ...data,
-            id: remixedTechniqueId ?? undefined,
-        };
+      const payload = {
+        ...data,
+        id: remixedTechniqueId ?? undefined,
+      };
 
       const { data: savedData, error } = await saveOrUpdateRemixedTechnique(payload);
-      
-      if (error) {
+
+      if (error || !savedData?.id) {
         toast({
           title: 'Save Failed',
-          description: error.message || 'Could not save the remixed technique. Please try again.',
+          description: error?.message || 'Could not save the remixed technique. Please try again.',
           variant: 'destructive',
         });
       } else {
         toast({
           title: 'Changes Saved!',
-          description: 'Your remixed technique has been saved.'
+          description: 'Taking you to the preview...',
         });
-        if (savedData?.id && !remixedTechniqueId) {
-            setRemixedTechniqueId(savedData.id);
-            // Update URL without reloading page to include the new ID
-            router.replace(`${window.location.pathname}?edit=true&remixId=${savedData.id}${fromProjectId ? `&projectId=${fromProjectId}`: ''}`);
+        
+        // Update URL to ensure back navigation works correctly from preview
+        const newUrl = `${window.location.pathname}?edit=true&remixId=${savedData.id}${fromProjectId ? `&projectId=${fromProjectId}`: ''}`;
+        if (window.location.href !== newUrl) {
+            router.replace(newUrl);
         }
-        form.reset(data); // to reset dirty state
+        
+        form.reset(data); // Reset dirty state
+        router.push(`/dashboard/portfolio/${savedData.id}`);
       }
     });
-  }
+  };
 
   // Read-only view
   const renderReadOnlyView = () => (
@@ -423,7 +414,7 @@ export default function TechniqueDetailPage() {
   // Editable Form view
   const renderEditView = () => (
     <FormProvider {...form}>
-    <form onSubmit={form.handleSubmit(onSave)} className="space-y-8">
+    <form onSubmit={form.handleSubmit(onSaveAndPreview)} className="space-y-8">
       {/* Meta Information Section */}
       <Card>
         <CardHeader>
@@ -545,7 +536,7 @@ export default function TechniqueDetailPage() {
       
       <div className="flex justify-end gap-4">
         <Button type="submit" disabled={isSaving}>
-            {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save Changes'}
+            {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save & Preview'}
         </Button>
       </div>
     </form>
@@ -582,13 +573,16 @@ export default function TechniqueDetailPage() {
         </h1>
         <div className="w-48 flex justify-end gap-2">
           {!isEditMode && (
-            <Button variant="default" size="sm" onClick={() => setIsEditMode(true)}>
+            <Button variant="default" size="sm" onClick={() => {
+                const url = new URL(window.location.href);
+                url.searchParams.set('edit', 'true');
+                if (remixedTechniqueId) {
+                    url.searchParams.set('remixId', remixedTechniqueId);
+                }
+                router.push(url.toString());
+                setIsEditMode(true);
+            }}>
               <Wand2 className="mr-2 h-4 w-4" /> Remix
-            </Button>
-          )}
-          {isEditMode && (
-            <Button variant="outline" size="sm" onClick={handlePreview}>
-              <Eye className="mr-2 h-4 w-4" /> Preview
             </Button>
           )}
         </div>
