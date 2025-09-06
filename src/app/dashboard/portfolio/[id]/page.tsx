@@ -117,7 +117,7 @@ export default function PortfolioPage() {
                     Portfolio Preview
                 </h1>
                 <div className="w-auto flex justify-end gap-2">
-                    <Button onClick={handleExport} variant="outline" disabled={isLoading || isGenerating}>
+                    <Button onClick={handleExport} variant="ghost" disabled={isLoading || isGenerating}>
                         <Download className="mr-2 h-4 w-4" />
                         Export
                     </Button>
