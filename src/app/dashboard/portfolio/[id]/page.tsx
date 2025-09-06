@@ -96,6 +96,16 @@ export default function PortfolioPage() {
         router.push(`/dashboard/technique/${techniqueSlug}?edit=true&remixId=${id}${projectIdQuery}`);
     };
 
+    const handleDone = () => {
+        if (technique?.project_id) {
+            router.push(`/dashboard/${technique.project_id}`);
+        } else {
+            // Fallback if no project_id is associated, though it should be.
+            router.push('/dashboard');
+        }
+    };
+
+
     return (
         <div className="flex min-h-screen flex-col bg-background text-foreground">
             <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between border-b border-border bg-background px-4">
@@ -106,10 +116,13 @@ export default function PortfolioPage() {
                 <h1 className="text-xl font-bold text-center flex-1 truncate">
                     Portfolio Preview
                 </h1>
-                <div className="w-40 flex justify-end">
-                    <Button onClick={handleExport} disabled={isLoading || isGenerating}>
+                <div className="w-auto flex justify-end gap-2">
+                    <Button onClick={handleExport} variant="outline" disabled={isLoading || isGenerating}>
                         <Download className="mr-2 h-4 w-4" />
                         Export
+                    </Button>
+                     <Button onClick={handleDone} disabled={isLoading || isGenerating}>
+                        Done
                     </Button>
                 </div>
             </header>
@@ -220,3 +233,4 @@ export default function PortfolioPage() {
     );
 
     
+

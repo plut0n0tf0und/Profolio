@@ -4,7 +4,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import { fetchSavedResultById, deleteSavedResult, Requirement } from '@/lib/supabaseClient';
+import { fetchSavedResultById, deleteSavedResult, Requirement, fetchRemixedTechniquesByProjectId, RemixedTechnique } from '@/lib/supabaseClient';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
@@ -23,10 +23,9 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
-import { ChevronLeft, Edit, Wand2, Loader2, ExternalLink } from 'lucide-react';
+import { ChevronLeft, Edit, Wand2, Loader2, CheckCircle } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
 import { Separator } from '@/components/ui/separator';
@@ -42,8 +41,13 @@ const slugify = (text: string) => {
     .replace(/-+$/, '');            // Trim - from end of text
 };
 
-const FiveDProcess = ({ techniques, projectId }: { techniques: StageTechniques, projectId: string }) => {
+const FiveDProcess = ({ techniques, projectId, remixedTechniques }: { techniques: StageTechniques, projectId: string, remixedTechniques: RemixedTechnique[] }) => {
   const router = useRouter();
+  const remixedTechniqueNames = useMemo(() => remixedTechniques.map(rt => rt.technique_name), [remixedTechniques]);
+
+  const getRemixedId = (techniqueName: string) => {
+    return remixedTechniques.find(rt => rt.technique_name === techniqueName)?.id;
+  }
 
   return (
     <Card className="w-full border-border/50 shadow-lg">
@@ -59,21 +63,33 @@ const FiveDProcess = ({ techniques, projectId }: { techniques: StageTechniques, 
               <AccordionContent>
                 {stageTechs.length > 0 ? (
                   <div className="space-y-3 p-2">
-                    {stageTechs.map(technique => (
-                      <Card key={technique} className="bg-background/50 border-border/50 hover:border-primary/50 transition-all">
-                        <CardContent className="flex items-center justify-between p-4">
-                          <Link href={`/dashboard/technique/${slugify(technique)}?projectId=${projectId}`} className="font-medium cursor-pointer hover:underline">
-                            {technique}
-                          </Link>
-                          <Link href={`/dashboard/technique/${slugify(technique)}?edit=true&projectId=${projectId}`} passHref>
-                              <Button variant="default" size="sm">
-                                  <Wand2 className="mr-2 h-4 w-4" />
-                                  Remix
-                              </Button>
-                          </Link>
-                        </CardContent>
-                      </Card>
-                    ))}
+                    {stageTechs.map(technique => {
+                      const isRemixed = remixedTechniqueNames.includes(technique);
+                      const remixedId = getRemixedId(technique);
+
+                      return (
+                        <Card key={technique} className="bg-background/50 border-border/50 hover:border-primary/50 transition-all">
+                          <CardContent className="flex items-center justify-between p-4">
+                             <Link href={`/dashboard/technique/${slugify(technique)}?projectId=${projectId}`} className="font-medium cursor-pointer hover:underline">
+                              {technique}
+                            </Link>
+                            {isRemixed && remixedId ? (
+                                <Button variant="secondary" size="sm" onClick={() => router.push(`/dashboard/portfolio/${remixedId}`)}>
+                                    <CheckCircle className="mr-2 h-4 w-4 text-green-500" />
+                                    Remixed
+                                </Button>
+                            ) : (
+                                <Link href={`/dashboard/technique/${slugify(technique)}?edit=true&projectId=${projectId}`} passHref>
+                                    <Button variant="default" size="sm">
+                                        <Wand2 className="mr-2 h-4 w-4" />
+                                        Remix
+                                    </Button>
+                                </Link>
+                            )}
+                          </CardContent>
+                        </Card>
+                      )
+                    })}
                   </div>
                 ) : (
                   <p className="p-2 text-muted-foreground">No specific techniques recommended for this stage based on your selections.</p>
@@ -112,30 +128,39 @@ export default function ProjectDetailPage() {
   const { toast } = useToast();
   const id = params.id as string;
   const [project, setProject] = useState<Requirement | null>(null);
+  const [remixedTechniques, setRemixedTechniques] = useState<RemixedTechnique[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (!id) return;
 
-    const getProjectDetails = async () => {
+    const getProjectData = async () => {
       setIsLoading(true);
-      const { data, error } = await fetchSavedResultById(id);
+      
+      const [projectResult, remixedResult] = await Promise.all([
+        fetchSavedResultById(id),
+        fetchRemixedTechniquesByProjectId(id)
+      ]);
 
-      if (error) {
+      const { data: projectData, error: projectError } = projectResult;
+      const { data: remixedData, error: remixedError } = remixedResult;
+
+      if (projectError || remixedError) {
         toast({
-            title: 'Error Fetching Project',
-            description: 'Could not retrieve project details. Please try again.',
-            className: 'px-3 py-2 text-sm border border-neutral-300 bg-neutral-50 text-neutral-900 rounded-lg shadow-md',
+            title: 'Error Fetching Project Data',
+            description: projectError?.message || remixedError?.message || 'Could not retrieve project details.',
+            variant: 'destructive',
         });
         router.push('/dashboard');
-      } else if (data) {
-        setProject(data);
+      } else if (projectData) {
+        setProject(projectData);
+        setRemixedTechniques(remixedData || []);
       }
       setIsLoading(false);
     };
 
-    getProjectDetails();
+    getProjectData();
   }, [id, router, toast]);
 
   const handleDeleteProject = async () => {
@@ -220,7 +245,7 @@ export default function ProjectDetailPage() {
               </CardContent>
             </Card>
 
-            <FiveDProcess techniques={stageTechniques} projectId={id} />
+            <FiveDProcess techniques={stageTechniques} projectId={id} remixedTechniques={remixedTechniques} />
             
             <Separator />
             

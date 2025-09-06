@@ -28,7 +28,7 @@ export type Requirement = z.infer<typeof RequirementSchema>;
 const TechniqueRemixSchema = z.object({
     id: z.string().uuid().optional(),
     user_id: z.string().uuid().optional(),
-    project_id: z.string().uuid().optional(),
+    project_id: z.string().uuid().nullable().optional(),
     created_at: z.string().optional(),
     technique_name: z.string(),
     date: z.string().optional(),
@@ -490,4 +490,22 @@ export async function fetchRemixedTechniqueById(id: string): Promise<{ data: Rem
     return { data, error };
 }
 
-    
+/**
+ * Fetches all remixed techniques associated with a specific project ID.
+ * @param projectId - The UUID of the project (saved_result).
+ * @returns A promise that resolves with an array of remixed techniques or an error.
+ */
+export async function fetchRemixedTechniquesByProjectId(projectId: string): Promise<{ data: RemixedTechnique[] | null; error: PostgrestError | null }> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+        return { data: null, error: { message: 'User not authenticated', details: '', hint: '', code: '401', name: '' } };
+    }
+
+    const { data, error } = await supabase
+        .from('remixed_techniques')
+        .select('*')
+        .eq('project_id', projectId)
+        .eq('user_id', user.id);
+
+    return { data, error };
+}
