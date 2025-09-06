@@ -80,14 +80,14 @@ export async function generateFullPortfolio(input: EnrichedRemixedTechnique[]): 
 
 const prompt = ai.definePrompt({
   name: 'generateFullPortfolioPrompt',
-  input: { schema: FullPortfolioInputSchema },
+  input: { schema: z.object({ inputJsonString: z.string() }) },
   output: { schema: FullPortfolioOutputSchema },
   prompt: `You are a world-class UX portfolio writer. Your task is to transform a collection of a user's raw notes about various UX projects and techniques into a single, polished, professional portfolio document.
 
-You will receive a JSON array of 'remixed techniques'. Each technique is associated with a project. You must group these techniques by 'project_name' and generate a cohesive case study for each project.
+You will receive a JSON string representing an array of 'remixed techniques'. Each technique is associated with a project. You must group these techniques by 'project_name' and generate a cohesive case study for each project.
 
 Here is the user's data:
-{{jsonStringify input}}
+{{{inputJsonString}}}
 
 Follow these instructions carefully for each project group:
 1.  **projectName**: Use the project's name.
@@ -111,7 +111,9 @@ const generateFullPortfolioFlow = ai.defineFlow(
     outputSchema: FullPortfolioOutputSchema,
   },
   async (input) => {
-    const { output } = await prompt(input);
+    const { output } = await prompt({
+      inputJsonString: JSON.stringify(input, null, 2)
+    });
     if (!output) {
       throw new Error('Failed to generate full portfolio.');
     }
