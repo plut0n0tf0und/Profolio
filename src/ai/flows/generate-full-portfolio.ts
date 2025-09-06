@@ -39,17 +39,10 @@ const ProjectPortfolioSchema = z.object({
   }),
   whyAndProblem: z.string().describe("A concise, professionally rewritten paragraph combining the 'why' and 'problem statement' from all techniques in this project."),
   introduction: z.string().describe("A compelling summary of the project's purpose and the user's high-level involvement."),
-  approach: z.array(z.string()).describe("A bulleted list summarizing the key methods and approaches taken across all techniques."),
-  prerequisites: z.array(z.object({
-    techniqueName: z.string(),
-    items: z.array(z.string()),
-  })).describe('A list of all prerequisites, grouped by the technique they belong to. Rewrite each item into a professional, past-tense sentence.'),
-  executionSteps: z.array(z.object({
-    techniqueName: z.string(),
-    items: z.array(z.string()),
-  })).describe('A list of all execution steps, grouped by the technique they belong to. Rewrite each item into a professional, past-tense sentence.'),
+  approach: z.string().describe("A professionally written, high-level summary of the overall approach taken. This should synthesize the key activities from prerequisites and execution steps from all techniques into a narrative, not a list. Mention key methods like 'user interviews', 'sitemapping', and 'usability testing' where applicable."),
   impactOnDesign: z.string().describe("A professionally written paragraph summarizing the combined impact of all techniques on the project's final design and outcomes."),
 });
+
 
 const FullPortfolioOutputSchema = z.object({
   projects: z.array(ProjectPortfolioSchema),
@@ -95,10 +88,8 @@ Follow these instructions carefully for each project group:
 3.  **meta**: Synthesize the project-level metadata. For date and duration, try to create a reasonable aggregate. Use the most common role.
 4.  **whyAndProblem**: Combine the 'why' and 'problemStatement' from all techniques into one clear, professional paragraph.
 5.  **introduction**: Write a powerful introduction summarizing the project's purpose and your role.
-6.  **approach**: Create a bulleted list that summarizes the key methods and steps taken across all techniques. This should be a high-level summary of the approach.
-7.  **prerequisites**: For each technique in the project, list its prerequisites. Rewrite each prerequisite as a professional, past-tense sentence (e.g., "Established clear research goals to guide the process.").
-8.  **executionSteps**: For each technique in the project, list its execution steps. Rewrite each step as a professional, past-tense sentence (e.g., "Conducted interviews with five target users.").
-9.  **impactOnDesign**: Write a new, compelling paragraph that summarizes the overall impact of all the work on the final design. This is the "so what?" of the project.
+6.  **approach**: CRITICAL: Do NOT list every single prerequisite and execution step. Instead, SYNTHESIZE these steps from all techniques into a high-level, narrative paragraph describing the overall process. For example, instead of listing 10 steps for user interviews, you would say "The process began with conducting in-depth user interviews to uncover pain points, followed by affinity mapping to synthesize the findings into key themes. These insights directly informed the creation of new wireframes and a clickable prototype, which was then validated through usability testing sessions." This should be a compact, readable summary of the entire process.
+7.  **impactOnDesign**: Write a new, compelling paragraph that summarizes the overall impact of all the work on the final design. This is the "so what?" of the project.
 
 Ensure all descriptions of actions and outcomes are written in the past tense. The final output must be a single JSON object containing a list of these structured project portfolios.
 `,

@@ -110,33 +110,7 @@ export default function FullPortfolioPage() {
                         <p>{project.introduction}</p>
                     </Section>
                     <Section title="Approach">
-                        <ul className="list-disc list-outside pl-5 space-y-2">
-                            {project.approach.map((item, i) => <li key={i}>{item}</li>)}
-                        </ul>
-                    </Section>
-                    <Section title="Prerequisites">
-                        <div className="space-y-4">
-                            {project.prerequisites.map((tech, i) => (
-                                <div key={i}>
-                                    <h4 className="font-semibold text-lg">{tech.techniqueName}</h4>
-                                    <ul className="list-disc list-outside pl-5 space-y-2 mt-1">
-                                        {tech.items.map((item, j) => <li key={j}>{item}</li>)}
-                                    </ul>
-                                </div>
-                            ))}
-                        </div>
-                    </Section>
-                    <Section title="Execution Steps">
-                        <div className="space-y-4">
-                            {project.executionSteps.map((tech, i) => (
-                                <div key={i}>
-                                    <h4 className="font-semibold text-lg">{tech.techniqueName}</h4>
-                                    <ol className="list-decimal list-outside pl-5 space-y-2 mt-1">
-                                        {tech.items.map((item, j) => <li key={j}>{item}</li>)}
-                                    </ol>
-                                </div>
-                            ))}
-                        </div>
+                       <p>{project.approach}</p>
                     </Section>
                     <Section title="Impact on Design">
                         <p>{project.impactOnDesign}</p>
