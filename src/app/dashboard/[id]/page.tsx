@@ -26,7 +26,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
-import { ChevronLeft, Edit, Wand2, Loader2 } from 'lucide-react';
+import { ChevronLeft, Edit, Wand2, Loader2, Eye } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
 import { Separator } from '@/components/ui/separator';
@@ -173,7 +173,14 @@ export default function ProjectDetailPage() {
         <h1 className="text-xl font-bold text-center flex-1 truncate">
             {isLoading ? 'Loading...' : project?.project_name || 'Project Details'}
         </h1>
-        <div className="w-20" />
+        <div className="flex items-center gap-2">
+            <Link href="/dashboard/full-portfolio" passHref>
+              <Button variant="outline" size="sm" disabled={isLoading}>
+                <Eye className="mr-2 h-4 w-4" />
+                View Full Portfolio
+              </Button>
+            </Link>
+        </div>
       </header>
 
       <main className="container mx-auto max-w-4xl p-4 md:p-8">
@@ -267,3 +274,5 @@ export default function ProjectDetailPage() {
     </div>
   );
 }
+
+    
