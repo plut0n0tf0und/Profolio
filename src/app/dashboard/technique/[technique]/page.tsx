@@ -534,11 +534,6 @@ export default function TechniqueDetailPage() {
         </CardContent>
       </Card>
       
-      <div className="flex justify-end gap-4">
-        <Button type="submit" disabled={isSaving}>
-            {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save & Preview'}
-        </Button>
-      </div>
     </form>
     </FormProvider>
   );
@@ -571,8 +566,8 @@ export default function TechniqueDetailPage() {
         <h1 className="text-xl font-bold text-center flex-1 truncate px-4">
           {isEditMode ? `Remix: ${techniqueName}` : techniqueName}
         </h1>
-        <div className="w-48 flex justify-end gap-2">
-          {!isEditMode && (
+        <div className="w-auto flex justify-end gap-2" style={{minWidth: '150px'}}>
+          {!isEditMode ? (
             <Button variant="default" size="sm" onClick={() => {
                 const url = new URL(window.location.href);
                 url.searchParams.set('edit', 'true');
@@ -584,6 +579,13 @@ export default function TechniqueDetailPage() {
             }}>
               <Wand2 className="mr-2 h-4 w-4" /> Remix
             </Button>
+          ) : (
+             <Button 
+                onClick={form.handleSubmit(onSaveAndPreview)}
+                disabled={isSaving}
+              >
+                  {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save & Preview'}
+              </Button>
           )}
         </div>
       </header>
@@ -599,5 +601,3 @@ export default function TechniqueDetailPage() {
     </>
   );
 }
-
-    
