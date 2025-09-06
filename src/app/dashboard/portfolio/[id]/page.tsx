@@ -8,7 +8,7 @@ import { generatePortfolio, PortfolioOutput } from '@/ai/flows/generate-portfoli
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { ChevronLeft, Download, Loader2, FileText, Link as LinkIcon, CheckCircle2 } from 'lucide-react';
+import { ChevronLeft, Download, Loader2, FileText, Link as LinkIcon } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -157,14 +157,14 @@ export default function PortfolioPage() {
                              <Section title="Prerequisites">
                                 <ul className="list-disc list-outside pl-5 space-y-2">
                                     {portfolio.prerequisites.map((item, i) => (
-                                        <li key={i}>{item.text} {item.checked && <CheckCircle2 className="inline-block ml-2 h-4 w-4 text-green-500"/>}</li>
+                                        <li key={i}>{item}</li>
                                     ))}
                                 </ul>
                             </Section>
                             <Section title="Execution Steps">
                                 <ol className="list-decimal list-outside pl-5 space-y-2">
                                     {portfolio.executionSteps.map((item, i) => (
-                                       <li key={i}>{item.text} {item.checked && <CheckCircle2 className="inline-block ml-2 h-4 w-4 text-green-500"/>}</li>
+                                       <li key={i}>{item}</li>
                                     ))}
                                 </ol>
                             </Section>

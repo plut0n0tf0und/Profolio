@@ -42,8 +42,8 @@ const PortfolioOutputSchema = z.object({
   problemStatement: z.string().describe("The user's problem statement, rewritten to be clear, concise, and compelling for a portfolio."),
   roleAndResponsibilities: z.array(z.string()).describe("A bulleted list of the user's role and key responsibilities in this project. Infer this from the user's provided role and the tasks they performed."),
   impactOnDesign: z.string().describe("A paragraph summarizing the impact of this work on the final design or project outcome. Explain how the findings influenced decisions and led to improvements."),
-  prerequisites: z.array(z.object({ text: z.string(), checked: z.boolean() })).describe("The list of prerequisites, copied from the input."),
-  executionSteps: z.array(z.object({ text: z.string(), checked: z.boolean() })).describe("The list of execution steps, copied from the input."),
+  prerequisites: z.array(z.string()).describe("A bulleted list describing the prerequisites that were completed. Rewrite the user's input into professional, past-tense sentences."),
+  executionSteps: z.array(z.string()).describe("A bulleted list describing the execution steps that were taken. Rewrite the user's input into professional, past-tense sentences."),
 });
 export type PortfolioOutput = z.infer<typeof PortfolioOutputSchema>;
 
@@ -93,7 +93,8 @@ Based on this, generate the complete JSON output. Follow these instructions care
 6.  **problemStatement**: Rewrite the user's problem statement to be sharp and clear for an external audience.
 7.  **roleAndResponsibilities**: Based on the user's 'role' and the tasks implied by the execution steps, create a bulleted list of 3-4 key responsibilities, described in the past tense (e.g., "Led user research...", "Analyzed findings...").
 8.  **impactOnDesign**: Write a new paragraph describing the impact of this technique's findings on the project's design. This is the "so what?" of the story. Use past tense to describe how findings influenced the design.
-9.  **prerequisites & executionSteps**: Copy these directly from the input. Do not change them.
+9.  **prerequisites**: Rewrite the user's checklist items into a professional, bulleted list. Each item should be a past-tense sentence describing what was prepared (e.g., "Established clear research goals to guide the process.").
+10. **executionSteps**: Rewrite the user's checklist items into a professional, bulleted list. Each item should be a past-tense sentence describing what action was performed (e.g., "Conducted interviews with five target users to gather qualitative insights.").
 `,
 });
 
@@ -108,6 +109,9 @@ const generatePortfolioFlow = ai.defineFlow(
     if (!output) {
       throw new Error('Failed to generate portfolio details.');
     }
+    // The schema for prereqs/steps in the output is different from the input.
+    // We can't just copy them over. The AI is responsible for rewriting them.
+    // This is a placeholder for the AI-generated content.
     return output;
   }
 );
