@@ -8,7 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { toPng } from 'html-to-image-fix';
 import { getTechniqueDetails, TechniqueDetailsOutput } from '@/ai/flows/get-technique-details';
-import { saveOrUpdateRemixedTechnique, fetchRemixedTechniqueById, insertRequirement } from '@/lib/supabaseClient';
+import { saveOrUpdateRemixedTechnique, fetchRemixedTechniqueById, saveOrUpdateResult } from '@/lib/supabaseClient';
 import allTechniqueDetails from '@/data/uxTechniqueDetails.json';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -22,6 +22,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { generateUUID } from '@/lib/utils';
 
 
 const unslugify = (slug: string) => {
@@ -206,13 +207,7 @@ export default function TechniqueDetailPage() {
     async function fetchDefaultDetails() {
       setIsLoading(true);
       try {
-        // Use local JSON instead of AI call for reliability and speed
-        const localDetails = allTechniqueDetails.find(t => t.name.toLowerCase() === techniqueName.toLowerCase());
-        
-        // As a fallback, call the AI if local details are not found
-        const result = localDetails 
-            ? (localDetails as unknown as TechniqueDetailsOutput) 
-            : await getTechniqueDetails({ techniqueName });
+        const result = allTechniqueDetails.find(t => t.name.toLowerCase() === techniqueName.toLowerCase()) as unknown as TechniqueDetailsOutput | undefined;
 
         if (!result) {
             throw new Error("Technique details not found.");
@@ -320,14 +315,18 @@ export default function TechniqueDetailPage() {
     startSaveTransition(async () => {
       let currentProjectId = data.project_id;
   
-      // If there's no project_id, create a new project first.
       if (!currentProjectId) {
         toast({ title: 'Creating Project...', description: 'A new project is being created for this technique.' });
-        const { data: newProject, error: projectError } = await insertRequirement({
+        
+        // This is a temporary ID for the `requirements` table, but our foreign key points to `saved_results`.
+        // We'll use this to create a record in `saved_results`.
+        const tempRequirementId = generateUUID();
+
+        const { data: newProject, error: projectError } = await saveOrUpdateResult(tempRequirementId, {
           project_name: `Standalone - ${data.technique_name || 'Technique'}`,
           role: data.role || 'N/A',
           problem_statement: data.problemStatement || 'N/A',
-          date: new Date(),
+          date: new Date().toISOString(),
           output_type: ['Presentation'],
           outcome: ['Insight'],
           device_type: ['Desktop'],
