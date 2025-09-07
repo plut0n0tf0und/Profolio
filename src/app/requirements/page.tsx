@@ -259,11 +259,11 @@ function RequirementsPageContent() {
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center border-b border-border bg-background px-4">
         <AlertDialog>
-          <AlertDialogTrigger asChild>
+          <AlertDialogTitle asChild>
             <Button variant="ghost" size="icon" className="shrink-0">
               <ChevronLeft className="h-6 w-6" />
             </Button>
-          </AlertDialogTrigger>
+          </AlertDialogTitle>
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Are you sure you want to leave?</AlertDialogTitle>
