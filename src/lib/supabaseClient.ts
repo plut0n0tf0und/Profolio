@@ -2,6 +2,7 @@
 import { createBrowserClient } from '@supabase/ssr';
 import type { PostgrestError, User } from '@supabase/supabase-js';
 import * as z from 'zod';
+import { generateUUID } from './utils';
 
 // Zod schema for validation, matches the form schema
 const RequirementSchema = z.object({
@@ -300,12 +301,6 @@ export async function saveOrUpdateResult(
         requirement_id: requirementId,
       };
 
-    // This field is not part of the database schema and should not be saved.
-    if ('stage_techniques' in dataToSave) {
-        delete (dataToSave as any).stage_techniques;
-    }
-
-
     let responseData, responseError;
 
     if (existingResult) {
@@ -451,8 +446,9 @@ export async function deleteSavedResult(id: string): Promise<{ error: PostgrestE
 }
 
 /**
- * Saves or updates a remixed technique.
- * @param techniqueData - The data for the remixed technique. Must include a valid project_id.
+ * Saves or updates a remixed technique. If no project_id is provided,
+ * it creates a placeholder project in 'saved_results' first.
+ * @param techniqueData - The data for the remixed technique.
  * @returns The saved or updated technique data.
  */
 export async function saveOrUpdateRemixedTechnique(
@@ -464,19 +460,48 @@ export async function saveOrUpdateRemixedTechnique(
       return { data: null, error: { message: 'User not authenticated', code: '401' } };
     }
 
-    if (!techniqueData.project_id) {
-      return { data: null, error: { message: 'A valid project_id is required to save a technique.', code: '400' } };
+    let currentProjectId = techniqueData.project_id;
+
+    // If no project_id, create a placeholder project first
+    if (!currentProjectId) {
+      const placeholderProject = {
+        user_id: user.id,
+        requirement_id: generateUUID(), // A new UUID for the link
+        project_name: `Standalone - ${techniqueData.technique_name || 'Technique'}`,
+        role: techniqueData.role || 'N/A',
+        problem_statement: techniqueData.problemStatement || 'N/A',
+        date: new Date().toISOString(),
+        output_type: ['Presentation'],
+        outcome: ['Insight'],
+        device_type: ['Desktop'],
+        project_type: 'new',
+      };
+
+      const { data: newProject, error: projectError } = await supabase
+        .from('saved_results')
+        .insert(placeholderProject)
+        .select('id')
+        .single();
+      
+      if (projectError || !newProject?.id) {
+        console.error('Error creating placeholder project:', projectError);
+        return { data: null, error: projectError || new Error('Could not create placeholder project.') };
+      }
+      
+      currentProjectId = newProject.id;
     }
 
-    const dataToSave = { ...techniqueData, user_id: user.id };
-    delete dataToSave.id;
+    // Now, save the technique with a valid project_id
+    const dataToSave = { ...techniqueData, user_id: user.id, project_id: currentProjectId };
+    const existingId = dataToSave.id;
+    delete dataToSave.id; // Don't send the ID in the update/insert payload itself
 
-    if (techniqueData.id) {
+    if (existingId) {
       // Update existing record
       const { data, error } = await supabase
         .from('remixed_techniques')
         .update(dataToSave)
-        .eq('id', techniqueData.id)
+        .eq('id', existingId)
         .eq('user_id', user.id)
         .select()
         .single();

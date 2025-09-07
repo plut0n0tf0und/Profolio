@@ -7,8 +7,7 @@ import { useForm, useFieldArray, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { toPng } from 'html-to-image-fix';
-import { getTechniqueDetails, TechniqueDetailsOutput } from '@/ai/flows/get-technique-details';
-import { saveOrUpdateRemixedTechnique, fetchRemixedTechniqueById, saveOrUpdateResult } from '@/lib/supabaseClient';
+import { saveOrUpdateRemixedTechnique, fetchRemixedTechniqueById } from '@/lib/supabaseClient';
 import allTechniqueDetails from '@/data/uxTechniqueDetails.json';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -22,7 +21,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { generateUUID } from '@/lib/utils';
+import type { TechniqueDetailsOutput } from '@/ai/flows/get-technique-details';
 
 
 const unslugify = (slug: string) => {
@@ -204,7 +203,7 @@ export default function TechniqueDetailPage() {
         setIsLoading(false);
     }
 
-    async function fetchDefaultDetails() {
+    function fetchDefaultDetails() {
       setIsLoading(true);
       try {
         const result = allTechniqueDetails.find(t => t.name.toLowerCase() === techniqueName.toLowerCase()) as unknown as TechniqueDetailsOutput | undefined;
@@ -313,42 +312,9 @@ export default function TechniqueDetailPage() {
   
   const onSaveAndPreview = (data: TechniqueRemixData) => {
     startSaveTransition(async () => {
-      let currentProjectId = data.project_id;
-  
-      if (!currentProjectId) {
-        toast({ title: 'Creating Project...', description: 'A new project is being created for this technique.' });
-        
-        // This is a temporary ID for the `requirements` table, but our foreign key points to `saved_results`.
-        // We'll use this to create a record in `saved_results`.
-        const tempRequirementId = generateUUID();
-
-        const { data: newProject, error: projectError } = await saveOrUpdateResult(tempRequirementId, {
-          project_name: `Standalone - ${data.technique_name || 'Technique'}`,
-          role: data.role || 'N/A',
-          problem_statement: data.problemStatement || 'N/A',
-          date: new Date().toISOString(),
-          output_type: ['Presentation'],
-          outcome: ['Insight'],
-          device_type: ['Desktop'],
-          project_type: 'new'
-        });
-        
-        if (projectError || !newProject?.id) {
-          toast({
-            title: 'Save Failed',
-            description: projectError?.message || 'Could not create a new project for this technique.',
-            variant: 'destructive',
-          });
-          return;
-        }
-        currentProjectId = newProject.id;
-        form.setValue('project_id', currentProjectId, { shouldDirty: true });
-      }
-  
       const payload = {
         ...data,
         id: remixedTechniqueId ?? undefined,
-        project_id: currentProjectId,
       };
   
       const { data: savedData, error } = await saveOrUpdateRemixedTechnique(payload);
@@ -367,6 +333,7 @@ export default function TechniqueDetailPage() {
   
         setRemixedTechniqueId(savedData.id);
   
+        // Ensure the URL reflects the state of the saved data (remixId and projectId)
         const newUrl = `${window.location.pathname}?edit=true&remixId=${savedData.id}${savedData.project_id ? `&projectId=${savedData.project_id}`: ''}`;
         if (window.location.href !== newUrl) {
             router.replace(newUrl);
