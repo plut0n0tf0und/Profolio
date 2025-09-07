@@ -506,11 +506,11 @@ export async function saveOrUpdateRemixedTechnique(
 
     let currentProjectId = techniqueData.project_id;
 
-    // If no project_id, create a placeholder project first
+    // If no project_id is provided, create a placeholder project first.
     if (!currentProjectId) {
       const placeholderProject = {
         user_id: user.id,
-        requirement_id: generateUUID(), // A new UUID for the link
+        requirement_id: generateUUID(), // A temporary UUID since there's no real requirement
         project_name: `Standalone - ${techniqueData.technique_name || 'Technique'}`,
         role: techniqueData.role || 'N/A',
         problem_statement: techniqueData.problemStatement || 'N/A',
@@ -526,22 +526,21 @@ export async function saveOrUpdateRemixedTechnique(
         .insert(placeholderProject)
         .select('id')
         .single();
-      
+
       if (projectError || !newProject?.id) {
-        console.error('Error creating placeholder project:', projectError);
+        console.error('Failed to create placeholder project:', projectError);
         return { data: null, error: projectError || new Error('Could not create placeholder project.') };
       }
-      
+
       currentProjectId = newProject.id;
     }
 
-    // Now, save the technique with a valid project_id
     const dataToSave = { ...techniqueData, user_id: user.id, project_id: currentProjectId };
     const existingId = dataToSave.id;
-    delete dataToSave.id; // Don't send the ID in the update/insert payload itself
+    delete dataToSave.id;
 
     if (existingId) {
-      // Update existing record
+      // Update existing technique
       const { data, error } = await supabase
         .from('remixed_techniques')
         .update(dataToSave)
@@ -551,7 +550,7 @@ export async function saveOrUpdateRemixedTechnique(
         .single();
       return { data, error };
     } else {
-      // Insert new record
+      // Insert new technique
       const { data, error } = await supabase
         .from('remixed_techniques')
         .insert(dataToSave)
@@ -564,6 +563,7 @@ export async function saveOrUpdateRemixedTechnique(
     return { data: null, error };
   }
 }
+
 
 /**
  * Fetches a single remixed technique by its ID.
