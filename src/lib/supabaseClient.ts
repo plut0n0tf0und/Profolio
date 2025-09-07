@@ -166,6 +166,11 @@ export async function insertRequirement(
   const requirementToInsert = {
     ...requirement,
     user_id: user.id,
+    // Provide default empty arrays for checkbox fields to avoid null issues
+    output_type: requirement.output_type || [],
+    outcome: requirement.outcome || [],
+    device_type: requirement.device_type || [],
+    stage_techniques: requirement.stage_techniques || {},
   };
   
   const { data, error } = await supabase
@@ -444,9 +449,8 @@ export async function deleteSavedResult(id: string): Promise<{ error: PostgrestE
 }
 
 /**
- * Saves or updates a remixed technique. If no project_id is provided,
- * it creates a new project in `saved_results` first.
- * @param techniqueData - The data for the remixed technique.
+ * Saves or updates a remixed technique.
+ * @param techniqueData - The data for the remixed technique. Must include a valid project_id.
  * @returns The saved or updated technique data.
  */
 export async function saveOrUpdateRemixedTechnique(
@@ -458,37 +462,12 @@ export async function saveOrUpdateRemixedTechnique(
       return { data: null, error: { message: 'User not authenticated', code: '401' } };
     }
 
-    let projectId = techniqueData.project_id;
-
-    // If there's no project_id, create a new project first.
-    if (!projectId) {
-      const { data: newProject, error: projectError } = await supabase
-        .from('saved_results')
-        .insert({
-          user_id: user.id,
-          project_name: `Standalone - ${techniqueData.technique_name || 'Technique'}`,
-          role: techniqueData.role || 'N/A',
-          problem_statement: techniqueData.problemStatement || 'N/A',
-          date: new Date().toISOString(),
-          // Add default empty arrays to avoid null issues
-          output_type: [],
-          outcome: [],
-          device_type: [],
-          stage_techniques: {},
-        })
-        .select('id')
-        .single();
-      
-      if (projectError) {
-        console.error("Error creating standalone project:", projectError);
-        throw projectError;
-      }
-      
-      projectId = newProject.id;
+    if (!techniqueData.project_id) {
+      return { data: null, error: { message: 'A valid project_id is required to save a technique.', code: '400' } };
     }
 
-    const dataToSave = { ...techniqueData, user_id: user.id, project_id: projectId };
-    delete dataToSave.id; // Don't include id in the payload for insert/update body
+    const dataToSave = { ...techniqueData, user_id: user.id };
+    delete dataToSave.id;
 
     if (techniqueData.id) {
       // Update existing record

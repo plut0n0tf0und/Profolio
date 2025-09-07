@@ -8,7 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { toPng } from 'html-to-image-fix';
 import { getTechniqueDetails, TechniqueDetailsOutput } from '@/ai/flows/get-technique-details';
-import { saveOrUpdateRemixedTechnique, fetchRemixedTechniqueById } from '@/lib/supabaseClient';
+import { saveOrUpdateRemixedTechnique, fetchRemixedTechniqueById, insertRequirement } from '@/lib/supabaseClient';
 import allTechniqueDetails from '@/data/uxTechniqueDetails.json';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -307,13 +307,38 @@ export default function TechniqueDetailPage() {
   
   const onSaveAndPreview = (data: TechniqueRemixData) => {
     startSaveTransition(async () => {
+      let currentProjectId = data.project_id;
+  
+      // If there's no project_id, create a new project first.
+      if (!currentProjectId) {
+        const { data: newProject, error: projectError } = await insertRequirement({
+          project_name: `Standalone - ${data.technique_name || 'Technique'}`,
+          role: data.role || 'N/A',
+          problem_statement: data.problemStatement || 'N/A',
+          date: new Date(),
+        });
+        
+        if (projectError || !newProject?.id) {
+          toast({
+            title: 'Save Failed',
+            description: projectError?.message || 'Could not create a new project for this technique.',
+            variant: 'destructive',
+          });
+          return;
+        }
+        currentProjectId = newProject.id;
+        // Update the form state immediately with the new project ID
+        form.setValue('project_id', currentProjectId, { shouldDirty: true });
+      }
+  
       const payload = {
         ...data,
         id: remixedTechniqueId ?? undefined,
+        project_id: currentProjectId, // Use the now-guaranteed project ID
       };
-
+  
       const { data: savedData, error } = await saveOrUpdateRemixedTechnique(payload);
-
+  
       if (error || !savedData?.id) {
         toast({
           title: 'Save Failed',
@@ -325,13 +350,10 @@ export default function TechniqueDetailPage() {
           title: 'Changes Saved!',
           description: 'Taking you to the preview...',
         });
-        
+  
         // Update state with new IDs if they were created
         setRemixedTechniqueId(savedData.id);
-        if (savedData.project_id) {
-            form.setValue('project_id', savedData.project_id, { shouldDirty: true });
-        }
-
+  
         // Update URL to ensure back navigation works correctly from preview
         const newUrl = `${window.location.pathname}?edit=true&remixId=${savedData.id}${savedData.project_id ? `&projectId=${savedData.project_id}`: ''}`;
         if (window.location.href !== newUrl) {
