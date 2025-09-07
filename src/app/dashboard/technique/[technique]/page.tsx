@@ -206,14 +206,25 @@ export default function TechniqueDetailPage() {
     async function fetchDefaultDetails() {
       setIsLoading(true);
       try {
-        const result = await getTechniqueDetails({ techniqueName });
+        // Use local JSON instead of AI call for reliability and speed
+        const localDetails = allTechniqueDetails.find(t => t.name.toLowerCase() === techniqueName.toLowerCase());
+        
+        // As a fallback, call the AI if local details are not found
+        const result = localDetails 
+            ? (localDetails as unknown as TechniqueDetailsOutput) 
+            : await getTechniqueDetails({ techniqueName });
+
+        if (!result) {
+            throw new Error("Technique details not found.");
+        }
+
         setDetails(result);
         form.reset({
             technique_name: techniqueName,
             project_id: fromProjectId,
-            overview: result.overview,
-            prerequisites: result.prerequisites.map((p, i) => ({ id: `prereq-${i}`, text: p, checked: false })),
-            executionSteps: result.executionSteps.map(s => ({ id: `step-${s.step}`, text: `${s.title}: ${s.description}`, checked: false })),
+            overview: result.overview || '',
+            prerequisites: (result.prerequisites || []).map((p, i) => ({ id: `prereq-${i}`, text: p, checked: false })),
+            executionSteps: (result.executionSteps || []).map(s => ({ id: `step-${s.step}`, text: `${s.title}: ${s.description}`, checked: false })),
             date: '',
             duration: '',
             teamSize: '',
@@ -311,12 +322,12 @@ export default function TechniqueDetailPage() {
   
       // If there's no project_id, create a new project first.
       if (!currentProjectId) {
+        toast({ title: 'Creating Project...', description: 'A new project is being created for this technique.' });
         const { data: newProject, error: projectError } = await insertRequirement({
           project_name: `Standalone - ${data.technique_name || 'Technique'}`,
           role: data.role || 'N/A',
           problem_statement: data.problemStatement || 'N/A',
           date: new Date(),
-          // Add default values for required fields to avoid validation errors
           output_type: ['Presentation'],
           outcome: ['Insight'],
           device_type: ['Desktop'],
@@ -332,14 +343,13 @@ export default function TechniqueDetailPage() {
           return;
         }
         currentProjectId = newProject.id;
-        // Update the form state immediately with the new project ID
         form.setValue('project_id', currentProjectId, { shouldDirty: true });
       }
   
       const payload = {
         ...data,
         id: remixedTechniqueId ?? undefined,
-        project_id: currentProjectId, // Use the now-guaranteed project ID
+        project_id: currentProjectId,
       };
   
       const { data: savedData, error } = await saveOrUpdateRemixedTechnique(payload);
@@ -356,16 +366,14 @@ export default function TechniqueDetailPage() {
           description: 'Taking you to the preview...',
         });
   
-        // Update state with new IDs if they were created
         setRemixedTechniqueId(savedData.id);
   
-        // Update URL to ensure back navigation works correctly from preview
         const newUrl = `${window.location.pathname}?edit=true&remixId=${savedData.id}${savedData.project_id ? `&projectId=${savedData.project_id}`: ''}`;
         if (window.location.href !== newUrl) {
             router.replace(newUrl);
         }
         
-        form.reset(savedData); // Reset dirty state with latest data
+        form.reset(savedData);
         router.push(`/dashboard/portfolio/${savedData.id}`);
       }
     });
