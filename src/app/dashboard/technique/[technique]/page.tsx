@@ -316,6 +316,11 @@ export default function TechniqueDetailPage() {
           role: data.role || 'N/A',
           problem_statement: data.problemStatement || 'N/A',
           date: new Date(),
+          // Add default values for required fields to avoid validation errors
+          output_type: ['Presentation'],
+          outcome: ['Insight'],
+          device_type: ['Desktop'],
+          project_type: 'new'
         });
         
         if (projectError || !newProject?.id) {
@@ -660,3 +665,5 @@ export default function TechniqueDetailPage() {
     </>
   );
 }
+
+    
