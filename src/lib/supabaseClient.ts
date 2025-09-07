@@ -444,7 +444,8 @@ export async function deleteSavedResult(id: string): Promise<{ error: PostgrestE
 }
 
 /**
- * Saves or updates a remixed technique.
+ * Saves or updates a remixed technique. If no project_id is provided,
+ * it creates a new project in `saved_results` first.
  * @param techniqueData - The data for the remixed technique.
  * @returns The saved or updated technique data.
  */
@@ -457,7 +458,37 @@ export async function saveOrUpdateRemixedTechnique(
       return { data: null, error: { message: 'User not authenticated', code: '401' } };
     }
 
-    const dataToSave = { ...techniqueData, user_id: user.id };
+    let projectId = techniqueData.project_id;
+
+    // If there's no project_id, create a new project first.
+    if (!projectId) {
+      const { data: newProject, error: projectError } = await supabase
+        .from('saved_results')
+        .insert({
+          user_id: user.id,
+          project_name: `Standalone - ${techniqueData.technique_name || 'Technique'}`,
+          role: techniqueData.role || 'N/A',
+          problem_statement: techniqueData.problemStatement || 'N/A',
+          date: new Date().toISOString(),
+          // Add default empty arrays to avoid null issues
+          output_type: [],
+          outcome: [],
+          device_type: [],
+          stage_techniques: {},
+        })
+        .select('id')
+        .single();
+      
+      if (projectError) {
+        console.error("Error creating standalone project:", projectError);
+        throw projectError;
+      }
+      
+      projectId = newProject.id;
+    }
+
+    const dataToSave = { ...techniqueData, user_id: user.id, project_id: projectId };
+    delete dataToSave.id; // Don't include id in the payload for insert/update body
 
     if (techniqueData.id) {
       // Update existing record

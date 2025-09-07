@@ -46,7 +46,7 @@ const SectionCard = ({ title, children, action, noPadding }: { title: string, ch
 
 const techniqueRemixSchema = z.object({
   technique_name: z.string(),
-  project_id: z.string().nullable(),
+  project_id: z.string().uuid().nullable(),
   date: z.string(),
   duration: z.string(),
   teamSize: z.string(),
@@ -326,13 +326,19 @@ export default function TechniqueDetailPage() {
           description: 'Taking you to the preview...',
         });
         
+        // Update state with new IDs if they were created
+        setRemixedTechniqueId(savedData.id);
+        if (savedData.project_id) {
+            form.setValue('project_id', savedData.project_id, { shouldDirty: true });
+        }
+
         // Update URL to ensure back navigation works correctly from preview
-        const newUrl = `${window.location.pathname}?edit=true&remixId=${savedData.id}${fromProjectId ? `&projectId=${fromProjectId}`: ''}`;
+        const newUrl = `${window.location.pathname}?edit=true&remixId=${savedData.id}${savedData.project_id ? `&projectId=${savedData.project_id}`: ''}`;
         if (window.location.href !== newUrl) {
             router.replace(newUrl);
         }
         
-        form.reset(data); // Reset dirty state
+        form.reset(savedData); // Reset dirty state with latest data
         router.push(`/dashboard/portfolio/${savedData.id}`);
       }
     });
