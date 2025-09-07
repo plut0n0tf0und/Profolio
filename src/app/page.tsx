@@ -4,36 +4,16 @@
 import { AuthForm } from '@/components/auth-form';
 import { AnimatedGrid } from '@/components/animated-grid';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
-import { useEffect } from 'react';
-import { useToast } from '@/hooks/use-toast';
+import { Suspense } from 'react';
 import { Logo } from '@/components/logo';
+import { LoginErrorHandler } from '@/components/login-error-handler';
 
-export default function LoginPage() {
-  const searchParams = useSearchParams();
-  const { toast } = useToast();
-  const error = searchParams.get('error');
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const error = params.get('error');
-    if (error) {
-      toast({
-        title: 'Login Failed',
-        description: decodeURIComponent(error),
-        className: 'px-3 py-2 text-sm border border-neutral-300 bg-neutral-50 text-neutral-900 rounded-lg shadow-md',
-      });
-
-      // Clean the URL so the toast won’t repeat on refresh
-      const url = new URL(window.location.href);
-      url.searchParams.delete('error');
-      window.history.replaceState({}, '', url.toString());
-    }
-  }, [toast]);
-
-
+function LoginPageContent() {
   return (
     <main className="flex min-h-screen w-full flex-col items-center justify-center bg-black p-4">
+      <Suspense>
+        <LoginErrorHandler />
+      </Suspense>
       <div className="grid w-full max-w-5xl grid-cols-1 md:grid-cols-2">
         <div className="flex w-full max-w-md flex-col justify-center gap-6 p-4 sm:p-6 md:p-8">
             <div className="flex items-center gap-4">
@@ -63,5 +43,13 @@ export default function LoginPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense>
+      <LoginPageContent />
+    </Suspense>
   );
 }

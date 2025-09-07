@@ -4,30 +4,16 @@
 import { AuthForm } from '@/components/auth-form';
 import { AnimatedGrid } from '@/components/animated-grid';
 import Link from 'next/link';
-import { useSearchParams, useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-import { useToast } from '@/hooks/use-toast';
+import { Suspense } from 'react';
 import { Logo } from '@/components/logo';
+import { SignupErrorHandler } from '@/components/signup-error-handler';
 
-export default function SignupPage() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const { toast } = useToast();
-
-  useEffect(() => {
-    const error = searchParams.get('error');
-    if (error) {
-      toast({
-        title: 'Sign Up Failed',
-        description: decodeURIComponent(error),
-        className: 'px-3 py-2 text-sm border border-neutral-300 bg-neutral-50 text-neutral-900 rounded-lg shadow-md',
-      });
-      router.replace('/signup'); // clean up ?error= from URL
-    }
-  }, [searchParams, router, toast]);
-
+function SignupPageContent() {
   return (
     <main className="flex min-h-screen w-full flex-col items-center justify-center bg-black p-4">
+       <Suspense>
+        <SignupErrorHandler />
+      </Suspense>
       <div className="grid w-full max-w-5xl grid-cols-1 md:grid-cols-2">
         <div className="flex w-full max-w-md flex-col justify-center gap-6 p-4 sm:p-6 md:p-8">
             <div className="flex items-center gap-4">
@@ -58,4 +44,12 @@ export default function SignupPage() {
       </div>
     </main>
   );
+}
+
+export default function SignupPage() {
+    return (
+        <Suspense>
+            <SignupPageContent />
+        </Suspense>
+    )
 }
