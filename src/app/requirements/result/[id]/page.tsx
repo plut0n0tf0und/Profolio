@@ -125,7 +125,7 @@ export default function ResultPage() {
       output_type: Array.isArray(requirement.output_type) ? requirement.output_type : [],
       outcome: Array.isArray(requirement.outcome) ? requirement.outcome : [],
       device_type: Array.isArray(requirement.device_type) ? requirement.device_type : [],
-      stage_techniques: stageTechniques || {},
+      project_type: requirement.project_type,
     };
   
     const { error } = await saveOrUpdateResult(id, resultData);
@@ -144,7 +144,7 @@ export default function ResultPage() {
       });
       router.push('/dashboard');
     }
-  }, [requirement, id, stageTechniques, toast, router]);
+  }, [requirement, id, toast, router]);
 
   useEffect(() => {
     if (!id) return;

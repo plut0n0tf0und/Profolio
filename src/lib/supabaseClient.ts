@@ -16,7 +16,6 @@ const RequirementSchema = z.object({
   outcome: z.array(z.string()).optional(),
   device_type: z.array(z.string()).optional(),
   project_type: z.enum(['new', 'old']).optional(),
-  stage_techniques: z.record(z.array(z.string())).optional(),
   requirement_id: z.string().optional(), // For saved_results table
 });
 
@@ -166,11 +165,9 @@ export async function insertRequirement(
   const requirementToInsert = {
     ...requirement,
     user_id: user.id,
-    // Provide default empty arrays for checkbox fields to avoid null issues
     output_type: requirement.output_type || [],
     outcome: requirement.outcome || [],
     device_type: requirement.device_type || [],
-    stage_techniques: requirement.stage_techniques || {},
   };
   
   const { data, error } = await supabase
@@ -296,13 +293,18 @@ export async function saveOrUpdateResult(
         console.error('Error checking for existing result:', selectError);
         throw selectError;
     }
-
-    // Prepare data for saving
+    
     const dataToSave = {
         ...resultData,
         user_id: user.id,
         requirement_id: requirementId,
       };
+
+    // This field is not part of the database schema and should not be saved.
+    if ('stage_techniques' in dataToSave) {
+        delete (dataToSave as any).stage_techniques;
+    }
+
 
     let responseData, responseError;
 

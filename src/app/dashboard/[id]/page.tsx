@@ -159,9 +159,6 @@ export default function ProjectDetailPage() {
     }
   };
 
-  const stageTechniques = useMemo(() => {
-    return project?.stage_techniques || {};
-  }, [project]);
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
@@ -228,7 +225,7 @@ export default function ProjectDetailPage() {
               </CardContent>
             </Card>
 
-            <FiveDProcess techniques={stageTechniques} projectId={id} />
+
             
             <Separator />
             
