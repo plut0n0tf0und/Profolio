@@ -94,6 +94,14 @@ export type RemixedTechnique = z.infer<typeof TechniqueRemixSchema>;
   CONSTRAINT remixed_techniques_project_id_fkey FOREIGN KEY (project_id) REFERENCES public.saved_results(id) ON DELETE SET NULL
 );
 
+-- Foreign Key Definition Clarification:
+-- The constraint `remixed_techniques_project_id_fkey` defines the relationship.
+-- It links the `project_id` column from the `remixed_techniques` table
+-- to the `id` column in the `public.saved_results` table.
+--
+-- Therefore, any value inserted into `remixed_techniques.project_id` MUST be a valid
+-- `id` that already exists in the `saved_results` table.
+
 ALTER TABLE public.remixed_techniques ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Allow users to manage their own remixed techniques"
