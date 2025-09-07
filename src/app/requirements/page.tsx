@@ -49,6 +49,7 @@ import { CalendarIcon, Loader2, ChevronLeft } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const formSchema = z.object({
   project_name: z.string().min(1, 'Project name is required.'),
@@ -102,6 +103,7 @@ function RequirementsPageContent() {
   const [activeAccordionItem, setActiveAccordionItem] = useState('item-1');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [requirementId, setRequirementId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -118,16 +120,16 @@ function RequirementsPageContent() {
 
   useEffect(() => {
     const id = searchParams.get('id');
+    setIsLoading(true);
     if (id) {
       setRequirementId(id);
       const loadRequirement = async () => {
-        setIsSubmitting(true);
         const { data, error } = await fetchRequirementById(id);
         if (error) {
           toast({
             title: 'Failed to load project',
             description: 'Could not fetch existing project details.',
-            className: 'px-3 py-2 text-sm border border-neutral-300 bg-neutral-50 text-neutral-900 rounded-lg shadow-md',
+            variant: 'destructive'
           });
         } else if (data) {
           form.reset({
@@ -142,9 +144,11 @@ function RequirementsPageContent() {
             description: 'You are now editing an existing project.',
           });
         }
-        setIsSubmitting(false);
+        setIsLoading(false);
       };
       loadRequirement();
+    } else {
+        setIsLoading(false);
     }
   }, [searchParams, form, toast]);
 
@@ -159,7 +163,7 @@ function RequirementsPageContent() {
       toast({
         title: 'Validation Error',
         description: 'Please fill in all required fields for this section.',
-        className: 'px-3 py-2 text-sm border border-neutral-300 bg-neutral-50 text-neutral-900 rounded-lg shadow-md',
+        variant: 'destructive'
       });
       setIsSubmitting(false);
       return;
@@ -187,6 +191,9 @@ function RequirementsPageContent() {
         savedData = data;
         if (savedData?.id) {
           setRequirementId(savedData.id);
+           // Update URL without navigation to persist the ID
+          const newUrl = `${window.location.pathname}?id=${savedData.id}`;
+          window.history.replaceState({ ...window.history.state, as: newUrl, url: newUrl }, '', newUrl);
         }
       }
 
@@ -199,8 +206,9 @@ function RequirementsPageContent() {
       if (currentIndex < accordionItems.length - 1) {
         setActiveAccordionItem(accordionItems[currentIndex + 1]);
       } else {
-        if (savedData?.id) {
-            router.push(`/requirements/result/${savedData.id}`);
+        const finalId = requirementId || savedData?.id;
+        if (finalId) {
+            router.push(`/requirements/result/${finalId}`);
         } else {
             throw new Error("Could not find requirement ID to show results.");
         }
@@ -209,12 +217,43 @@ function RequirementsPageContent() {
       toast({
         title: 'Uh oh! Something went wrong.',
         description: error.message || 'There was a problem saving your requirements.',
-        className: 'px-3 py-2 text-sm border border-neutral-300 bg-neutral-50 text-neutral-900 rounded-lg shadow-md',
+        variant: 'destructive'
       });
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const PageSkeleton = () => (
+    <Card className="w-full">
+        <CardHeader>
+            <Skeleton className="h-9 w-3/5" />
+            <Skeleton className="h-4 w-4/5 mt-2" />
+        </CardHeader>
+        <CardContent className="space-y-4">
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-12 w-full" />
+        </CardContent>
+    </Card>
+  );
+
+  if (isLoading) {
+    return (
+         <div className="flex min-h-screen flex-col bg-background text-foreground">
+             <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center border-b border-border bg-background px-4">
+                <Button variant="ghost" size="icon" className="shrink-0" disabled>
+                    <ChevronLeft className="h-6 w-6" />
+                </Button>
+                <h1 className="ml-2 text-xl ">Back</h1>
+            </header>
+            <main className="container mx-auto max-w-3xl flex-1 p-4 md:p-8">
+                <PageSkeleton />
+            </main>
+        </div>
+    )
+  }
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
@@ -499,12 +538,28 @@ function RequirementsPageContent() {
   );
 }
 
+const PageSkeleton = () => (
+    <main className="container mx-auto max-w-3xl flex-1 p-4 md:p-8">
+        <Card className="w-full">
+            <CardHeader>
+                <Skeleton className="h-9 w-3/5" />
+                <Skeleton className="h-4 w-4/5 mt-2" />
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+            </CardContent>
+        </Card>
+    </main>
+);
+
+
 export default function RequirementsPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<PageSkeleton />}>
       <RequirementsPageContent />
     </Suspense>
   )
 }
-
-    
