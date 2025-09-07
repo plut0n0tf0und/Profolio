@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -44,7 +44,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { CalendarIcon, Loader2, ChevronLeft } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
@@ -96,7 +95,7 @@ const deviceTypes = ['Mobile', 'Desktop', 'Electronics', 'Kiosk'];
 
 const accordionItems = ['item-1', 'item-2', 'item-3', 'item-4', 'item-5'];
 
-export default function RequirementsPage() {
+function RequirementsPageContent() {
   const { toast } = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -499,3 +498,13 @@ export default function RequirementsPage() {
     </div>
   );
 }
+
+export default function RequirementsPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <RequirementsPageContent />
+    </Suspense>
+  )
+}
+
+    
