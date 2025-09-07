@@ -102,6 +102,42 @@ FOR ALL
 TO authenticated
 USING (auth.uid() = user_id);
 
+---
+
+REQUIRED RLS POLICY FOR `saved_results` TABLE (run this in Supabase SQL Editor):
+
+-- 1. Enable RLS on the table
+ALTER TABLE public.saved_results ENABLE ROW LEVEL SECURITY;
+
+-- 2. Allow users to SELECT (view) their own projects
+CREATE POLICY "Allow users to view their own projects"
+ON public.saved_results
+FOR SELECT
+TO authenticated
+USING (auth.uid() = user_id);
+
+-- 3. Allow users to INSERT (create) their own projects
+CREATE POLICY "Allow users to insert their own projects"
+ON public.saved_results
+FOR INSERT
+TO authenticated
+WITH CHECK (auth.uid() = user_id);
+
+-- 4. Allow users to UPDATE their own projects
+CREATE POLICY "Allow users to update their own projects"
+ON public.saved_results
+FOR UPDATE
+TO authenticated
+USING (auth.uid() = user_id);
+
+-- 5. Allow users to DELETE their own projects
+CREATE POLICY "Allow users to delete their own projects"
+ON public.saved_results
+FOR DELETE
+TO authenticated
+USING (auth.uid() = user_id);
+
+
 */
 
 
@@ -474,7 +510,7 @@ export async function saveOrUpdateRemixedTechnique(
         output_type: ['Presentation'],
         outcome: ['Insight'],
         device_type: ['Desktop'],
-        project_type: 'new',
+        project_type: 'new' as 'new' | 'old',
       };
 
       const { data: newProject, error: projectError } = await supabase
