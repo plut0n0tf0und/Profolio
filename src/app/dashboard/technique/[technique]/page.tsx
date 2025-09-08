@@ -20,7 +20,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import type { TechniqueDetailsOutput } from '@/ai/flows/get-technique-details';
 
 
@@ -351,10 +351,10 @@ export default function TechniqueDetailPage() {
               <CardTitle className="text-3xl font-bold">{techniqueName}</CardTitle>
               {staticDetails && (
               <div className="flex flex-wrap gap-2 pt-2">
-                  {staticDetails.output_types.map(t => <Badge key={t} variant="secondary">{t}</Badge>)}
-                   {staticDetails.outcomes.map(t => <Badge key={t} variant="secondary">{t}</Badge>)}
-                  {staticDetails.device_types.map(t => <Badge key={t} variant="secondary">{t}</Badge>)}
-                  {staticDetails.project_types.map(t => <Badge key={t} variant="secondary">{t === 'New' ? 'New Project' : 'Existing Project'}</Badge>)}
+                  {staticDetails.output_types?.map(t => <Badge key={t} variant="secondary">{t}</Badge>)}
+                   {staticDetails.outcomes?.map(t => <Badge key={t} variant="secondary">{t}</Badge>)}
+                  {staticDetails.device_types?.map(t => <Badge key={t} variant="secondary">{t}</Badge>)}
+                  {staticDetails.project_types?.map(t => <Badge key={t} variant="secondary">{t === 'New' ? 'New Project' : 'Existing Project'}</Badge>)}
               </div>
               )}
           </CardHeader>
@@ -365,7 +365,7 @@ export default function TechniqueDetailPage() {
 
       <SectionCard title="Prerequisites">
           <ul className="list-disc space-y-2 pl-5 text-muted-foreground">
-              {details?.prerequisites.map((item, index) => <li key={index}>{item}</li>)}
+              {details?.prerequisites?.map((item, index) => <li key={index}>{item}</li>)}
           </ul>
       </SectionCard>
       
@@ -376,7 +376,7 @@ export default function TechniqueDetailPage() {
         </Button>
       }>
           <div className="space-y-4">
-              {details?.executionSteps.map(step => (
+              {details?.executionSteps?.map(step => (
                   <div key={step.step} className="flex items-start gap-4">
                       <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground font-bold text-lg flex-shrink-0">
                           {step.step}
@@ -395,7 +395,7 @@ export default function TechniqueDetailPage() {
               <div>
                   <h4 className="font-semibold text-lg mb-2">Ready-to-use</h4>
                   <div className="space-y-2">
-                  {details?.resourceLinks.create.map(link => (
+                  {details?.resourceLinks?.create?.map(link => (
                       <a key={link.url} href={link.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-primary hover:underline">
                           <ExternalLink className="h-4 w-4" />
                           <span>{link.title}</span>
@@ -406,7 +406,7 @@ export default function TechniqueDetailPage() {
                <div>
                   <h4 className="font-semibold text-lg mb-2">Best Practices / Guides</h4>
                   <div className="space-y-2">
-                   {details?.resourceLinks.guides.map(link => (
+                   {details?.resourceLinks?.guides?.map(link => (
                       <a key={link.url} href={link.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-primary hover:underline">
                           <ExternalLink className="h-4 w-4" />
                           <span>{link.title}</span>
@@ -423,14 +423,14 @@ export default function TechniqueDetailPage() {
           </SectionCard>
           <SectionCard title="Best For">
                <ul className="list-disc space-y-2 pl-5 text-muted-foreground">
-                 {details?.bestFor.map((item, index) => <li key={index}>{item}</li>)}
+                 {details?.bestFor?.map((item, index) => <li key={index}>{item}</li>)}
               </ul>
           </SectionCard>
       </div>
 
       <SectionCard title="Tips for Good Surveys">
           <ul className="space-y-3">
-              {details?.tips.map((tip, index) => (
+              {details?.tips?.map((tip, index) => (
                    <li key={index} className="flex items-start gap-3">
                       <Check className="h-5 w-5 text-green-500 mt-1 flex-shrink-0" />
                       <span className="text-muted-foreground">{tip}</span>
