@@ -118,7 +118,6 @@ export default function TechniqueDetailPage() {
   const fromProjectId = searchParams.get('projectId');
   const remixedTechniqueIdFromUrl = searchParams.get('remixId');
 
-
   const [details, setDetails] = useState<TechniqueDetailsOutput | null>(null);
   const [remixedTechniqueId, setRemixedTechniqueId] = useState<string | null>(remixedTechniqueIdFromUrl);
   const [isLoading, setIsLoading] = useState(true);
@@ -193,7 +192,6 @@ export default function TechniqueDetailPage() {
     const loadPageData = async () => {
       setIsLoading(true);
 
-      // Always fetch the base details from the JSON file first.
       const baseDetails = allTechniqueDetails.find(
         (t) => t.name.toLowerCase() === techniqueName.toLowerCase()
       ) as TechniqueDetailsOutput | undefined;
@@ -204,25 +202,22 @@ export default function TechniqueDetailPage() {
         router.push('/dashboard');
         return;
       }
+      
       setDetails(baseDetails);
 
+      let remixedDataToLoad: RemixedTechnique | null = null;
       if (remixedTechniqueIdFromUrl) {
-        // If we're editing, load the saved remix data.
         const { data: remixedData, error } = await fetchRemixedTechniqueById(remixedTechniqueIdFromUrl);
-        if (error || !remixedData) {
+        if (error) {
           toast({ title: 'Error', description: 'Could not load your saved work.' });
-          // Fallback to default view if load fails
-          form.reset({
-            ...form.getValues(),
-            overview: baseDetails.overview || '',
-            prerequisites: (baseDetails.prerequisites || []).map((p, i) => ({ id: `prereq-${i}`, text: p, checked: false })),
-            executionSteps: (baseDetails.executionSteps || []).map(s => ({ id: `step-${s.step}`, text: `${s.title}: ${s.description}`, checked: false })),
-          });
         } else {
-          form.reset(remixedData as any);
+          remixedDataToLoad = remixedData;
         }
+      }
+
+      if (remixedDataToLoad) {
+        form.reset(remixedDataToLoad as any);
       } else {
-        // If it's a new remix, populate the form with default details.
         form.reset({
           technique_name: techniqueName,
           project_id: fromProjectId,
@@ -347,10 +342,10 @@ export default function TechniqueDetailPage() {
               <CardTitle className="text-3xl font-bold">{techniqueName}</CardTitle>
               {staticDetails && (
               <div className="flex flex-wrap gap-2 pt-2">
-                  {staticDetails.output_types?.map(t => <Badge key={t} variant="secondary">{t}</Badge>)}
-                   {staticDetails.outcomes?.map(t => <Badge key={t} variant="secondary">{t}</Badge>)}
-                  {staticDetails.device_types?.map(t => <Badge key={t} variant="secondary">{t}</Badge>)}
-                  {staticDetails.project_types?.map(t => <Badge key={t} variant="secondary">{t === 'New' ? 'New Project' : 'Existing Project'}</Badge>)}
+                  {(staticDetails.output_types || []).map(t => <Badge key={t} variant="secondary">{t}</Badge>)}
+                   {(staticDetails.outcomes || []).map(t => <Badge key={t} variant="secondary">{t}</Badge>)}
+                  {(staticDetails.device_types || []).map(t => <Badge key={t} variant="secondary">{t}</Badge>)}
+                  {(staticDetails.project_types || []).map(t => <Badge key={t} variant="secondary">{t === 'New' ? 'New Project' : 'Existing Project'}</Badge>)}
               </div>
               )}
           </CardHeader>
@@ -525,7 +520,7 @@ export default function TechniqueDetailPage() {
       {/* Attachments Section */}
       <Card>
         <CardHeader>
-            <CardTitle>References & Attachments</CardTitle>
+            <CardTitle>References &amp; Attachments</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
             {/* Files */}
@@ -642,7 +637,7 @@ export default function TechniqueDetailPage() {
                 onClick={form.handleSubmit(onSaveAndPreview)}
                 disabled={isSaving}
               >
-                  {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save & Preview'}
+                  {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save &amp; Preview'}
               </Button>
           )}
         </div>
@@ -659,3 +654,5 @@ export default function TechniqueDetailPage() {
     </>
   );
 }
+
+    
