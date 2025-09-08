@@ -140,6 +140,85 @@ export default function TechniqueDetailPage() {
       },
     }
   });
+  
+    // Debug log to trace state changes
+    useEffect(() => {
+        console.log('[DEBUG] details state updated:', details);
+    }, [details]);
+
+  useEffect(() => {
+    if (searchParams.get('edit') === 'true') {
+      setIsEditMode(true);
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    setIsLoading(true);
+    console.log(`[DEBUG] 1. useEffect triggered. Slug: ${techniqueSlug}`);
+    
+    if (!techniqueSlug) return;
+    
+    // --- Step 1: Find the technique in the static JSON data ---
+    const matchedTechnique = allTechniqueDetails.find(t => t.slug === techniqueSlug) as TechniqueDetailsOutput | undefined;
+    console.log(`[DEBUG] 2. Matched technique from JSON:`, matchedTechnique?.name || 'Not Found');
+    
+    if (!matchedTechnique) {
+      toast({
+        title: 'Error: Technique Not Found',
+        description: 'The requested technique could not be found. You are being redirected.',
+        variant: 'destructive',
+      });
+      router.push('/dashboard');
+      return;
+    }
+    
+    // --- Step 2: Immediately set the static details state ---
+    setDetails(matchedTechnique);
+
+    const loadRemixData = async () => {
+      // --- Step 3: Handle loading remix data or setting defaults ---
+      if (remixedTechniqueIdFromUrl) {
+        // We have a saved remix, fetch it
+        setRemixedTechniqueId(remixedTechniqueIdFromUrl);
+        const { data: remixedData, error } = await fetchRemixedTechniqueById(remixedTechniqueIdFromUrl);
+
+        if (error) {
+          console.error("Error fetching remixed technique:", error);
+          toast({ title: 'Error', description: 'Could not load your saved work.' });
+          // Fallback to default form values from matchedTechnique
+           form.reset({
+            technique_name: matchedTechnique.name,
+            project_id: fromProjectId,
+            overview: matchedTechnique.overview || '',
+            prerequisites: (matchedTechnique.prerequisites || []).map((p, i) => ({ id: `prereq-${i}`, text: p, checked: false })),
+            executionSteps: (matchedTechnique.executionSteps || []).map(s => ({ id: `step-${s.step}`, text: `${s.title}: ${s.description}`, checked: false })),
+            date: '', duration: '', teamSize: '', why: '', problemStatement: '', role: '',
+            attachments: { files: [], links: [], notes: [] },
+          });
+        } else if (remixedData) {
+          // Success: reset the form with the user's saved data
+          console.log('[DEBUG] 3a. Found saved remix data, resetting form.');
+          form.reset(remixedData as any);
+        }
+      } else {
+        // This is a new remix, set form defaults from the matched technique
+        console.log('[DEBUG] 3b. No remix ID, setting default form values from JSON.');
+        form.reset({
+          technique_name: matchedTechnique.name,
+          project_id: fromProjectId,
+          overview: matchedTechnique.overview || '',
+          prerequisites: (matchedTechnique.prerequisites || []).map((p, i) => ({ id: `prereq-${i}`, text: p, checked: false })),
+          executionSteps: (matchedTechnique.executionSteps || []).map(s => ({ id: `step-${s.step}`, text: `${s.title}: ${s.description}`, checked: false })),
+          date: '', duration: '', teamSize: '', why: '', problemStatement: '', role: '',
+          attachments: { files: [], links: [], notes: [] },
+        });
+      }
+      setIsLoading(false);
+    };
+
+    loadRemixData();
+
+  }, [techniqueSlug, remixedTechniqueIdFromUrl, fromProjectId, router, toast]);
 
   const { fields: prereqFields, append: appendPrereq, remove: removePrereq } = useFieldArray({
     control: form.control,
@@ -165,78 +244,6 @@ export default function TechniqueDetailPage() {
     control: form.control,
     name: "attachments.notes",
   });
-
-  useEffect(() => {
-    if (searchParams.get('edit') === 'true') {
-      setIsEditMode(true);
-    }
-  }, [searchParams]);
-
-  useEffect(() => {
-    const loadPageData = async () => {
-      setIsLoading(true);
-      
-      console.log(`[DEBUG] 1. Looking for technique with slug: ${techniqueSlug}`);
-      const matchedTechnique = allTechniqueDetails.find(t => t.slug === techniqueSlug) as TechniqueDetailsOutput | undefined;
-      
-      if (!matchedTechnique) {
-        toast({
-          title: 'Error: Technique Not Found',
-          description: 'The requested technique could not be found. You are being redirected.',
-          variant: 'destructive',
-        });
-        router.push('/dashboard');
-        return;
-      }
-      
-      console.log('[DEBUG] 2. Matched technique from JSON:', matchedTechnique.name);
-      setDetails(matchedTechnique);
-
-      // Now, handle loading remix data or setting defaults
-      if (remixedTechniqueIdFromUrl) {
-        setRemixedTechniqueId(remixedTechniqueIdFromUrl);
-        const { data: remixedData, error } = await fetchRemixedTechniqueById(remixedTechniqueIdFromUrl);
-        
-        if (error) {
-          console.error("Error fetching remixed technique:", error);
-          toast({ title: 'Error', description: 'Could not load your saved work.' });
-           form.reset({
-            technique_name: matchedTechnique.name,
-            project_id: fromProjectId,
-            overview: matchedTechnique.overview || '',
-            prerequisites: (matchedTechnique.prerequisites || []).map((p, i) => ({ id: `prereq-${i}`, text: p, checked: false })),
-            executionSteps: (matchedTechnique.executionSteps || []).map(s => ({ id: `step-${s.step}`, text: `${s.title}: ${s.description}`, checked: false })),
-            date: '', duration: '', teamSize: '', why: '', problemStatement: '', role: '',
-            attachments: { files: [], links: [], notes: [] },
-          });
-        } else if (remixedData) {
-          form.reset(remixedData as any);
-        }
-      } else {
-        // This is a new remix, set form defaults from the matched technique
-        form.reset({
-          technique_name: matchedTechnique.name,
-          project_id: fromProjectId,
-          overview: matchedTechnique.overview || '',
-          prerequisites: (matchedTechnique.prerequisites || []).map((p, i) => ({ id: `prereq-${i}`, text: p, checked: false })),
-          executionSteps: (matchedTechnique.executionSteps || []).map(s => ({ id: `step-${s.step}`, text: `${s.title}: ${s.description}`, checked: false })),
-          date: '', duration: '', teamSize: '', why: '', problemStatement: '', role: '',
-          attachments: { files: [], links: [], notes: [] },
-        });
-      }
-
-      setIsLoading(false);
-    };
-
-    if (techniqueSlug) {
-      loadPageData();
-    }
-  }, [techniqueSlug, remixedTechniqueIdFromUrl, fromProjectId, form, router, toast]);
-
-  useEffect(() => {
-    console.log('[DEBUG] 3. `details` state has been updated:', details ? `Set to: ${details.name}` : 'null');
-  }, [details]);
-
 
   const techniqueName = useMemo(() => details?.name || '', [details]);
 
@@ -337,9 +344,9 @@ export default function TechniqueDetailPage() {
             <CardHeader>
                 <CardTitle className="text-3xl font-bold">{details?.name || techniqueName}</CardTitle>
                 {details?.bestFor && details.bestFor.length > 0 && (
-                    <div className="flex flex-wrap gap-2 pt-2">
+                    <CardDescription className="flex flex-wrap gap-2 pt-2">
                         {details.bestFor.slice(0, 3).map(t => <Badge key={t} variant="secondary">{t}</Badge>)}
-                    </div>
+                    </CardDescription>
                 )}
             </CardHeader>
             {details?.overview && (
