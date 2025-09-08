@@ -175,55 +175,61 @@ export default function TechniqueDetailPage() {
 
   useEffect(() => {
     if (!techniqueSlug) return;
-
+  
     const loadPageData = async () => {
-        setIsLoading(true);
-
-        const baseDetails = allTechniqueDetails.find(
-            (t) => t.slug === techniqueSlug
-        ) as TechniqueDetailsOutput | undefined;
-        
-        if (!baseDetails) {
-            toast({ title: 'Error', description: 'Technique details not found.', variant: 'destructive' });
-            router.push('/dashboard');
-            return;
+      setIsLoading(true);
+  
+      const baseDetails = allTechniqueDetails.find(
+        (t) => t.slug === techniqueSlug
+      ) as TechniqueDetailsOutput | undefined;
+  
+      if (!baseDetails) {
+        toast({
+          title: 'Error',
+          description: 'Technique details not found.',
+          variant: 'destructive',
+        });
+        router.push('/dashboard');
+        return;
+      }
+      
+      // Always set the base details for rendering the read-only view
+      setDetails(baseDetails);
+      setTechniqueName(baseDetails.name);
+  
+      // Now, check if there's a remixed version to load
+      if (remixedTechniqueIdFromUrl) {
+        setRemixedTechniqueId(remixedTechniqueIdFromUrl);
+        const { data: remixedData, error } = await fetchRemixedTechniqueById(remixedTechniqueIdFromUrl);
+        if (error) {
+          console.error("Error fetching remixed technique:", error);
+          toast({ title: 'Error', description: 'Could not load your saved work.' });
+          // Even if it fails, we still have baseDetails to show
+        } else if (remixedData) {
+          // If we have saved data, reset the form with it
+          form.reset(remixedData as any);
         }
-        setDetails(baseDetails);
-        setTechniqueName(baseDetails.name);
-
-        let remixedDataToLoad: RemixedTechnique | null = null;
-        if (remixedTechniqueIdFromUrl) {
-            const { data, error } = await fetchRemixedTechniqueById(remixedTechniqueIdFromUrl);
-            if (error) {
-                console.error("Error fetching remixed technique by ID:", error);
-                toast({ title: 'Error', description: 'Could not load your saved work.' });
-            } else {
-                remixedDataToLoad = data;
-            }
-        }
-
-        if (remixedDataToLoad) {
-            form.reset(remixedDataToLoad as any);
-        } else {
-            // This is a new remix, so populate the form with defaults from the base details
-            form.reset({
-                technique_name: baseDetails.name,
-                project_id: fromProjectId,
-                overview: baseDetails.overview || '',
-                prerequisites: (baseDetails.prerequisites || []).map((p, i) => ({ id: `prereq-${i}`, text: p, checked: false })),
-                executionSteps: (baseDetails.executionSteps || []).map(s => ({ id: `step-${s.step}`, text: `${s.title}: ${s.description}`, checked: false })),
-                date: '',
-                duration: '',
-                teamSize: '',
-                why: '',
-                problemStatement: '',
-                role: '',
-                attachments: { files: [], links: [], notes: [] },
-            });
-        }
-        setIsLoading(false);
+      } else {
+        // This is a new remix, so populate the form with defaults from the base details
+        form.reset({
+          technique_name: baseDetails.name,
+          project_id: fromProjectId,
+          overview: baseDetails.overview || '',
+          prerequisites: (baseDetails.prerequisites || []).map((p, i) => ({ id: `prereq-${i}`, text: p, checked: false })),
+          executionSteps: (baseDetails.executionSteps || []).map(s => ({ id: `step-${s.step}`, text: `${s.title}: ${s.description}`, checked: false })),
+          date: '',
+          duration: '',
+          teamSize: '',
+          why: '',
+          problemStatement: '',
+          role: '',
+          attachments: { files: [], links: [], notes: [] },
+        });
+      }
+  
+      setIsLoading(false);
     };
-
+  
     loadPageData();
   }, [techniqueSlug, remixedTechniqueIdFromUrl, fromProjectId, form, router, toast]);
 
@@ -618,7 +624,7 @@ export default function TechniqueDetailPage() {
                 onClick={form.handleSubmit(onSaveAndPreview)}
                 disabled={isSaving}
               >
-                  {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save &amp; Preview'}
+                  {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save & Preview'}
               </Button>
           )}
         </div>
@@ -635,3 +641,5 @@ export default function TechniqueDetailPage() {
     </>
   );
 }
+
+    
