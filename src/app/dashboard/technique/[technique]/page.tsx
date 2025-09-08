@@ -509,7 +509,14 @@ export default function TechniqueDetailPage() {
     };
   
     const handleDeleteSelected = () => {
-      // Sort indices in descending order to avoid shifting issues
+      if (watchedItems.length - selectedIndices.length < 1) {
+        toast({
+          title: "Action Prohibited",
+          description: "At least one item must remain in the list.",
+          variant: "destructive"
+        });
+        return;
+      }
       const sortedIndices = [...selectedIndices].sort((a, b) => b - a);
       remove(sortedIndices);
     };
@@ -804,5 +811,7 @@ export default function TechniqueDetailPage() {
     </>
   );
 }
+
+    
 
     
