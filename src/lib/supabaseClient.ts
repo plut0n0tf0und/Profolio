@@ -365,23 +365,25 @@ export async function saveOrUpdateRemixedTechnique(
 
     let currentProjectId = techniqueData.project_id;
 
-    // Create placeholder project if none provided
+    // Create placeholder project if one is not provided.
+    // This happens when a user remixes a technique without starting from a project.
     if (!currentProjectId) {
-      const placeholderProject: Omit<SavedResult, 'id' | 'created_at' | 'stage_techniques'> = {
+      const placeholderRequirement = {
+        id: generateUUID(),
         user_id: user.id,
-        requirement_id: generateUUID(), // Satisfy NOT NULL constraint
-        project_name: `Standalone - ${techniqueData.technique_name || "Technique"}`,
-        role: techniqueData.role || "N/A",
-        problem_statement: techniqueData.problemStatement || "N/A",
+        project_name: `Standalone: ${techniqueData.technique_name || 'Remix'}`,
         date: new Date().toISOString(),
-        output_type: ['Wireframe'],
-        outcome: ['Insight'],
-        device_type: ['Desktop'],
+        role: techniqueData.role || 'N/A',
+        problem_statement: techniqueData.problemStatement || 'N/A',
+        // Provide default values for required arrays to satisfy schema
+        output_type: [], 
+        outcome: [],
+        device_type: [],
       };
-
+      
       const { data: newProject, error: projectError } = await supabase
         .from("saved_results")
-        .insert(placeholderProject)
+        .insert(placeholderRequirement)
         .select("id")
         .single();
 
@@ -389,10 +391,6 @@ export async function saveOrUpdateRemixedTechnique(
         console.error("Failed to create placeholder project in saveOrUpdateRemixedTechnique:", projectError);
         return { data: null, error: projectError };
       }
-      if (!newProject?.id) {
-        return { data: null, error: new Error("Could not retrieve ID for new placeholder project.") };
-      }
-
       currentProjectId = newProject.id;
     }
 
@@ -403,26 +401,29 @@ export async function saveOrUpdateRemixedTechnique(
     };
 
     const existingId = dataToSave.id;
+    // Clean up fields that shouldn't be in the 'remixed_techniques' table
     delete dataToSave.id;
     delete dataToSave.saved_results;
 
     if (existingId) {
+      // Update existing remixed technique
       const { data, error } = await supabase
         .from("remixed_techniques")
         .update(dataToSave)
         .eq("id", existingId)
         .eq("user_id", user.id)
         .select()
-        .maybeSingle();
+        .single(); // Use single() because we expect one result
 
       if (error) throw error;
       return { data, error: null };
     } else {
+      // Insert new remixed technique
       const { data, error } = await supabase
         .from("remixed_techniques")
         .insert(dataToSave)
         .select()
-        .maybeSingle();
+        .single(); // Use single() because we expect one result
 
       if (error) throw error;
       return { data, error: null };

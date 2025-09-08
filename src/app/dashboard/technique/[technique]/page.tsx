@@ -105,15 +105,12 @@ export default function TechniqueDetailPage() {
   const { toast } = useToast();
   
   const techniqueSlug = params.technique as string;
-  const techniqueName = useMemo(() => {
-    const found = allTechniqueDetails.find(t => t.slug === techniqueSlug);
-    return found?.name || 'Technique';
-  }, [techniqueSlug]);
-
+  
   const fromProjectId = searchParams.get('projectId');
   const remixedTechniqueIdFromUrl = searchParams.get('remixId');
 
   const [details, setDetails] = useState<TechniqueDetailsOutput | null>(null);
+  const [techniqueName, setTechniqueName] = useState<string>('Technique');
   const [remixedTechniqueId, setRemixedTechniqueId] = useState<string | null>(remixedTechniqueIdFromUrl);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -126,7 +123,7 @@ export default function TechniqueDetailPage() {
   const form = useForm<TechniqueRemixData>({
     resolver: zodResolver(techniqueRemixSchema),
     defaultValues: {
-      technique_name: techniqueName,
+      technique_name: '',
       project_id: fromProjectId,
       date: '',
       duration: '',
@@ -192,6 +189,7 @@ export default function TechniqueDetailPage() {
             return;
         }
         setDetails(baseDetails);
+        setTechniqueName(baseDetails.name);
 
         let remixedDataToLoad: RemixedTechnique | null = null;
         if (remixedTechniqueIdFromUrl) {
@@ -207,6 +205,7 @@ export default function TechniqueDetailPage() {
         if (remixedDataToLoad) {
             form.reset(remixedDataToLoad as any);
         } else {
+            // This is a new remix, so populate the form with defaults from the base details
             form.reset({
                 technique_name: baseDetails.name,
                 project_id: fromProjectId,
