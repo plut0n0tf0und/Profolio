@@ -17,31 +17,20 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA "extensions";
 
 -- 2. RLS Policies for `requirements` table
 ALTER TABLE public.requirements ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "Users can insert their own requirements" ON public.requirements;
-CREATE POLICY "Users can insert their own requirements" ON public.requirements FOR INSERT TO authenticated WITH CHECK (auth.uid() = user_id);
-DROP POLICY IF EXISTS "Users can view their own requirements" ON public.requirements;
-CREATE POLICY "Users can view their own requirements" ON public.requirements FOR SELECT TO authenticated USING (auth.uid() = user_id);
-DROP POLICY IF EXISTS "Users can update their own requirements" ON public.requirements;
-CREATE POLICY "Users can update their own requirements" ON public.requirements FOR UPDATE TO authenticated USING (auth.uid() = user_id);
-DROP POLICY IF EXISTS "Users can delete their own requirements" ON public.requirements;
-CREATE POLICY "Users can delete their own requirements" ON public.requirements FOR DELETE TO authenticated USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Users can manage their own requirements" ON public.requirements;
+CREATE POLICY "Users can manage their own requirements" ON public.requirements FOR ALL TO authenticated USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
 -- 3. RLS Policies for `saved_results` table
+-- Foreign Key: saved_results.requirement_id -> requirements.id
 ALTER TABLE public.saved_results ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "Users can view their own projects" ON public.saved_results;
-CREATE POLICY "Users can view their own projects" ON public.saved_results FOR SELECT TO authenticated USING (auth.uid() = user_id);
-DROP POLICY IF EXISTS "Users can insert their own projects" ON public.saved_results;
-CREATE POLICY "Users can insert their own projects" ON public.saved_results FOR INSERT TO authenticated WITH CHECK (auth.uid() = user_id);
-DROP POLICY IF EXISTS "Users can update their own projects" ON public.saved_results;
-CREATE POLICY "Users can update their own projects" ON public.saved_results FOR UPDATE TO authenticated USING (auth.uid() = user_id);
-DROP POLICY IF EXISTS "Users can delete their own projects" ON public.saved_results;
-CREATE POLICY "Users can delete their own projects" ON public.saved_results FOR DELETE TO authenticated USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Users can manage their own saved results" ON public.saved_results;
+CREATE POLICY "Users can manage their own saved results" ON public.saved_results FOR ALL TO authenticated USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
 -- 4. RLS Policies for `remixed_techniques` table
 -- Foreign Key: remixed_techniques.project_id -> saved_results.id
 ALTER TABLE public.remixed_techniques ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "Allow users to manage their own remixed techniques" ON public.remixed_techniques;
-CREATE POLICY "Allow users to manage their own remixed techniques" ON public.remixed_techniques FOR ALL TO authenticated USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Users can manage their own remixed techniques" ON public.remixed_techniques;
+CREATE POLICY "Users can manage their own remixed techniques" ON public.remixed_techniques FOR ALL TO authenticated USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
 
 -- 5. Function to delete user data
 CREATE OR REPLACE FUNCTION delete_user_data()
@@ -55,6 +44,12 @@ BEGIN
   DELETE FROM auth.users WHERE id = auth.uid();
 END;
 $$ LANGUAGE plpgsql;
+
+-- FOREIGN KEY DEFINITION for remixed_techniques:
+-- CONSTRAINT remixed_techniques_project_id_fkey 
+-- FOREIGN KEY (project_id) 
+-- REFERENCES public.saved_results(id) ON DELETE SET NULL;
+-- This means `remixed_techniques.project_id` MUST be a valid `id` from the `saved_results` table.
 */
 
 
@@ -75,8 +70,8 @@ const RequirementSchema = z.object({
 export type Requirement = z.infer<typeof RequirementSchema>;
 
 // Zod schema for the 'saved_results' table, which is an extension of Requirement
-const SavedResultSchema = RequirementSchema.extend({
-  requirement_id: z.string(),
+const SavedResultSchema = RequirementSchema.omit({ project_type: true }).extend({
+  requirement_id: z.string().uuid(),
   stage_techniques: z.any().optional(),
 });
 export type SavedResult = z.infer<typeof SavedResultSchema>;
@@ -342,21 +337,9 @@ export async function saveOrUpdateRemixedTechnique(
   techniqueData: Partial<RemixedTechnique> & { id?: string }
 ): Promise<{ data: RemixedTechnique | null; error: any | null }> {
   try {
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
-
-    if (userError) {
-      console.error("Auth error:", userError);
-      return { data: null, error: userError };
-    }
-    if (!user) {
-      return {
-        data: null,
-        error: { message: "User not authenticated", code: "401" },
-      };
-    }
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError) throw userError;
+    if (!user) throw new Error("User not authenticated");
 
     let currentProjectId = techniqueData.project_id;
 
@@ -385,7 +368,7 @@ export async function saveOrUpdateRemixedTechnique(
         return { data: null, error: projectError };
       }
       if (!newProject?.id) {
-        return { data: null, error: new Error("Could not create placeholder project.") };
+        return { data: null, error: new Error("Could not retrieve ID for new placeholder project.") };
       }
 
       currentProjectId = newProject.id;
@@ -410,10 +393,7 @@ export async function saveOrUpdateRemixedTechnique(
         .select()
         .maybeSingle();
 
-      if (error) {
-        console.error("Update error:", error);
-        return { data: null, error };
-      }
+      if (error) throw error;
       return { data, error: null };
     } else {
       const { data, error } = await supabase
@@ -422,15 +402,11 @@ export async function saveOrUpdateRemixedTechnique(
         .select()
         .maybeSingle();
 
-      if (error) {
-        console.error("Insert error:", error);
-        return { data: null, error };
-      }
+      if (error) throw error;
       return { data, error: null };
     }
-  } catch (error: any)
-{
-    console.error("Unexpected error in saveOrUpdateRemixedTechnique:", error);
+  } catch (error: any) {
+    console.error("Error in saveOrUpdateRemixedTechnique:", error);
     return { data: null, error };
   }
 }
