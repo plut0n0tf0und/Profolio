@@ -4,6 +4,7 @@ import techniqueDetails from '@/data/uxTechniqueDetails.json';
 
 interface TechniqueDetail {
   name: string;
+  slug: string;
   stage: string;
   outcomes: string[];
   output_types: string[];
@@ -17,10 +18,10 @@ const allTechniques: TechniqueDetail[] = techniqueDetails as TechniqueDetail[];
  * Retrieves a filtered list of UX techniques based on project requirements,
  * applying lenient output_type filtering for early stages and strict for later stages.
  * @param requirement - The user's selections for the project.
- * @returns An object where keys are 5D stages and values are arrays of recommended technique names.
+ * @returns An object where keys are 5D stages and values are arrays of recommended technique objects.
  */
-export function getFilteredTechniques(requirement: Requirement): Record<string, string[]> {
-  const recommendations: Record<string, string[]> = {
+export function getFilteredTechniques(requirement: Requirement): Record<string, {name: string, slug: string}[]> {
+  const recommendations: Record<string, {name: string, slug: string}[]> = {
     Discover: [],
     Define: [],
     Design: [],
@@ -49,8 +50,8 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
     const outputTypeMatch = isEarlyStage || doArraysIntersect(requirement.output_type, tech.output_types);
 
     if (projectTypeMatch && outcomeMatch && deviceTypeMatch && outputTypeMatch) {
-      if (recommendations[tech.stage] && !recommendations[tech.stage].includes(tech.name)) {
-        recommendations[tech.stage].push(tech.name);
+      if (recommendations[tech.stage] && !recommendations[tech.stage].find(t => t.name === tech.name)) {
+        recommendations[tech.stage].push({ name: tech.name, slug: tech.slug });
       }
     }
   });

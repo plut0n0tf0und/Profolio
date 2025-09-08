@@ -23,15 +23,6 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import type { TechniqueDetailsOutput } from '@/ai/flows/get-technique-details';
 
-
-const unslugify = (slug: string) => {
-  if (!slug) return '';
-  const words = slug.split('-');
-  return words
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
-};
-
 const SectionCard = ({ title, children, action, noPadding }: { title: string, children: React.ReactNode, action?: React.ReactNode, noPadding?: boolean }) => (
   <Card>
     <CardHeader className="flex flex-row items-center justify-between">
@@ -114,7 +105,11 @@ export default function TechniqueDetailPage() {
   const { toast } = useToast();
   
   const techniqueSlug = params.technique as string;
-  const techniqueName = useMemo(() => unslugify(techniqueSlug), [techniqueSlug]);
+  const techniqueName = useMemo(() => {
+    const found = allTechniqueDetails.find(t => t.slug === techniqueSlug);
+    return found?.name || 'Technique';
+  }, [techniqueSlug]);
+
   const fromProjectId = searchParams.get('projectId');
   const remixedTechniqueIdFromUrl = searchParams.get('remixId');
 
@@ -182,13 +177,13 @@ export default function TechniqueDetailPage() {
   }, [searchParams]);
 
   useEffect(() => {
-    if (!techniqueName) return;
+    if (!techniqueSlug) return;
 
     const loadPageData = async () => {
         setIsLoading(true);
 
         const baseDetails = allTechniqueDetails.find(
-            (t) => t.name.toLowerCase() === techniqueName.toLowerCase()
+            (t) => t.slug === techniqueSlug
         ) as TechniqueDetailsOutput | undefined;
         
         if (!baseDetails) {
@@ -213,7 +208,7 @@ export default function TechniqueDetailPage() {
             form.reset(remixedDataToLoad as any);
         } else {
             form.reset({
-                technique_name: techniqueName,
+                technique_name: baseDetails.name,
                 project_id: fromProjectId,
                 overview: baseDetails.overview || '',
                 prerequisites: (baseDetails.prerequisites || []).map((p, i) => ({ id: `prereq-${i}`, text: p, checked: false })),
@@ -231,7 +226,7 @@ export default function TechniqueDetailPage() {
     };
 
     loadPageData();
-  }, [techniqueName, remixedTechniqueIdFromUrl, fromProjectId, form, router, toast]);
+  }, [techniqueSlug, remixedTechniqueIdFromUrl, fromProjectId, form, router, toast]);
 
 
   const copyToClipboard = (text: string) => {

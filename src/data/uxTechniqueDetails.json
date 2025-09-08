@@ -2,6 +2,7 @@
 [
   {
     "name": "User Interviews",
+    "slug": "user-interviews",
     "stage": "Discover",
     "outcomes": ["Qualitative", "Insight"],
     "output_types": ["Presentation", "Video"],
@@ -10,6 +11,7 @@
   },
   {
     "name": "Contextual Inquiry (Shadowing)",
+    "slug": "contextual-inquiry-shadowing",
     "stage": "Discover",
     "outcomes": ["Qualitative", "Insight"],
     "output_types": ["Presentation", "Video"],
@@ -18,6 +20,7 @@
   },
   {
     "name": "Surveys & Questionnaires",
+    "slug": "surveys-questionnaires",
     "stage": "Discover",
     "outcomes": ["Quantitative", "Qualitative"],
     "output_types": ["Presentation"],
@@ -26,6 +29,7 @@
   },
   {
     "name": "Web/App Analytics Review",
+    "slug": "web-app-analytics-review",
     "stage": "Discover",
     "outcomes": ["Quantitative"],
     "output_types": ["Presentation"],
@@ -34,6 +38,7 @@
   },
   {
     "name": "Competitor Benchmarking",
+    "slug": "competitor-benchmarking",
     "stage": "Discover",
     "outcomes": ["Quantitative", "Insight"],
     "output_types": ["Presentation"],
@@ -42,6 +47,7 @@
   },
   {
     "name": "Persona Creation & Validation",
+    "slug": "persona-creation-validation",
     "stage": "Define",
     "outcomes": ["Qualitative", "Insight"],
     "output_types": ["Presentation"],
@@ -50,6 +56,7 @@
   },
   {
     "name": "Customer Journey Mapping",
+    "slug": "customer-journey-mapping",
     "stage": "Define",
     "outcomes": ["Qualitative", "Insight"],
     "output_types": ["Presentation"],
@@ -58,6 +65,7 @@
   },
   {
     "name": "Affinity Diagramming",
+    "slug": "affinity-diagramming",
     "stage": "Define",
     "outcomes": ["Insight"],
     "output_types": ["Presentation"],
@@ -66,6 +74,7 @@
   },
   {
     "name": "Prioritization Matrices (MoSCoW, Kano, etc.)",
+    "slug": "prioritization-matrices-moscow-kano-etc",
     "stage": "Define",
     "outcomes": ["Quantitative"],
     "output_types": ["Presentation"],
@@ -74,6 +83,7 @@
   },
   {
     "name": "Wireframing",
+    "slug": "wireframing",
     "stage": "Design",
     "outcomes": [],
     "output_types": ["Wireframe", "Interactive Prototype"],
@@ -82,6 +92,7 @@
   },
   {
     "name": "Low-fidelity Prototyping",
+    "slug": "low-fidelity-prototyping",
     "stage": "Design",
     "outcomes": [],
     "output_types": ["Interactive Prototype"],
@@ -90,6 +101,7 @@
   },
   {
     "name": "Information Architecture (Sitemaps, Task Flows)",
+    "slug": "information-architecture-sitemaps-task-flows",
     "stage": "Design",
     "outcomes": [],
     "output_types": ["Information Architecture", "Wireframe"],
@@ -98,6 +110,7 @@
   },
   {
     "name": "High-fidelity Prototyping",
+    "slug": "high-fidelity-prototyping",
     "stage": "Develop",
     "outcomes": [],
     "output_types": ["Interactive Prototype", "UI Design", "Visual Design"],
@@ -106,6 +119,7 @@
   },
   {
     "name": "UI Design (Screens, Components)",
+    "slug": "ui-design-screens-components",
     "stage": "Develop",
     "outcomes": [],
     "output_types": ["UI Design", "Visual Design"],
@@ -114,6 +128,7 @@
   },
   {
     "name": "Motion Design / Microinteractions",
+    "slug": "motion-design-microinteractions",
     "stage": "Develop",
     "outcomes": [],
     "output_types": ["Motion Design", "Animation", "Interactive Prototype"],
@@ -122,6 +137,7 @@
   },
   {
     "name": "Accessibility Testing",
+    "slug": "accessibility-testing",
     "stage": "Develop",
     "outcomes": ["Qualitative", "Quantitative"],
     "output_types": ["UI Design", "Interactive Prototype"],
@@ -130,6 +146,7 @@
   },
   {
     "name": "A/B Testing",
+    "slug": "a-b-testing",
     "stage": "Deliver",
     "outcomes": ["Quantitative"],
     "output_types": ["UI Design", "Visual Design", "Motion Design"],
@@ -138,6 +155,7 @@
   },
   {
     "name": "Usability Observation (Validation)",
+    "slug": "usability-observation-validation",
     "stage": "Deliver",
     "outcomes": ["Qualitative", "Insight"],
     "output_types": ["Interactive Prototype"],
@@ -146,6 +164,7 @@
   },
   {
     "name": "Post-Launch Analytics Review",
+    "slug": "post-launch-analytics-review",
     "stage": "Deliver",
     "outcomes": ["Quantitative"],
     "output_types": ["Presentation"],
@@ -154,6 +173,7 @@
   },
   {
     "name": "Success Metrics & KPIs Tracking",
+    "slug": "success-metrics-kpis-tracking",
     "stage": "Deliver",
     "outcomes": ["Quantitative"],
     "output_types": ["Presentation"],

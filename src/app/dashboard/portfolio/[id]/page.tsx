@@ -12,16 +12,7 @@ import { ChevronLeft, Download, Loader2, FileText, Link as LinkIcon } from 'luci
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-
-const slugify = (text: string) => {
-    if (!text) return '';
-    return text.toString().toLowerCase()
-      .replace(/\s+/g, '-')           // Replace spaces with -
-      .replace(/[^\w-]+/g, '')       // Remove all non-word chars
-      .replace(/--+/g, '-')         // Replace multiple - with single -
-      .replace(/^-+/, '')             // Trim - from start of text
-      .replace(/-+$/, '');            // Trim - from end of text
-};
+import allTechniqueDetails from '@/data/uxTechniqueDetails.json';
 
 const PortfolioSkeleton = () => (
     <div className="space-y-8">
@@ -92,7 +83,12 @@ export default function PortfolioPage() {
 
     const handleBackToEditor = () => {
         if (!technique) return;
-        const techniqueSlug = slugify(technique.technique_name);
+        const techniqueDetails = allTechniqueDetails.find(t => t.name === technique.technique_name);
+        if (!techniqueDetails) {
+            toast({ title: 'Error', description: 'Could not find the original technique details to edit.' });
+            return;
+        }
+        const techniqueSlug = techniqueDetails.slug;
         const projectIdQuery = technique.project_id ? `&projectId=${technique.project_id}` : '';
         router.push(`/dashboard/technique/${techniqueSlug}?edit=true&remixId=${id}${projectIdQuery}`);
     };
@@ -185,7 +181,7 @@ export default function PortfolioPage() {
                             </Section>
                              <Section title="References & Attachments">
                                 <div className="space-y-4">
-                                    {technique.attachments.files.length > 0 && (
+                                    {technique.attachments?.files && technique.attachments.files.length > 0 && (
                                         <div>
                                             <h4 className="font-semibold text-lg">Files</h4>
                                             <ul className="list-none space-y-2 pt-2">
@@ -193,7 +189,7 @@ export default function PortfolioPage() {
                                             </ul>
                                         </div>
                                     )}
-                                    {technique.attachments.links.length > 0 && (
+                                    {technique.attachments?.links && technique.attachments.links.length > 0 && (
                                         <div>
                                             <h4 className="font-semibold text-lg">Links</h4>
                                             <ul className="list-none space-y-2 pt-2">
@@ -206,7 +202,7 @@ export default function PortfolioPage() {
                                             </ul>
                                         </div>
                                     )}
-                                    {technique.attachments.notes.length > 0 && (
+                                    {technique.attachments?.notes && technique.attachments.notes.length > 0 && (
                                         <div>
                                             <h4 className="font-semibold text-lg">Notes</h4>
                                             <div className="space-y-2 pt-2">
@@ -233,8 +229,4 @@ export default function PortfolioPage() {
             </main>
         </div>
     );
-
-    
-
-
 }

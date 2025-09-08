@@ -31,16 +31,7 @@ import { ChevronLeft, Wand2, Save } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
 
-type StageTechniques = { [key: string]: string[] };
-
-const slugify = (text: string) => {
-  return text.toString().toLowerCase()
-    .replace(/\s+/g, '-')
-    .replace(/[^\w-]+/g, '')
-    .replace(/--+/g, '-')
-    .replace(/^-+/, '')
-    .replace(/-+$/, '');
-};
+type StageTechniques = { [key: string]: {name: string, slug: string}[] };
 
 const FiveDProcess = ({ techniques, projectId }: { techniques: StageTechniques, projectId: string }) => {
   return (
@@ -58,12 +49,12 @@ const FiveDProcess = ({ techniques, projectId }: { techniques: StageTechniques, 
                 {stageTechs.length > 0 ? (
                   <div className="space-y-3 p-2">
                     {stageTechs.map(technique => (
-                      <Card key={technique} className="bg-background/50 border-border/50 hover:border-primary/50 transition-all">
+                      <Card key={technique.name} className="bg-background/50 border-border/50 hover:border-primary/50 transition-all">
                         <CardContent className="flex items-center justify-between p-4">
-                           <Link href={`/dashboard/technique/${slugify(technique)}?projectId=${projectId}`} className="font-medium cursor-pointer hover:underline">
-                            {technique}
+                           <Link href={`/dashboard/technique/${technique.slug}?projectId=${projectId}`} className="font-medium cursor-pointer hover:underline">
+                            {technique.name}
                           </Link>
-                          <Link href={`/dashboard/technique/${slugify(technique)}?edit=true&projectId=${projectId}`} passHref>
+                          <Link href={`/dashboard/technique/${technique.slug}?edit=true&projectId=${projectId}`} passHref>
                               <Button variant="outline" size="sm">
                                   <Wand2 className="mr-2 h-4 w-4" />
                                   Remix
