@@ -94,13 +94,8 @@ export type RemixedTechnique = z.infer<typeof TechniqueRemixSchema>;
   CONSTRAINT remixed_techniques_project_id_fkey FOREIGN KEY (project_id) REFERENCES public.saved_results(id) ON DELETE SET NULL
 );
 
--- Foreign Key Definition Clarification:
--- The constraint `remixed_techniques_project_id_fkey` defines the relationship.
--- It links the `project_id` column from the `remixed_techniques` table
--- to the `id` column in the `public.saved_results` table.
---
--- Therefore, any value inserted into `remixed_techniques.project_id` MUST be a valid
--- `id` that already exists in the `saved_results` table.
+-- The foreign key "remixed_techniques_project_id_fkey" links the
+-- "project_id" column of this table to the "id" column of the "public.saved_results" table.
 
 ALTER TABLE public.remixed_techniques ENABLE ROW LEVEL SECURITY;
 
@@ -108,11 +103,12 @@ CREATE POLICY "Allow users to manage their own remixed techniques"
 ON public.remixed_techniques
 FOR ALL
 TO authenticated
-USING (auth.uid() = user_id);
+USING (auth.uid() = user_id)
+WITH CHECK (auth.uid() = user_id);
 
 ---
 
-REQUIRED RLS POLICY FOR `saved_results` TABLE (run this in Supabase SQL Editor):
+REQUIRED RLS POLICIES FOR `saved_results` TABLE (run this in Supabase SQL Editor):
 
 -- 1. Enable RLS on the table
 ALTER TABLE public.saved_results ENABLE ROW LEVEL SECURITY;
@@ -510,7 +506,7 @@ export async function saveOrUpdateRemixedTechnique(
     if (!currentProjectId) {
       const placeholderProject = {
         user_id: user.id,
-        requirement_id: generateUUID(), // A temporary UUID since there's no real requirement
+        requirement_id: generateUUID(),
         project_name: `Standalone - ${techniqueData.technique_name || 'Technique'}`,
         role: techniqueData.role || 'N/A',
         problem_statement: techniqueData.problemStatement || 'N/A',
@@ -518,13 +514,13 @@ export async function saveOrUpdateRemixedTechnique(
         output_type: ['Presentation'],
         outcome: ['Insight'],
         device_type: ['Desktop'],
-        project_type: 'new' as 'new' | 'old',
+        project_type: ['new'],
       };
 
       const { data: newProject, error: projectError } = await supabase
         .from('saved_results')
         .insert(placeholderProject)
-        .select('id')
+        .select('id, project_name')
         .single();
 
       if (projectError || !newProject?.id) {
