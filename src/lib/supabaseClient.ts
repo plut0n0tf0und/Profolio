@@ -233,39 +233,47 @@ export async function fetchRequirementById(
   return { data, error };
 }
 
+
 export async function saveOrUpdateResult(
-  requirementId: string,
-  resultData: Partial<SavedResult>
+  requirement: Requirement
 ): Promise<{ data: SavedResult | null; error: any | null }> {
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return { data: null, error: { message: 'User not authenticated', code: '401' } };
 
     const dataToSave = {
-      ...resultData,
-      user_id: user.id,
-      requirement_id: requirementId,
+        user_id: user.id,
+        requirement_id: requirement.id,
+        project_name: requirement.project_name,
+        role: requirement.role,
+        date: typeof requirement.date === 'string' ? requirement.date : requirement.date?.toISOString(),
+        problem_statement: requirement.problem_statement,
+        output_type: requirement.output_type,
+        outcome: requirement.outcome,
+        device_type: requirement.device_type,
+        stage_techniques: null, // This can be updated later
     };
 
     const { data: existingResult, error: selectError } = await supabase
       .from('saved_results')
       .select('id')
-      .eq('requirement_id', requirementId)
+      .eq('requirement_id', requirement.id)
       .eq('user_id', user.id)
       .maybeSingle();
 
     if (selectError) throw selectError;
 
     if (existingResult) {
+      // It exists, just return it. The user may update details from the edit page.
       const { data, error } = await supabase
         .from('saved_results')
-        .update(dataToSave)
+        .select('*')
         .eq('id', existingResult.id)
-        .select()
         .single();
       if (error) throw error;
       return { data, error: null };
     } else {
+      // It doesn't exist, create it.
       const { data, error } = await supabase
         .from('saved_results')
         .insert(dataToSave)
@@ -482,3 +490,5 @@ export async function fetchRemixedTechniquesByProjectId(projectId: string): Prom
     if (error) console.error("Error fetching remixed techniques by project ID:", error);
     return { data, error };
 }
+
+    

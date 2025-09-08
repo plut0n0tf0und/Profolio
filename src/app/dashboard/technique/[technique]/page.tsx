@@ -621,7 +621,7 @@ export default function TechniqueDetailPage() {
       <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between border-b border-border bg-background px-4">
         <Button variant="ghost" size="sm" onClick={handleBackNavigation} className="flex items-center gap-2">
           <ChevronLeft className="h-5 w-5" />
-          <span className="hidden md:inline">Back</span>
+          <span className="hidden md:inline">Cancel</span>
         </Button>
         <h1 className="text-xl font-bold text-center flex-1 truncate px-4">
           {isEditMode ? `Remix: ${techniqueName}` : techniqueName}

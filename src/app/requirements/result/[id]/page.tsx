@@ -27,7 +27,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
-import { ChevronLeft, Wand2, Save } from 'lucide-react';
+import { ChevronLeft, Wand2, Save, Loader2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
 
@@ -99,60 +99,77 @@ export default function ResultPage() {
   const router = useRouter();
   const params = useParams();
   const { toast } = useToast();
-  const id = params.id as string;
+  const requirementId = params.id as string;
   const [requirement, setRequirement] = useState<Requirement | null>(null);
+  const [savedResultId, setSavedResultId] = useState<string | null>(null);
   const [stageTechniques, setStageTechniques] = useState<StageTechniques>({});
   const [isLoading, setIsLoading] = useState(true);
-
-  const handleSaveResult = async () => {
-    if (!requirement || !id) return;
-  
-    const { error } = await saveOrUpdateResult(id, requirement);
-  
-    if (error) {
-      console.error("Supabase save error:", error);
-      toast({
-        title: 'Save Failed',
-        description: `There was a problem saving your project results: ${error.message}`,
-        variant: 'destructive',
-      });
-    } else {
-      toast({
-        title: 'Project Saved!',
-        description: 'Your project results have been successfully saved.',
-      });
-      router.push('/dashboard');
-    }
-  };
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    if (!id) return;
+    if (!requirementId) return;
 
-    const getRequirement = async () => {
+    const getRequirementAndSave = async () => {
       setIsLoading(true);
-      const { data, error } = await fetchRequirementById(id);
+      const { data, error } = await fetchRequirementById(requirementId);
 
-      if (error) {
+      if (error || !data) {
         console.error("Error fetching project requirement:", error);
         toast({
             title: 'Error Fetching Project',
-            description: 'Could not retrieve project details. Please try again.',
+            description: 'Could not retrieve project details. Redirecting to dashboard.',
             variant: 'destructive',
         });
         router.push('/dashboard');
-      } else if(data) {
-        setRequirement(data);
-        const filteredTechniques = getFilteredTechniques(data);
-        setStageTechniques(filteredTechniques);
+        return;
       }
+      
+      setRequirement(data);
+      const filteredTechniques = getFilteredTechniques(data);
+      setStageTechniques(filteredTechniques);
+
+      // --- FIX: Automatically save this to `saved_results` table ---
+      const { data: savedResultData, error: saveError } = await saveOrUpdateResult(data);
+      if (saveError || !savedResultData) {
+         console.error("Error auto-saving result:", saveError);
+         toast({
+            title: 'Save Failed',
+            description: 'Could not create the project. Please go back and try again.',
+            variant: 'destructive',
+          });
+      } else {
+        setSavedResultId(savedResultData.id);
+        console.debug("Project auto-saved with ID:", savedResultData.id);
+      }
+      // -------------------------------------------------------------
+
       setIsLoading(false);
     };
 
-    getRequirement();
-  }, [id, router, toast]);
+    getRequirementAndSave();
+  }, [requirementId, router, toast]);
+  
+  const handleProceedToDashboard = () => {
+    if (!savedResultId) {
+        toast({
+            title: 'Project Not Ready',
+            description: 'The project is still being created. Please wait a moment.',
+            variant: 'destructive',
+        });
+        return;
+    }
+    setIsSaving(true);
+    toast({
+        title: 'Project Created!',
+        description: 'Your new project is now available on your dashboard.',
+    });
+    router.push(`/dashboard/${savedResultId}`);
+    router.refresh();
+  };
+
 
   const handleBackToEdit = () => {
-    router.push(`/requirements?id=${id}`);
+    router.push(`/requirements?id=${requirementId}`);
   };
 
   return (
@@ -190,9 +207,9 @@ export default function ResultPage() {
         </h1>
 
         <div className="flex items-center justify-end gap-2" style={{ minWidth: '80px' }}>
-          <Button variant="default" size="sm" onClick={handleSaveResult} disabled={isLoading}>
-            <Save className="mr-2 h-4 w-4" />
-            Save
+          <Button variant="default" size="sm" onClick={handleProceedToDashboard} disabled={isLoading || isSaving || !savedResultId}>
+            {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+            Done
           </Button>
         </div>
       </header>
@@ -236,13 +253,15 @@ export default function ResultPage() {
             </Card>
           )}
 
-          {isLoading ? (
+          {isLoading || !savedResultId ? (
             <RequirementDetailSkeleton />
           ) : (
-            <FiveDProcess techniques={stageTechniques} projectId={id} />
+            <FiveDProcess techniques={stageTechniques} projectId={savedResultId} />
           )}
         </div>
       </main>
     </div>
   );
 }
+
+    
