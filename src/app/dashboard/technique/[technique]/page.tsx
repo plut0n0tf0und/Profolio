@@ -189,7 +189,7 @@ export default function TechniqueDetailPage() {
   useEffect(() => {
     if (!techniqueName) return;
     form.setValue('technique_name', techniqueName);
-    
+
     async function loadRemixedData() {
         if (!remixedTechniqueIdFromUrl) return;
         setIsLoading(true);
@@ -198,7 +198,7 @@ export default function TechniqueDetailPage() {
             toast({ title: 'Error', description: 'Could not load your saved work.' });
             setRemixedTechniqueId(null);
         } else {
-            form.reset(data);
+            form.reset(data as any);
         }
         setIsLoading(false);
     }
@@ -207,7 +207,7 @@ export default function TechniqueDetailPage() {
       setIsLoading(true);
       try {
         const result = allTechniqueDetails.find(t => t.name.toLowerCase() === techniqueName.toLowerCase()) as unknown as TechniqueDetailsOutput | undefined;
-
+        
         if (!result) {
             throw new Error("Technique details not found.");
         }
@@ -245,9 +245,10 @@ export default function TechniqueDetailPage() {
     
     if (remixedTechniqueIdFromUrl) {
         loadRemixedData();
-    } else {
-        fetchDefaultDetails();
     }
+    // Always load default details for the read-only view.
+    fetchDefaultDetails();
+
   }, [techniqueName, remixedTechniqueIdFromUrl, toast, form, fromProjectId]);
 
   const copyToClipboard = (text: string) => {
@@ -337,7 +338,7 @@ export default function TechniqueDetailPage() {
             router.replace(newUrl);
         }
         
-        form.reset(savedData);
+        form.reset(savedData as any);
         router.push(`/dashboard/portfolio/${savedData.id}`);
       }
     });
@@ -471,7 +472,20 @@ export default function TechniqueDetailPage() {
         <div className="space-y-2">
           {prereqFields.map((field, index) => (
             <div key={field.id} className="flex items-center gap-2">
-              <Checkbox {...form.register(`prerequisites.${index}.checked`)} />
+              <FormField
+                control={form.control}
+                name={`prerequisites.${index}.checked`}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
               <Input {...form.register(`prerequisites.${index}.text`)} placeholder="New prerequisite..." className="flex-1"/>
               <Button type="button" variant="ghost" size="icon" onClick={() => removePrereq(index)}>
                 <Trash2 className="h-4 w-4 text-destructive" />
@@ -490,7 +504,20 @@ export default function TechniqueDetailPage() {
         <div className="space-y-2">
           {stepFields.map((field, index) => (
             <div key={field.id} className="flex items-center gap-2">
-               <Checkbox {...form.register(`executionSteps.${index}.checked`)} />
+               <FormField
+                control={form.control}
+                name={`executionSteps.${index}.checked`}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
                <Input {...form.register(`executionSteps.${index}.text`)} placeholder="New execution step..." className="flex-1"/>
                <Button type="button" variant="ghost" size="icon" onClick={() => removeStep(index)}>
                 <Trash2 className="h-4 w-4 text-destructive" />
