@@ -90,10 +90,10 @@ export type RemixedTechnique = z.infer<typeof TechniqueRemixSchema>;
   executionSteps jsonb NULL,
   attachments jsonb NULL,
   CONSTRAINT remixed_techniques_pkey PRIMARY KEY (id),
-  CONSTRAINT remixed_techniques_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE,
   -- The foreign key "remixed_techniques_project_id_fkey" links the
   -- "project_id" column of this table to the "id" column of the "public.saved_results" table.
-  CONSTRAINT remixed_techniques_project_id_fkey FOREIGN KEY (project_id) REFERENCES public.saved_results(id) ON DELETE SET NULL
+  CONSTRAINT remixed_techniques_project_id_fkey FOREIGN KEY (project_id) REFERENCES public.saved_results(id) ON DELETE SET NULL,
+  CONSTRAINT remixed_techniques_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE
 );
 
 ALTER TABLE public.remixed_techniques ENABLE ROW LEVEL SECURITY;
