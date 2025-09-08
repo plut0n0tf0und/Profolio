@@ -7,7 +7,7 @@ import { useForm, useFieldArray, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { toPng } from 'html-to-image-fix';
-import { saveOrUpdateRemixedTechnique, fetchRemixedTechniqueById } from '@/lib/supabaseClient';
+import { saveOrUpdateRemixedTechnique, fetchRemixedTechniqueById, RemixedTechnique } from '@/lib/supabaseClient';
 import allTechniqueDetails from '@/data/uxTechniqueDetails.json';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -190,66 +190,61 @@ export default function TechniqueDetailPage() {
     if (!techniqueName) return;
     form.setValue('technique_name', techniqueName);
 
-    async function loadRemixedData() {
-        if (!remixedTechniqueIdFromUrl) return;
-        setIsLoading(true);
-        const { data, error } = await fetchRemixedTechniqueById(remixedTechniqueIdFromUrl);
-        if (error || !data) {
-            toast({ title: 'Error', description: 'Could not load your saved work.' });
-            setRemixedTechniqueId(null);
-        } else {
-            form.reset(data as any);
-        }
-        setIsLoading(false);
-    }
-
-    function fetchDefaultDetails() {
+    const loadPageData = async () => {
       setIsLoading(true);
-      try {
-        const result = allTechniqueDetails.find(t => t.name.toLowerCase() === techniqueName.toLowerCase()) as unknown as TechniqueDetailsOutput | undefined;
-        
-        if (!result) {
-            throw new Error("Technique details not found.");
-        }
 
-        setDetails(result);
-        form.reset({
-            technique_name: techniqueName,
-            project_id: fromProjectId,
-            overview: result.overview || '',
-            prerequisites: (result.prerequisites || []).map((p, i) => ({ id: `prereq-${i}`, text: p, checked: false })),
-            executionSteps: (result.executionSteps || []).map(s => ({ id: `step-${s.step}`, text: `${s.title}: ${s.description}`, checked: false })),
-            date: '',
-            duration: '',
-            teamSize: '',
-            why: '',
-            problemStatement: '',
-            role: '',
-            attachments: {
-              files: [],
-              links: [],
-              notes: [],
-            },
-        });
-      } catch (error) {
-        console.error("Failed to fetch technique details:", error);
-        toast({
-          title: 'Error',
-          description: 'Could not load details for this technique. Please try again.',
-          variant: 'destructive',
-        });
-      } finally {
+      // Always fetch the base details from the JSON file first.
+      const baseDetails = allTechniqueDetails.find(
+        (t) => t.name.toLowerCase() === techniqueName.toLowerCase()
+      ) as TechniqueDetailsOutput | undefined;
+
+      if (!baseDetails) {
+        toast({ title: 'Error', description: 'Technique details not found.', variant: 'destructive' });
         setIsLoading(false);
+        router.push('/dashboard');
+        return;
       }
-    };
-    
-    if (remixedTechniqueIdFromUrl) {
-        loadRemixedData();
-    }
-    // Always load default details for the read-only view.
-    fetchDefaultDetails();
+      setDetails(baseDetails);
 
-  }, [techniqueName, remixedTechniqueIdFromUrl, toast, form, fromProjectId]);
+      if (remixedTechniqueIdFromUrl) {
+        // If we're editing, load the saved remix data.
+        const { data: remixedData, error } = await fetchRemixedTechniqueById(remixedTechniqueIdFromUrl);
+        if (error || !remixedData) {
+          toast({ title: 'Error', description: 'Could not load your saved work.' });
+          // Fallback to default view if load fails
+          form.reset({
+            ...form.getValues(),
+            overview: baseDetails.overview || '',
+            prerequisites: (baseDetails.prerequisites || []).map((p, i) => ({ id: `prereq-${i}`, text: p, checked: false })),
+            executionSteps: (baseDetails.executionSteps || []).map(s => ({ id: `step-${s.step}`, text: `${s.title}: ${s.description}`, checked: false })),
+          });
+        } else {
+          form.reset(remixedData as any);
+        }
+      } else {
+        // If it's a new remix, populate the form with default details.
+        form.reset({
+          technique_name: techniqueName,
+          project_id: fromProjectId,
+          overview: baseDetails.overview || '',
+          prerequisites: (baseDetails.prerequisites || []).map((p, i) => ({ id: `prereq-${i}`, text: p, checked: false })),
+          executionSteps: (baseDetails.executionSteps || []).map(s => ({ id: `step-${s.step}`, text: `${s.title}: ${s.description}`, checked: false })),
+          date: '',
+          duration: '',
+          teamSize: '',
+          why: '',
+          problemStatement: '',
+          role: '',
+          attachments: { files: [], links: [], notes: [] },
+        });
+      }
+
+      setIsLoading(false);
+    };
+
+    loadPageData();
+  }, [techniqueName, remixedTechniqueIdFromUrl, toast, form, fromProjectId, router]);
+
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);

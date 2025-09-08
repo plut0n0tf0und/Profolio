@@ -5,6 +5,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { fetchSavedResultById, deleteSavedResult, Requirement } from '@/lib/supabaseClient';
+import { getFilteredTechniques } from '@/lib/uxTechniques';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
@@ -43,6 +44,9 @@ const slugify = (text: string) => {
 };
 
 const FiveDProcess = ({ techniques, projectId }: { techniques: StageTechniques, projectId: string }) => {
+  if (!techniques || Object.keys(techniques).length === 0) {
+    return <p className="text-muted-foreground">No techniques to display.</p>;
+  }
   return (
     <Card className="w-full border-border/50 shadow-lg">
       <CardHeader>
@@ -112,6 +116,7 @@ export default function ProjectDetailPage() {
   const { toast } = useToast();
   const id = params.id as string;
   const [project, setProject] = useState<Requirement | null>(null);
+  const [stageTechniques, setStageTechniques] = useState<StageTechniques>({});
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -132,6 +137,9 @@ export default function ProjectDetailPage() {
         router.push('/dashboard');
       } else if (projectData) {
         setProject(projectData);
+        // Calculate and set the recommended techniques
+        const filteredTechniques = getFilteredTechniques(projectData);
+        setStageTechniques(filteredTechniques);
       }
       setIsLoading(false);
     };
@@ -165,7 +173,7 @@ export default function ProjectDetailPage() {
       <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between border-b border-border bg-background px-4">
         <Button variant="ghost" size="sm" onClick={() => router.push('/dashboard')} className="flex items-center gap-2">
             <ChevronLeft className="h-5 w-5" />
-            <span className="hidden md:inline">Back</span>
+            <span className="hidden md:inline">Back to Dashboard</span>
         </Button>
         <h1 className="text-xl font-bold text-center flex-1 truncate">
             {isLoading ? 'Loading...' : project?.project_name || 'Project Details'}
@@ -225,7 +233,7 @@ export default function ProjectDetailPage() {
               </CardContent>
             </Card>
 
-
+            <FiveDProcess techniques={stageTechniques} projectId={id} />
             
             <Separator />
             
@@ -258,18 +266,8 @@ export default function ProjectDetailPage() {
             </div>
             </>
           )}
-
-          {isLoading && !project && (
-            <>
-              <RequirementDetailSkeleton />
-              <RequirementDetailSkeleton />
-            </>
-          )}
-
         </div>
       </main>
     </div>
   );
 }
-
-    
