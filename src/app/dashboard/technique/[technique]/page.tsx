@@ -117,7 +117,6 @@ export default function TechniqueDetailPage() {
   const [isSharing, startShareTransition] = useTransition();
 
   const shareableContentRef = useRef<HTMLDivElement>(null);
-  const effectRan = useRef(false);
 
   const form = useForm<TechniqueRemixData>({
     resolver: zodResolver(techniqueRemixSchema),
@@ -147,19 +146,13 @@ export default function TechniqueDetailPage() {
     }
   }, [searchParams]);
 
+  // FIX: This effect ONLY handles loading the static descriptive content.
+  // It is synchronous and only depends on the slug from the URL.
   useEffect(() => {
-    if (process.env.NODE_ENV === 'development' && effectRan.current) {
-        return;
-    }
-    effectRan.current = true;
-
-    console.log(`[DEBUG] 1. useEffect triggered. Slug: ${techniqueSlug}`);
     if (!techniqueSlug) return;
-    
     setIsLoading(true);
 
     const matchedTechnique = allTechniqueDetails.find(t => t.slug === techniqueSlug) as TechniqueDetailsOutput | undefined;
-    console.log(`[DEBUG] 2. Matched technique from JSON:`, matchedTechnique?.name || 'Not Found');
     
     if (!matchedTechnique) {
       toast({
@@ -171,40 +164,46 @@ export default function TechniqueDetailPage() {
       return;
     }
     
+    // This is now the ONLY place where setDetails is called.
     setDetails(matchedTechnique);
-    
+
+  }, [techniqueSlug, router, toast]);
+
+
+  // FIX: This second effect ONLY handles loading the dynamic user data.
+  // It runs AFTER the `details` have been set by the first effect.
+  useEffect(() => {
+    // Wait until the static details are loaded before proceeding.
+    if (!details) return;
+
     const loadRemixData = async () => {
       if (remixedTechniqueIdFromUrl) {
-        console.log(`[DEBUG] 3a. Remix ID found: ${remixedTechniqueIdFromUrl}, fetching data...`);
+        // If there's a remix ID, fetch the saved data from the database.
         const { data: remixedData, error } = await fetchRemixedTechniqueById(remixedTechniqueIdFromUrl);
-
         if (remixedData) {
           form.reset(remixedData as any);
         } else if (error) {
           toast({ title: 'Error', description: 'Could not load your saved work.' });
         }
       } else {
-        console.log(`[DEBUG] 3b. No remix ID, setting default form values from JSON.`);
+        // If no remix ID, this is a new remix. Populate the form with defaults from the static `details`.
         form.reset({
-          technique_name: matchedTechnique.name,
+          technique_name: details.name,
           project_id: fromProjectId,
-          overview: matchedTechnique.overview || '',
-          prerequisites: (matchedTechnique.prerequisites || []).map((p, i) => ({ id: `prereq-${i}`, text: p, checked: false })),
-          executionSteps: (matchedTechnique.executionSteps || []).map(s => ({ id: `step-${s.step}`, text: `${s.title}: ${s.description}`, checked: false })),
+          overview: details.overview || '',
+          prerequisites: (details.prerequisites || []).map((p, i) => ({ id: `prereq-${i}`, text: p, checked: false })),
+          executionSteps: (details.executionSteps || []).map(s => ({ id: `step-${s.step}`, text: `${s.title}: ${s.description}`, checked: false })),
           date: '', duration: '', teamSize: '', why: '', problemStatement: '', role: '',
           attachments: { files: [], links: [], notes: [] },
         });
       }
+      // All data loading is complete.
       setIsLoading(false);
     };
 
     loadRemixData();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [techniqueSlug]);
+  }, [details, remixedTechniqueIdFromUrl, fromProjectId, form, toast]);
 
-  useEffect(() => {
-    console.log('[DEBUG] details state updated:', details);
-  },[details]);
 
   const { fields: prereqFields, append: appendPrereq, remove: removePrereq } = useFieldArray({
     control: form.control,
