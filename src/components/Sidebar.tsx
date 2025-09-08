@@ -16,6 +16,7 @@ import { Label } from '@/components/ui/label';
 import { LogOut, Settings, Moon, UserCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Skeleton } from './ui/skeleton';
+import { Logo } from './logo';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -84,7 +85,10 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent side="left" className="flex w-[280px] flex-col bg-background">
         <SheetHeader className="text-left">
-          <SheetTitle className="text-2xl font-bold">Menu</SheetTitle>
+          <SheetTitle className="flex items-center gap-3 text-2xl font-bold">
+            <Logo className="h-8 w-8 text-primary" />
+            <span>Profolio</span>
+          </SheetTitle>
         </SheetHeader>
         <div className="flex items-center gap-3 py-4">
             <UserCircle className="h-10 w-10 text-muted-foreground" />
