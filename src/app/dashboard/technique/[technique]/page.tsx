@@ -479,7 +479,7 @@ export default function TechniqueDetailPage() {
     control: any;
     name: 'prerequisites' | 'executionSteps';
     append: (val: any) => void;
-    remove: (indices: number[]) => void;
+    remove: (indices: number[] | number) => void;
     title: string;
   }) => {
     const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
@@ -490,11 +490,11 @@ export default function TechniqueDetailPage() {
         .map((item, index) => (item.checked ? index : -1))
         .filter(index => index !== -1);
       setSelectedIndices(newSelected);
-    }, [watchedItems]);
+    }, [watchedItems, name]);
   
     const handleSelectAll = (checked: boolean) => {
       watchedItems.forEach((_, index) => {
-        form.setValue(`${name}.${index}.checked`, checked);
+        form.setValue(`${name}.${index}.checked`, checked, { shouldDirty: true });
       });
     };
   
@@ -504,7 +504,7 @@ export default function TechniqueDetailPage() {
       remove(sortedIndices);
     };
 
-    const isAllSelected = selectedIndices.length > 0 && selectedIndices.length === watchedItems.length;
+    const isAllSelected = watchedItems.length > 0 && selectedIndices.length === watchedItems.length;
     const showActions = selectedIndices.length > 0;
   
     const AddButton = (
@@ -528,7 +528,7 @@ export default function TechniqueDetailPage() {
         </div>
         <Button
           type="button"
-          variant="destructive-outline"
+          variant="outline"
           size="sm"
           onClick={handleDeleteSelected}
         >
@@ -540,30 +540,37 @@ export default function TechniqueDetailPage() {
   
     return (
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="flex flex-row items-center justify-between min-h-[64px]">
           <CardTitle className="text-2xl">{title}</CardTitle>
-          <div className="relative h-9 w-[180px]">
-            <div className={cn("absolute inset-0 transition-all duration-300", !showActions ? "opacity-100 transform-none" : "opacity-0 -translate-x-4")}>
+          <div className="relative h-9 w-[190px]">
+            <div className={cn("absolute inset-0 transition-all duration-300 flex items-center justify-end", !showActions ? "opacity-100 transform-none" : "opacity-0 -translate-x-4")}>
                 {!showActions && AddButton}
             </div>
-            <div className={cn("absolute inset-0 transition-all duration-300", showActions ? "opacity-100 transform-none" : "opacity-0 translate-x-4")}>
+            <div className={cn("absolute inset-0 transition-all duration-300 flex items-center justify-end", showActions ? "opacity-100 transform-none" : "opacity-0 translate-x-4")}>
                 {showActions && ActionsToolbar}
             </div>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2">
+          <div className="space-y-3">
             {fieldArray.map((field: any, index: number) => (
-              <div key={field.id} className="flex items-center gap-2">
+              <div
+                key={field.id}
+                className={cn(
+                  'flex items-center gap-3 rounded-lg border-2 border-input bg-transparent px-3 transition-colors has-[:focus]:border-ring',
+                  form.getValues(`${name}.${index}.checked`) && 'border-primary'
+                )}
+              >
                 <FormField
                   control={control}
                   name={`${name}.${index}.checked`}
-                  render={({ field }) => (
-                    <FormItem>
+                  render={({ field: checkboxField }) => (
+                    <FormItem className="flex items-center">
                       <FormControl>
                         <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
+                          checked={checkboxField.value}
+                          onCheckedChange={checkboxField.onChange}
+                          className="h-5 w-5"
                         />
                       </FormControl>
                     </FormItem>
@@ -572,7 +579,7 @@ export default function TechniqueDetailPage() {
                 <Input
                   {...form.register(`${name}.${index}.text`)}
                   placeholder="New item..."
-                  className="flex-1"
+                  className="h-auto flex-1 border-0 bg-transparent p-0 py-2.5 focus-visible:ring-0 focus-visible:ring-offset-0"
                 />
               </div>
             ))}
