@@ -187,58 +187,56 @@ export default function TechniqueDetailPage() {
 
   useEffect(() => {
     if (!techniqueName) return;
-    form.setValue('technique_name', techniqueName);
 
     const loadPageData = async () => {
-      setIsLoading(true);
+        setIsLoading(true);
 
-      const baseDetails = allTechniqueDetails.find(
-        (t) => t.name.toLowerCase() === techniqueName.toLowerCase()
-      ) as TechniqueDetailsOutput | undefined;
+        const baseDetails = allTechniqueDetails.find(
+            (t) => t.name.toLowerCase() === techniqueName.toLowerCase()
+        ) as TechniqueDetailsOutput | undefined;
 
-      if (!baseDetails) {
-        toast({ title: 'Error', description: 'Technique details not found.', variant: 'destructive' });
-        setIsLoading(false);
-        router.push('/dashboard');
-        return;
-      }
-      
-      setDetails(baseDetails);
-
-      let remixedDataToLoad: RemixedTechnique | null = null;
-      if (remixedTechniqueIdFromUrl) {
-        const { data: remixedData, error } = await fetchRemixedTechniqueById(remixedTechniqueIdFromUrl);
-        if (error) {
-          toast({ title: 'Error', description: 'Could not load your saved work.' });
-        } else {
-          remixedDataToLoad = remixedData;
+        if (!baseDetails) {
+            toast({ title: 'Error', description: 'Technique details not found.', variant: 'destructive' });
+            router.push('/dashboard');
+            return;
         }
-      }
 
-      if (remixedDataToLoad) {
-        form.reset(remixedDataToLoad as any);
-      } else {
-        form.reset({
-          technique_name: techniqueName,
-          project_id: fromProjectId,
-          overview: baseDetails.overview || '',
-          prerequisites: (baseDetails.prerequisites || []).map((p, i) => ({ id: `prereq-${i}`, text: p, checked: false })),
-          executionSteps: (baseDetails.executionSteps || []).map(s => ({ id: `step-${s.step}`, text: `${s.title}: ${s.description}`, checked: false })),
-          date: '',
-          duration: '',
-          teamSize: '',
-          why: '',
-          problemStatement: '',
-          role: '',
-          attachments: { files: [], links: [], notes: [] },
-        });
-      }
+        setDetails(baseDetails);
 
-      setIsLoading(false);
+        let remixedDataToLoad: RemixedTechnique | null = null;
+        if (remixedTechniqueIdFromUrl) {
+            const { data, error } = await fetchRemixedTechniqueById(remixedTechniqueIdFromUrl);
+            if (error) {
+                toast({ title: 'Error', description: 'Could not load your saved work.' });
+            } else {
+                remixedDataToLoad = data;
+            }
+        }
+
+        if (remixedDataToLoad) {
+            form.reset(remixedDataToLoad as any);
+        } else {
+            // This is a new remix, so set up the form with default values from the static details.
+            form.reset({
+                technique_name: techniqueName,
+                project_id: fromProjectId,
+                overview: baseDetails.overview || '',
+                prerequisites: (baseDetails.prerequisites || []).map((p, i) => ({ id: `prereq-${i}`, text: p, checked: false })),
+                executionSteps: (baseDetails.executionSteps || []).map(s => ({ id: `step-${s.step}`, text: `${s.title}: ${s.description}`, checked: false })),
+                date: '',
+                duration: '',
+                teamSize: '',
+                why: '',
+                problemStatement: '',
+                role: '',
+                attachments: { files: [], links: [], notes: [] },
+            });
+        }
+        setIsLoading(false);
     };
 
     loadPageData();
-  }, [techniqueName, remixedTechniqueIdFromUrl, toast, form, fromProjectId, router]);
+  }, [techniqueName, remixedTechniqueIdFromUrl, fromProjectId, form, router, toast]);
 
 
   const copyToClipboard = (text: string) => {
@@ -654,5 +652,3 @@ export default function TechniqueDetailPage() {
     </>
   );
 }
-
-    

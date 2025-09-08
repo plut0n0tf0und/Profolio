@@ -57,5 +57,3 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
 
   return recommendations;
 }
-
-    
