@@ -76,8 +76,6 @@ const techniqueRemixSchema = z.object({
 
 type TechniqueRemixData = z.infer<typeof techniqueRemixSchema>;
 
-// This is a new interface combining the static JSON data with the dynamic form data
-// It's not used directly but helps understand the technique's data model.
 type FullTechniqueDetails = TechniqueDetailsOutput & { name: string, slug: string };
 
 const TechniqueDetailsSkeleton = () => (
@@ -144,81 +142,58 @@ export default function TechniqueDetailPage() {
       },
     }
   });
-  
-  // FIX: This is the definitive data-loading hook.
-  // It's structured as a single, sequential flow to prevent race conditions.
+
   useEffect(() => {
-    // This guard prevents the effect from running twice in React Strict Mode (development)
     if (process.env.NODE_ENV === 'development' && effectRan.current) {
         return;
     }
     effectRan.current = true;
 
-    // A single async function to orchestrate all data loading.
     const loadAllData = async () => {
-        console.debug(`[DEBUG] 1. Data loading sequence started. Slug: ${techniqueSlug}`);
-        if (!techniqueSlug) return;
-        
-        setIsLoading(true);
+      console.debug(`[DEBUG] Data loading sequence started. Slug: ${techniqueSlug}`);
+      if (!techniqueSlug) return;
+      
+      setIsLoading(true);
 
-        // Step 1: Synchronously find the static technique data from the JSON file.
-        const matchedTechnique = allTechniqueDetails.find(t => t.slug === techniqueSlug) as FullTechniqueDetails | undefined;
-        console.debug(`[DEBUG] 2. Matched technique from JSON:`, matchedTechnique?.name || 'Not Found');
-        
-        if (!matchedTechnique) {
-          toast({
-            title: 'Error: Technique Not Found',
-            description: 'The requested technique could not be found. You are being redirected.',
-            variant: 'destructive',
+      const matchedTechnique = allTechniqueDetails.find(t => t.slug === techniqueSlug) as FullTechniqueDetails | undefined;
+      
+      if (!matchedTechnique) {
+        toast({ title: 'Error: Technique Not Found', variant: 'destructive' });
+        router.push('/dashboard');
+        return;
+      }
+      
+      console.debug("[DEBUG] Static JSON loaded:", matchedTechnique.name);
+      setDetails(matchedTechnique);
+
+      if (remixedTechniqueIdFromUrl) {
+          console.debug(`[DEBUG] Remix ID found: ${remixedTechniqueIdFromUrl}. Fetching dynamic Firebase data...`);
+          const { data: remixedData } = await fetchRemixedTechniqueById(remixedTechniqueIdFromUrl);
+          if (remixedData) {
+            console.debug("[DEBUG] Dynamic Firebase data loaded.");
+            form.reset(remixedData as any);
+          }
+      } else {
+          console.debug("[DEBUG] No Remix ID found. Setting default form values.");
+          form.reset({
+            technique_name: matchedTechnique.name,
+            project_id: fromProjectId,
+            overview: matchedTechnique.overview || '',
+            prerequisites: (matchedTechnique.prerequisites || []).map((p, i) => ({ id: `prereq-${i}`, text: p, checked: false })),
+            executionSteps: (matchedTechnique.executionSteps || []).map(s => ({ id: `step-${s.step}`, text: `${s.title}: ${s.description}`, checked: false })),
+            date: '', duration: '', teamSize: '', why: '', problemStatement: '', role: '',
+            attachments: { files: [], links: [], notes: [] },
           });
-          router.push('/dashboard');
-          return;
-        }
-        
-        // Step 2: Set the static details state. This is crucial for rendering the read-only view.
-        setDetails(matchedTechnique);
+      }
 
-        // Step 3: Handle dynamic data (saved user work or default form values).
-        if (remixedTechniqueIdFromUrl) {
-            console.debug(`[DEBUG] 3a. Remix ID found: ${remixedTechniqueIdFromUrl}, fetching saved data...`);
-            const { data: remixedData, error } = await fetchRemixedTechniqueById(remixedTechniqueIdFromUrl);
-
-            if (remixedData) {
-              form.reset(remixedData as any);
-            } else if (error) {
-              toast({ title: 'Error', description: 'Could not load your saved work.' });
-            }
-        } else {
-            console.debug(`[DEBUG] 3b. No remix ID, setting default form values from static JSON.`);
-            // When creating a new remix, populate the form with defaults from the static data.
-            form.reset({
-              technique_name: matchedTechnique.name,
-              project_id: fromProjectId,
-              overview: matchedTechnique.overview || '',
-              prerequisites: (matchedTechnique.prerequisites || []).map((p, i) => ({ id: `prereq-${i}`, text: p, checked: false })),
-              executionSteps: (matchedTechnique.executionSteps || []).map(s => ({ id: `step-${s.step}`, text: `${s.title}: ${s.description}`, checked: false })),
-              date: '', duration: '', teamSize: '', why: '', problemStatement: '', role: '',
-              attachments: { files: [], links: [], notes: [] },
-            });
-        }
-
-        // Step 4: All data is loaded, so we can stop the loading indicator.
-        setIsLoading(false);
-        console.debug(`[DEBUG] 4. Data loading finished. isLoading is now false.`);
+      console.debug("[DEBUG] Details state is fully ready for rendering.");
+      setIsLoading(false);
     };
 
     loadAllData();
-  // The hook should only re-run if the slug changes (i.e., user navigates to a new technique).
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [techniqueSlug, remixedTechniqueIdFromUrl, fromProjectId]);
-
   
-  useEffect(() => {
-    // This effect is purely for debugging, to see when the details state updates.
-    console.debug('[DEBUG] `details` state updated to:', details ? details.name : null);
-  }, [details]);
-
-
   useEffect(() => {
     if (searchParams.get('edit') === 'true') {
       setIsEditMode(true);
@@ -342,7 +317,6 @@ export default function TechniqueDetailPage() {
     });
   };
 
-  // Read-only view
   const renderReadOnlyView = () => (
     <div className="space-y-8" ref={shareableContentRef}>
         <Card className="overflow-hidden">
@@ -456,11 +430,9 @@ export default function TechniqueDetailPage() {
 );
 
 
-  // Editable Form view
   const renderEditView = () => (
     <FormProvider {...form}>
     <form onSubmit={form.handleSubmit(onSaveAndPreview)} className="space-y-8">
-      {/* Meta Information Section */}
       <Card>
         <CardHeader>
           <CardTitle>Technique Details</CardTitle>
@@ -477,7 +449,6 @@ export default function TechniqueDetailPage() {
         </CardContent>
       </Card>
       
-      {/* Prerequisites Section */}
       <SectionCard title="Prerequisites" action={
         <Button type="button" variant="ghost" size="sm" onClick={() => appendPrereq({ id: `prereq-${Date.now()}`, text: '', checked: false })}>
           <PlusCircle className="mr-2 h-4 w-4"/> Add Item
@@ -509,7 +480,6 @@ export default function TechniqueDetailPage() {
         </div>
       </SectionCard>
 
-      {/* Execution Steps Section */}
        <SectionCard title="Execution Steps" action={
         <Button type="button" variant="ghost" size="sm" onClick={() => appendStep({ id: `step-${Date.now()}`, text: '', checked: false })}>
           <PlusCircle className="mr-2 h-4 w-4"/> Add Step
@@ -541,13 +511,11 @@ export default function TechniqueDetailPage() {
         </div>
       </SectionCard>
 
-      {/* Attachments Section */}
       <Card>
         <CardHeader>
             <CardTitle>References &amp; Attachments</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-            {/* Files */}
             <div>
                 <FormLabel>Files (Images, PDFs)</FormLabel>
                 <div className="mt-2 space-y-2">
@@ -566,7 +534,6 @@ export default function TechniqueDetailPage() {
                 </Button>
             </div>
             
-            {/* Links */}
             <div>
                 <FormLabel>Links</FormLabel>
                 <div className="mt-2 space-y-2">
@@ -585,7 +552,6 @@ export default function TechniqueDetailPage() {
                 </Button>
             </div>
 
-            {/* Notes */}
             <div>
                 <FormLabel>Text Notes</FormLabel>
                 <div className="mt-2 space-y-2">
