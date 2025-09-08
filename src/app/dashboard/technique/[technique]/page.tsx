@@ -26,8 +26,8 @@ import type { TechniqueDetailsOutput } from '@/ai/flows/get-technique-details';
 
 const unslugify = (slug: string) => {
   if (!slug) return '';
-  return slug
-    .split('-')
+  const words = slug.split('-');
+  return words
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
 };
@@ -187,7 +187,6 @@ export default function TechniqueDetailPage() {
     const loadPageData = async () => {
         setIsLoading(true);
 
-        // Step 1: Always load base details from local JSON
         const baseDetails = allTechniqueDetails.find(
             (t) => t.name.toLowerCase() === techniqueName.toLowerCase()
         ) as TechniqueDetailsOutput | undefined;
@@ -200,7 +199,6 @@ export default function TechniqueDetailPage() {
         setDetails(baseDetails);
 
         let remixedDataToLoad: RemixedTechnique | null = null;
-        // Step 2: If there's an ID, load saved data from DB
         if (remixedTechniqueIdFromUrl) {
             const { data, error } = await fetchRemixedTechniqueById(remixedTechniqueIdFromUrl);
             if (error) {
@@ -211,12 +209,9 @@ export default function TechniqueDetailPage() {
             }
         }
 
-        // Step 3: Populate the form
         if (remixedDataToLoad) {
-            // If we have saved data, use it to reset the form
             form.reset(remixedDataToLoad as any);
         } else {
-            // Otherwise, this is a new remix. Set up the form with defaults from base details.
             form.reset({
                 technique_name: techniqueName,
                 project_id: fromProjectId,
@@ -259,8 +254,6 @@ export default function TechniqueDetailPage() {
     setIsEditMode(false);
     setIsBackAlertOpen(false);
     if (!remixedTechniqueId) {
-        // If it was a new remix, reset to default, otherwise we keep the saved data
-        // This is handled by the useEffect re-triggering fetchDefaultDetails
         router.replace(`/dashboard/technique/${techniqueSlug}${fromProjectId ? `?projectId=${fromProjectId}`: ''}`);
     }
   };
@@ -301,7 +294,6 @@ export default function TechniqueDetailPage() {
   
   const onSaveAndPreview = (data: TechniqueRemixData) => {
     startSaveTransition(async () => {
-      // The payload includes the ID if it exists, for updating.
       const payload = { ...data, id: remixedTechniqueId ?? undefined };
   
       const { data: savedData, error } = await saveOrUpdateRemixedTechnique(payload);
@@ -321,7 +313,6 @@ export default function TechniqueDetailPage() {
   
         setRemixedTechniqueId(savedData.id);
   
-        // Ensure the URL reflects the state of the saved data (remixId and projectId)
         const newUrl = `${window.location.pathname}?edit=true&remixId=${savedData.id}${savedData.project_id ? `&projectId=${savedData.project_id}` : ''}`;
         if (window.location.href !== newUrl) {
             router.replace(newUrl);
