@@ -8,31 +8,57 @@ import { generateUUID } from './utils';
 ================================================================================
 REQUIRED RLS POLICIES FOR SUPABASE
 Run these in the Supabase SQL Editor to fix data access issues.
-================================s================================================
+================================================================================
 */
 
 /*
--- 1. Policies for `requirements` table
+-- 1. Make sure uuid-ossp extension is enabled
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA "extensions";
+
+-- 2. RLS Policies for `requirements` table
 ALTER TABLE public.requirements ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Users can insert their own requirements" ON public.requirements;
 CREATE POLICY "Users can insert their own requirements" ON public.requirements FOR INSERT TO authenticated WITH CHECK (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Users can view their own requirements" ON public.requirements;
 CREATE POLICY "Users can view their own requirements" ON public.requirements FOR SELECT TO authenticated USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Users can update their own requirements" ON public.requirements;
 CREATE POLICY "Users can update their own requirements" ON public.requirements FOR UPDATE TO authenticated USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Users can delete their own requirements" ON public.requirements;
 CREATE POLICY "Users can delete their own requirements" ON public.requirements FOR DELETE TO authenticated USING (auth.uid() = user_id);
 
--- 2. Policies for `saved_results` table
+-- 3. RLS Policies for `saved_results` table
 ALTER TABLE public.saved_results ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Allow users to view their own projects" ON public.saved_results FOR SELECT TO authenticated USING (auth.uid() = user_id);
-CREATE POLICY "Allow users to insert their own projects" ON public.saved_results FOR INSERT TO authenticated WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "Allow users to update their own projects" ON public.saved_results FOR UPDATE TO authenticated USING (auth.uid() = user_id);
-CREATE POLICY "Allow users to delete their own projects" ON public.saved_results FOR DELETE TO authenticated USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Users can view their own projects" ON public.saved_results;
+CREATE POLICY "Users can view their own projects" ON public.saved_results FOR SELECT TO authenticated USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Users can insert their own projects" ON public.saved_results;
+CREATE POLICY "Users can insert their own projects" ON public.saved_results FOR INSERT TO authenticated WITH CHECK (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Users can update their own projects" ON public.saved_results;
+CREATE POLICY "Users can update their own projects" ON public.saved_results FOR UPDATE TO authenticated USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Users can delete their own projects" ON public.saved_results;
+CREATE POLICY "Users can delete their own projects" ON public.saved_results FOR DELETE TO authenticated USING (auth.uid() = user_id);
 
--- 3. Policies for `remixed_techniques` table
+-- 4. RLS Policies for `remixed_techniques` table
+-- Foreign Key: remixed_techniques.project_id -> saved_results.id
 ALTER TABLE public.remixed_techniques ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow users to manage their own remixed techniques" ON public.remixed_techniques;
 CREATE POLICY "Allow users to manage their own remixed techniques" ON public.remixed_techniques FOR ALL TO authenticated USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+
+-- 5. Function to delete user data
+CREATE OR REPLACE FUNCTION delete_user_data()
+RETURNS void AS $$
+BEGIN
+  -- Delete from tables that reference auth.users
+  DELETE FROM requirements WHERE user_id = auth.uid();
+  DELETE FROM saved_results WHERE user_id = auth.uid();
+  DELETE FROM remixed_techniques WHERE user_id = auth.uid();
+  -- Finally, delete the user from auth.users
+  DELETE FROM auth.users WHERE id = auth.uid();
+END;
+$$ LANGUAGE plpgsql;
 */
 
 
-// Zod schema for validation, matches the 'requirements' table and 'saved_results' table structure.
+// Zod schema for validation, matches the 'requirements' table structure.
 const RequirementSchema = z.object({
   id: z.string().uuid(),
   created_at: z.string().optional(),
@@ -45,12 +71,16 @@ const RequirementSchema = z.object({
   outcome: z.array(z.string()).optional(),
   device_type: z.array(z.string()).optional(),
   project_type: z.enum(['new', 'old']).optional(),
-  // Fields specific to saved_results
-  requirement_id: z.string().optional(),
+});
+export type Requirement = z.infer<typeof RequirementSchema>;
+
+// Zod schema for the 'saved_results' table, which is an extension of Requirement
+const SavedResultSchema = RequirementSchema.extend({
+  requirement_id: z.string(),
   stage_techniques: z.any().optional(),
 });
+export type SavedResult = z.infer<typeof SavedResultSchema>;
 
-export type Requirement = z.infer<typeof RequirementSchema>;
 
 // Schema for the remixed technique form data
 const TechniqueRemixSchema = z.object({
@@ -183,7 +213,7 @@ export async function fetchRequirementById(
     .select('*')
     .eq('id', id)
     .eq('user_id', user.id)
-    .single();
+    .maybeSingle();
 
   if (data?.date) data.date = new Date(data.date);
 
@@ -192,8 +222,8 @@ export async function fetchRequirementById(
 
 export async function saveOrUpdateResult(
   requirementId: string,
-  resultData: Partial<Requirement>
-): Promise<{ data: Requirement | null; error: any | null }> {
+  resultData: Partial<SavedResult>
+): Promise<{ data: SavedResult | null; error: any | null }> {
   try {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return { data: null, error: { message: 'User not authenticated', code: '401' } };
@@ -239,8 +269,8 @@ export async function saveOrUpdateResult(
 
 export async function updateSavedResult(
   id: string,
-  updates: Partial<Requirement>
-): Promise<{ data: Requirement | null; error: PostgrestError | null }> {
+  updates: Partial<SavedResult>
+): Promise<{ data: SavedResult | null; error: PostgrestError | null }> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { data: null, error: { message: 'User not authenticated', details: '', hint: '', code: '401', name: '' } };
 
@@ -255,7 +285,7 @@ export async function updateSavedResult(
   return { data, error };
 }
 
-export async function fetchSavedResults(): Promise<{ data: Requirement[] | null; error: PostgrestError | null }> {
+export async function fetchSavedResults(): Promise<{ data: SavedResult[] | null; error: PostgrestError | null }> {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return { data: null, error: { message: 'User not authenticated', details: '', hint: '', code: '401', name: '' } };
 
@@ -270,7 +300,7 @@ export async function fetchSavedResults(): Promise<{ data: Requirement[] | null;
 
 export async function fetchSavedResultById(
   id: string
-): Promise<{ data: Requirement | null; error: PostgrestError | null }> {
+): Promise<{ data: SavedResult | null; error: PostgrestError | null }> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { data: null, error: { message: 'User not authenticated', details: '', hint: '', code: '401', name: '' } };
 
@@ -279,7 +309,7 @@ export async function fetchSavedResultById(
     .select('*')
     .eq('id', id)
     .eq('user_id', user.id)
-    .single();
+    .maybeSingle();
 
   return { data, error };
 }
@@ -330,15 +360,18 @@ export async function saveOrUpdateRemixedTechnique(
 
     let currentProjectId = techniqueData.project_id;
 
-    // 🔹 Create placeholder project if none provided
+    // Create placeholder project if none provided
     if (!currentProjectId) {
       const placeholderProject = {
         user_id: user.id,
-        requirement_id: generateUUID().toString(), // always string
+        requirement_id: generateUUID(),
         project_name: `Standalone - ${techniqueData.technique_name || "Technique"}`,
         role: techniqueData.role || "N/A",
         problem_statement: techniqueData.problemStatement || "N/A",
         date: new Date().toISOString(),
+        output_type: ['Wireframe'],
+        outcome: ['Insight'],
+        device_type: ['Desktop'],
       };
 
       const { data: newProject, error: projectError } = await supabase
@@ -352,7 +385,6 @@ export async function saveOrUpdateRemixedTechnique(
         return { data: null, error: projectError };
       }
       if (!newProject?.id) {
-        console.error("No project ID returned from insert");
         return { data: null, error: new Error("Could not create placeholder project.") };
       }
 
@@ -367,9 +399,9 @@ export async function saveOrUpdateRemixedTechnique(
 
     const existingId = dataToSave.id;
     delete dataToSave.id;
+    delete dataToSave.saved_results;
 
     if (existingId) {
-      // 🔹 Update
       const { data, error } = await supabase
         .from("remixed_techniques")
         .update(dataToSave)
@@ -384,7 +416,6 @@ export async function saveOrUpdateRemixedTechnique(
       }
       return { data, error: null };
     } else {
-      // 🔹 Insert
       const { data, error } = await supabase
         .from("remixed_techniques")
         .insert(dataToSave)
@@ -397,7 +428,8 @@ export async function saveOrUpdateRemixedTechnique(
       }
       return { data, error: null };
     }
-  } catch (error: any) {
+  } catch (error: any)
+{
     console.error("Unexpected error in saveOrUpdateRemixedTechnique:", error);
     return { data: null, error };
   }
@@ -413,7 +445,7 @@ export async function fetchRemixedTechniqueById(id: string): Promise<{ data: Rem
         .select('*')
         .eq('id', id)
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
     return { data, error };
 }
