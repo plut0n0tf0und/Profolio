@@ -26,6 +26,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { getTechniqueDetails, type TechniqueDetailsOutput } from '@/ai/flows/get-technique-details';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import { Label } from '@/components/ui/label';
 
 const SectionCard = ({ title, children, action, noPadding }: { title: string, children: React.ReactNode, action?: React.ReactNode, noPadding?: boolean }) => (
   <Card>
@@ -596,7 +597,7 @@ export default function TechniqueDetailPage() {
                 control={form.control}
                 name="date"
                 render={({ field }) => (
-                  <FormItem className='flex flex-col'>
+                  <FormItem>
                     <FormLabel>Date</FormLabel>
                     <Popover>
                       <PopoverTrigger asChild>
