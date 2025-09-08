@@ -110,7 +110,6 @@ export default function TechniqueDetailPage() {
   const remixedTechniqueIdFromUrl = searchParams.get('remixId');
 
   const [details, setDetails] = useState<TechniqueDetailsOutput | null>(null);
-  const [techniqueName, setTechniqueName] = useState<string>('Technique');
   const [remixedTechniqueId, setRemixedTechniqueId] = useState<string | null>(remixedTechniqueIdFromUrl);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -174,15 +173,15 @@ export default function TechniqueDetailPage() {
   }, [searchParams]);
 
   useEffect(() => {
-    if (!techniqueSlug) return;
-  
     const loadPageData = async () => {
       setIsLoading(true);
-  
+
+      // Step 1: Find the base technique details from the JSON file using the slug.
       const baseDetails = allTechniqueDetails.find(
         (t) => t.slug === techniqueSlug
       ) as TechniqueDetailsOutput | undefined;
-  
+
+      // If no base details are found, the technique is invalid. Redirect.
       if (!baseDetails) {
         toast({
           title: 'Error',
@@ -193,46 +192,54 @@ export default function TechniqueDetailPage() {
         return;
       }
       
-      // Always set the base details for rendering the read-only view
+      // Step 2: Immediately set the details state. This is the crucial fix for the blank content.
       setDetails(baseDetails);
-      setTechniqueName(baseDetails.name);
-  
-      // Now, check if there's a remixed version to load
+
+      // Step 3: Check if we are editing an existing remix or creating a new one.
       if (remixedTechniqueIdFromUrl) {
+        // We are editing an existing remix. Fetch its data.
         setRemixedTechniqueId(remixedTechniqueIdFromUrl);
         const { data: remixedData, error } = await fetchRemixedTechniqueById(remixedTechniqueIdFromUrl);
+        
         if (error) {
           console.error("Error fetching remixed technique:", error);
           toast({ title: 'Error', description: 'Could not load your saved work.' });
-          // Even if it fails, we still have baseDetails to show
+          // Fallback to new remix defaults if fetch fails
+          form.reset({
+            technique_name: baseDetails.name,
+            project_id: fromProjectId,
+            overview: baseDetails.overview || '',
+            prerequisites: (baseDetails.prerequisites || []).map((p, i) => ({ id: `prereq-${i}`, text: p, checked: false })),
+            executionSteps: (baseDetails.executionSteps || []).map(s => ({ id: `step-${s.step}`, text: `${s.title}: ${s.description}`, checked: false })),
+            date: '', duration: '', teamSize: '', why: '', problemStatement: '', role: '',
+            attachments: { files: [], links: [], notes: [] },
+          });
         } else if (remixedData) {
-          // If we have saved data, reset the form with it
+          // If we have saved data, reset the form with it.
           form.reset(remixedData as any);
         }
       } else {
-        // This is a new remix, so populate the form with defaults from the base details
+        // This is a new remix. Populate the form with defaults from the base details.
         form.reset({
           technique_name: baseDetails.name,
           project_id: fromProjectId,
           overview: baseDetails.overview || '',
           prerequisites: (baseDetails.prerequisites || []).map((p, i) => ({ id: `prereq-${i}`, text: p, checked: false })),
           executionSteps: (baseDetails.executionSteps || []).map(s => ({ id: `step-${s.step}`, text: `${s.title}: ${s.description}`, checked: false })),
-          date: '',
-          duration: '',
-          teamSize: '',
-          why: '',
-          problemStatement: '',
-          role: '',
+          date: '', duration: '', teamSize: '', why: '', problemStatement: '', role: '',
           attachments: { files: [], links: [], notes: [] },
         });
       }
-  
+
       setIsLoading(false);
     };
-  
-    loadPageData();
+
+    if (techniqueSlug) {
+      loadPageData();
+    }
   }, [techniqueSlug, remixedTechniqueIdFromUrl, fromProjectId, form, router, toast]);
 
+  const techniqueName = useMemo(() => details?.name || '', [details]);
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -641,5 +648,3 @@ export default function TechniqueDetailPage() {
     </>
   );
 }
-
-    
