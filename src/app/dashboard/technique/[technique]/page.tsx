@@ -150,12 +150,12 @@ export default function TechniqueDetailPage() {
     effectRan.current = true;
 
     const loadAllData = async () => {
-      console.debug(`[DEBUG] Data loading sequence started. Slug: ${techniqueSlug}`);
       if (!techniqueSlug) return;
       
       setIsLoading(true);
 
       const matchedTechnique = allTechniqueDetails.find(t => t.slug === techniqueSlug) as FullTechniqueDetails | undefined;
+      console.debug("[DEBUG] Static JSON data loaded:", matchedTechnique?.name || "Not Found");
       
       if (!matchedTechnique) {
         toast({ title: 'Error: Technique Not Found', variant: 'destructive' });
@@ -163,18 +163,16 @@ export default function TechniqueDetailPage() {
         return;
       }
       
-      console.debug("[DEBUG] Static JSON loaded:", matchedTechnique.name);
+      console.debug("[DEBUG] Calling setDetails with object:", matchedTechnique);
       setDetails(matchedTechnique);
 
       if (remixedTechniqueIdFromUrl) {
-          console.debug(`[DEBUG] Remix ID found: ${remixedTechniqueIdFromUrl}. Fetching dynamic Firebase data...`);
           const { data: remixedData } = await fetchRemixedTechniqueById(remixedTechniqueIdFromUrl);
+          console.debug("[DEBUG] Dynamic Supabase data fetched and resolved:", remixedData);
           if (remixedData) {
-            console.debug("[DEBUG] Dynamic Firebase data loaded.");
             form.reset(remixedData as any);
           }
       } else {
-          console.debug("[DEBUG] No Remix ID found. Setting default form values.");
           form.reset({
             technique_name: matchedTechnique.name,
             project_id: fromProjectId,
@@ -186,13 +184,12 @@ export default function TechniqueDetailPage() {
           });
       }
 
-      console.debug("[DEBUG] Details state is fully ready for rendering.");
       setIsLoading(false);
     };
 
     loadAllData();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [techniqueSlug, remixedTechniqueIdFromUrl, fromProjectId]);
+  }, [techniqueSlug]);
   
   useEffect(() => {
     if (searchParams.get('edit') === 'true') {
@@ -317,7 +314,9 @@ export default function TechniqueDetailPage() {
     });
   };
 
-  const renderReadOnlyView = () => (
+  const renderReadOnlyView = () => {
+    console.debug("[DEBUG] renderReadOnlyView called. `details` is:", details ? "Populated" : "null");
+    return (
     <div className="space-y-8" ref={shareableContentRef}>
         <Card className="overflow-hidden">
             <CardHeader>
@@ -427,7 +426,7 @@ export default function TechniqueDetailPage() {
             </SectionCard>
         )}
     </div>
-);
+)};
 
 
   const renderEditView = () => (
