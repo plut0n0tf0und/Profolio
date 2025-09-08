@@ -96,6 +96,10 @@ export type RemixedTechnique = z.infer<typeof TechniqueRemixSchema>;
   CONSTRAINT remixed_techniques_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE
 );
 
+---
+REQUIRED RLS POLICIES FOR `remixed_techniques` TABLE (run this in Supabase SQL Editor):
+---
+
 ALTER TABLE public.remixed_techniques ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Allow users to manage their own remixed techniques"
@@ -106,8 +110,8 @@ USING (auth.uid() = user_id)
 WITH CHECK (auth.uid() = user_id);
 
 ---
-
 REQUIRED RLS POLICIES FOR `saved_results` TABLE (run this in Supabase SQL Editor):
+---
 
 -- 1. Enable RLS on the table
 ALTER TABLE public.saved_results ENABLE ROW LEVEL SECURITY;
@@ -509,9 +513,6 @@ export async function saveOrUpdateRemixedTechnique(
         role: techniqueData.role || 'N/A',
         problem_statement: techniqueData.problemStatement || 'N/A',
         date: new Date().toISOString(),
-        output_type: ['Presentation'], // text[]
-        outcome: ['Insight'], // text[]
-        device_type: ['Desktop'], // text[]
       };
 
       const { data: newProject, error: projectError } = await supabase
@@ -624,3 +625,5 @@ export async function fetchRemixedTechniquesByProjectId(projectId: string): Prom
 
     return { data, error };
 }
+
+    
