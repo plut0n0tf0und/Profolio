@@ -55,10 +55,11 @@ export default function DashboardPage() {
       setIsLoading(true);
       const { data, error } = await fetchSavedResults();
       if (error) {
+        console.error("Failed to load projects:", error);
         toast({
             title: 'Failed to load projects',
             description: 'Could not fetch your saved projects. Please try again.',
-            className: 'px-3 py-2 text-sm border border-neutral-300 bg-neutral-50 text-neutral-900 rounded-lg shadow-md',
+            variant: 'destructive'
         });
       } else if (data) {
         setProjects(data);

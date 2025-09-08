@@ -13,7 +13,7 @@ import { z } from 'zod';
 import type { RemixedTechnique } from '@/lib/supabaseClient';
 
 const FullPortfolioInputSchema = z.array(z.object({
-  project_id: z.string().nullable().optional(),
+  project_id: z.string().uuid().nullable().optional(),
   project_name: z.string(), // Added for grouping
   technique_name: z.string(),
   date: z.string().optional(),
@@ -124,10 +124,11 @@ const generateFullPortfolioFlow = ai.defineFlow(
     outputSchema: FullPortfolioOutputSchema,
   },
   async (input) => {
-    const { output } = await prompt({
+    const { output, usage } = await prompt({
       inputJsonString: JSON.stringify(input, null, 2)
     });
     if (!output) {
+      console.error("AI flow 'generateFullPortfolioFlow' failed to produce an output.", { usage });
       throw new Error('Failed to generate full portfolio.');
     }
     return output;

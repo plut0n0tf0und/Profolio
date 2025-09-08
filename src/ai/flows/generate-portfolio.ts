@@ -15,7 +15,7 @@ import type { RemixedTechnique } from '@/lib/supabaseClient';
 // We redefine the input schema here for the AI flow, based on RemixedTechnique
 const PortfolioInputSchema = z.object({
   technique_name: z.string(),
-  project_id: z.string().nullable().optional(),
+  project_id: z.string().uuid().nullable().optional(),
   date: z.string().optional(),
   duration: z.string().optional(),
   teamSize: z.string().optional(),
@@ -105,8 +105,9 @@ const generatePortfolioFlow = ai.defineFlow(
     outputSchema: PortfolioOutputSchema,
   },
   async (input) => {
-    const { output } = await prompt(input);
+    const { output, usage } = await prompt(input);
     if (!output) {
+      console.error("AI flow 'generatePortfolioFlow' failed to produce an output.", { usage });
       throw new Error('Failed to generate portfolio details.');
     }
     // The schema for prereqs/steps in the output is different from the input.

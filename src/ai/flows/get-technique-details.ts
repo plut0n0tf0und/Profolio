@@ -71,8 +71,9 @@ const getTechniqueDetailsFlow = ai.defineFlow(
     outputSchema: TechniqueDetailsOutputSchema,
   },
   async (input) => {
-    const { output } = await prompt(input);
+    const { output, usage } = await prompt(input);
     if (!output) {
+      console.error("AI flow 'getTechniqueDetailsFlow' failed to produce an output.", { usage });
       throw new Error('Failed to generate technique details.');
     }
     return output;

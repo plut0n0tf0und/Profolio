@@ -129,6 +129,7 @@ export default function ProjectDetailPage() {
       const { data: projectData, error: projectError } = await fetchSavedResultById(id);
 
       if (projectError) {
+        console.error("Error fetching project data:", projectError);
         toast({
             title: 'Error Fetching Project Data',
             description: projectError?.message || 'Could not retrieve project details.',
@@ -150,6 +151,7 @@ export default function ProjectDetailPage() {
     setIsDeleting(true);
     const { error } = await deleteSavedResult(id);
     if (error) {
+      console.error("Error deleting project:", error);
       toast({
         title: 'Delete Failed',
         description: 'Could not delete the project. Please try again.',

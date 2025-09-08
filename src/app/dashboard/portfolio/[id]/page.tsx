@@ -63,6 +63,7 @@ export default function PortfolioPage() {
             setIsLoading(true);
             const { data: techniqueData, error } = await fetchRemixedTechniqueById(id);
             if (error || !techniqueData) {
+                console.error("Error loading remixed technique:", error);
                 toast({ title: 'Error', description: 'Failed to load portfolio details.', variant: 'destructive' });
                 router.push('/dashboard');
                 return;

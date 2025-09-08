@@ -142,6 +142,7 @@ export default function ResultPage() {
       const { data, error } = await fetchRequirementById(id);
 
       if (error) {
+        console.error("Error fetching project requirement:", error);
         toast({
             title: 'Error Fetching Project',
             description: 'Could not retrieve project details. Please try again.',

@@ -49,15 +49,27 @@ export default function FullPortfolioPage() {
       setIsLoading(true);
       try {
         const { data, error } = await fetchAllRemixedTechniquesForUser();
-        if (error || !data || data.length === 0) {
+        if (error) {
+          console.error("Error fetching remixed techniques:", error);
           toast({
-            title: "No Content",
-            description: "You have not remixed any techniques yet. Remix a technique to see it here.",
+            title: "Error Loading Data",
+            description: "Could not fetch your saved work. Please try again.",
             variant: "destructive",
           });
           setPortfolio({ projects: [] }); // Empty state
           setIsLoading(false);
           return;
+        }
+
+        if (!data || data.length === 0) {
+            toast({
+              title: "No Content",
+              description: "You have not remixed any techniques yet. Remix a technique to see it here.",
+              variant: "destructive",
+            });
+            setPortfolio({ projects: [] }); // Empty state
+            setIsLoading(false);
+            return;
         }
 
         const enrichedData: EnrichedRemixedTechnique[] = data.map((item) => ({

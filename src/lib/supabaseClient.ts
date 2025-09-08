@@ -10,48 +10,49 @@ REQUIRED RLS POLICIES FOR SUPABASE
 Run these in the Supabase SQL Editor to fix data access issues.
 ================================================================================
 */
-
 /*
--- 1. Make sure uuid-ossp extension is enabled
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA "extensions";
+-- 1. Make sure uuid-ossp extension is enabled if not already.
+-- CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA "extensions";
 
--- 2. RLS Policies for `requirements` table
+-- 2. RLS Policies for `requirements` table (Users can manage their own records)
 ALTER TABLE public.requirements ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Users can manage their own requirements" ON public.requirements;
-CREATE POLICY "Users can manage their own requirements" ON public.requirements FOR ALL TO authenticated USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can manage their own requirements" ON public.requirements FOR ALL
+  TO authenticated
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
 
--- 3. RLS Policies for `saved_results` table
--- Foreign Key: saved_results.requirement_id -> requirements.id
+-- 3. RLS Policies for `saved_results` table (Users can manage their own records)
 ALTER TABLE public.saved_results ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Users can manage their own saved results" ON public.saved_results;
-CREATE POLICY "Users can manage their own saved results" ON public.saved_results FOR ALL TO authenticated USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can manage their own saved results" ON public.saved_results FOR ALL
+  TO authenticated
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
 
--- 4. RLS Policies for `remixed_techniques` table
--- Foreign Key: remixed_techniques.project_id -> saved_results.id
+-- 4. RLS Policies for `remixed_techniques` table (Users can manage their own records)
+-- This table has a Foreign Key: remixed_techniques.project_id -> saved_results.id
 ALTER TABLE public.remixed_techniques ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Users can manage their own remixed techniques" ON public.remixed_techniques;
-CREATE POLICY "Users can manage their own remixed techniques" ON public.remixed_techniques FOR ALL TO authenticated USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can manage their own remixed techniques" ON public.remixed_techniques FOR ALL
+  TO authenticated
+  USING (auth.uid() = user_id)
+  WITH CHECK (auth.uid() = user_id);
 
--- 5. Function to delete user data
+-- 5. Function to delete all of a user's data upon account deletion
 CREATE OR REPLACE FUNCTION delete_user_data()
 RETURNS void AS $$
 BEGIN
-  -- Delete from tables that reference auth.users
+  -- Delete from tables that reference auth.users, which will cascade
   DELETE FROM requirements WHERE user_id = auth.uid();
   DELETE FROM saved_results WHERE user_id = auth.uid();
   DELETE FROM remixed_techniques WHERE user_id = auth.uid();
-  -- Finally, delete the user from auth.users
+  
+  -- Finally, delete the user from auth.users itself
   DELETE FROM auth.users WHERE id = auth.uid();
 END;
 $$ LANGUAGE plpgsql;
-
--- FOREIGN KEY DEFINITION for remixed_techniques:
--- CONSTRAINT remixed_techniques_project_id_fkey 
--- FOREIGN KEY (project_id) 
--- REFERENCES public.saved_results(id) ON DELETE SET NULL;
--- This means `remixed_techniques.project_id` MUST be a valid `id` from the `saved_results` table.
 */
-
 
 // Zod schema for validation, matches the 'requirements' table structure.
 const RequirementSchema = z.object({
@@ -65,14 +66,24 @@ const RequirementSchema = z.object({
   output_type: z.array(z.string()).optional(),
   outcome: z.array(z.string()).optional(),
   device_type: z.array(z.string()).optional(),
-  project_type: z.enum(['new', 'old']).optional(),
+  project_type: z.string().optional(),
 });
 export type Requirement = z.infer<typeof RequirementSchema>;
 
-// Zod schema for the 'saved_results' table, which is an extension of Requirement
-const SavedResultSchema = RequirementSchema.omit({ project_type: true }).extend({
-  requirement_id: z.string().uuid(),
-  stage_techniques: z.any().optional(),
+// Zod schema for the 'saved_results' table
+const SavedResultSchema = z.object({
+    id: z.string().uuid(),
+    user_id: z.string().uuid(),
+    requirement_id: z.string(),
+    project_name: z.string().nullable(),
+    role: z.string().nullable(),
+    date: z.string().nullable(), // timestamp
+    problem_statement: z.string().nullable(),
+    output_type: z.array(z.string()).nullable(),
+    outcome: z.array(z.string()).nullable(),
+    device_type: z.array(z.string()).nullable(),
+    stage_techniques: z.any().nullable(), // jsonb
+    created_at: z.string().optional(), // timestamp
 });
 export type SavedResult = z.infer<typeof SavedResultSchema>;
 
@@ -95,29 +106,29 @@ const TechniqueRemixSchema = z.object({
         id: z.string(),
         text: z.string(),
         checked: z.boolean(),
-    })),
+    })).optional(),
     executionSteps: z.array(z.object({
         id: z.string(),
         text: z.string(),
         checked: z.boolean(),
-    })),
+    })).optional(),
     attachments: z.object({
         files: z.array(z.object({
             id: z.string(),
             description: z.string(),
             value: z.any()
-        })),
+        })).optional(),
         links: z.array(z.object({
             id: z.string(),
             description: z.string(),
             value: z.string()
-        })),
+        })).optional(),
         notes: z.array(z.object({
             id: z.string(),
             value: z.string()
-        })),
-    }),
-    saved_results: z.any().optional(),
+        })).optional(),
+    }).optional(),
+    saved_results: z.any().optional(), // for joining data
 });
 
 export type RemixedTechnique = z.infer<typeof TechniqueRemixSchema>;
@@ -133,16 +144,19 @@ export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey);
 
 export async function deleteUserAccount(): Promise<{ error: any | null }> {
     const { error } = await supabase.rpc('delete_user_data');
+    if (error) console.error("Error deleting user account:", error);
     return { error };
 }
 
 export async function getUserProfile(): Promise<{ user: User | null; error: any | null }> {
     const { data: { user }, error } = await supabase.auth.getUser();
+    if (error) console.error("Error fetching user profile:", error);
     return { user, error };
 }
 
 export async function updateUserProfile(updates: { full_name?: string; role?: string; company?: string; }): Promise<{ data: any | null; error: any | null }> {
     const { data, error } = await supabase.auth.updateUser({ data: updates });
+    if (error) console.error("Error updating user profile:", error);
     return { data, error };
 }
 
@@ -162,7 +176,8 @@ export async function insertRequirement(
     .insert([requirementToInsert])
     .select()
     .single();
-
+  
+  if (error) console.error("Error inserting requirement:", error);
   return { data, error };
 }
 
@@ -181,6 +196,7 @@ export async function updateRequirement(
       .select()
       .single();
 
+  if (error) console.error("Error updating requirement:", error);
   return { data, error };
 }
 
@@ -194,6 +210,7 @@ export async function fetchRequirementsForUser(): Promise<{ data: Requirement[] 
     .eq('user_id', user.id)
     .order('created_at', { ascending: false });
 
+  if (error) console.error("Error fetching requirements for user:", error);
   return { data, error };
 }
 
@@ -210,6 +227,7 @@ export async function fetchRequirementById(
     .eq('user_id', user.id)
     .maybeSingle();
 
+  if (error) console.error("Error fetching requirement by ID:", error);
   if (data?.date) data.date = new Date(data.date);
 
   return { data, error };
@@ -277,6 +295,7 @@ export async function updateSavedResult(
     .select()
     .single();
 
+  if (error) console.error("Error updating saved result:", error);
   return { data, error };
 }
 
@@ -290,6 +309,7 @@ export async function fetchSavedResults(): Promise<{ data: SavedResult[] | null;
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
+    if (error) console.error("Error fetching saved results:", error);
     return { data, error };
 }
 
@@ -306,6 +326,7 @@ export async function fetchSavedResultById(
     .eq('user_id', user.id)
     .maybeSingle();
 
+  if (error) console.error("Error fetching saved result by ID:", error);
   return { data, error };
 }
 
@@ -330,6 +351,7 @@ export async function deleteSavedResult(id: string): Promise<{ error: PostgrestE
     .eq('id', id)
     .eq('user_id', user.id);
 
+  if (projectError) console.error("Error deleting saved result:", projectError);
   return { error: projectError };
 }
 
@@ -345,9 +367,9 @@ export async function saveOrUpdateRemixedTechnique(
 
     // Create placeholder project if none provided
     if (!currentProjectId) {
-      const placeholderProject = {
+      const placeholderProject: Omit<SavedResult, 'id' | 'created_at' | 'stage_techniques'> = {
         user_id: user.id,
-        requirement_id: generateUUID(),
+        requirement_id: generateUUID(), // Satisfy NOT NULL constraint
         project_name: `Standalone - ${techniqueData.technique_name || "Technique"}`,
         role: techniqueData.role || "N/A",
         problem_statement: techniqueData.problemStatement || "N/A",
@@ -360,11 +382,11 @@ export async function saveOrUpdateRemixedTechnique(
       const { data: newProject, error: projectError } = await supabase
         .from("saved_results")
         .insert(placeholderProject)
-        .select("id, project_name")
+        .select("id")
         .single();
 
       if (projectError) {
-        console.error("Failed to create placeholder project:", projectError);
+        console.error("Failed to create placeholder project in saveOrUpdateRemixedTechnique:", projectError);
         return { data: null, error: projectError };
       }
       if (!newProject?.id) {
@@ -422,7 +444,8 @@ export async function fetchRemixedTechniqueById(id: string): Promise<{ data: Rem
         .eq('id', id)
         .eq('user_id', user.id)
         .maybeSingle();
-
+    
+    if (error) console.error("Error fetching remixed technique by ID:", error);
     return { data, error };
 }
 
@@ -441,6 +464,7 @@ export async function fetchAllRemixedTechniquesForUser(): Promise<{ data: Remixe
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
+    if (error) console.error("Error fetching all remixed techniques for user:", error);
     return { data, error };
 }
 
@@ -454,5 +478,6 @@ export async function fetchRemixedTechniquesByProjectId(projectId: string): Prom
         .eq('project_id', projectId)
         .eq('user_id', user.id);
 
+    if (error) console.error("Error fetching remixed techniques by project ID:", error);
     return { data, error };
 }

@@ -204,6 +204,7 @@ export default function TechniqueDetailPage() {
         if (remixedTechniqueIdFromUrl) {
             const { data, error } = await fetchRemixedTechniqueById(remixedTechniqueIdFromUrl);
             if (error) {
+                console.error("Error fetching remixed technique by ID:", error);
                 toast({ title: 'Error', description: 'Could not load your saved work.' });
             } else {
                 remixedDataToLoad = data;
@@ -306,6 +307,7 @@ export default function TechniqueDetailPage() {
       const { data: savedData, error } = await saveOrUpdateRemixedTechnique(payload);
   
       if (error || !savedData?.id) {
+        console.error("Save failed:", error);
         toast({
           title: 'Save Failed',
           description: error?.message || 'Could not save the remixed technique. Please try again.',

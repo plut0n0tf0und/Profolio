@@ -128,6 +128,7 @@ function RequirementsPageContent() {
       const loadRequirement = async () => {
         const { data, error } = await fetchRequirementById(id);
         if (error) {
+          console.error("Failed to load project requirement:", error);
           toast({
             title: 'Failed to load project',
             description: 'Could not fetch existing project details.',
@@ -216,6 +217,7 @@ function RequirementsPageContent() {
         }
       }
     } catch (error: any) {
+      console.error("Error saving requirement section:", error);
       toast({
         title: 'Uh oh! Something went wrong.',
         description: error.message || 'There was a problem saving your requirements.',
@@ -262,8 +264,9 @@ function RequirementsPageContent() {
       <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center border-b border-border bg-background px-4">
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Button variant="ghost" size="icon" className="shrink-0">
+            <Button variant="ghost" className='p-2'>
               <ChevronLeft className="h-6 w-6" />
+              <span className='ml-2'>Back</span>
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
@@ -279,7 +282,6 @@ function RequirementsPageContent() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-        <h1 className="ml-2 text-xl ">Back</h1>
       </header>
       <main className="container mx-auto max-w-3xl flex-1 p-4 md:p-8">
       <Card className="w-full">
