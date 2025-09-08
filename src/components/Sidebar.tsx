@@ -10,6 +10,9 @@ import { Label } from '@/components/ui/label';
 import { LogOut, Settings, Moon, UserCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Skeleton } from './ui/skeleton';
+import { Logo } from './logo';
+import { cn } from '@/lib/utils';
+
 
 interface SidebarProps {
   isOpen: boolean;
@@ -73,53 +76,58 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   };
 
   return (
-      <aside className={`fixed top-0 left-0 z-40 w-[280px] h-screen bg-background border-r border-border flex flex-col transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <div className="flex items-center gap-3 py-4 px-6 mt-16">
-            <UserCircle className="h-10 w-10 text-muted-foreground" />
-            <div className="flex flex-col">
-                {isLoading ? (
-                     <Skeleton className="h-5 w-32" />
-                ) : (
-                    <span className="font-semibold">{userName || 'User'}</span>
-                )}
+      <aside className={cn(
+          "fixed top-0 left-0 z-40 w-[280px] h-screen bg-card border-r border-border flex flex-col transition-transform duration-300 ease-in-out",
+          isOpen ? 'translate-x-0' : '-translate-x-full'
+      )}>
+        <div className="flex-1 flex flex-col py-4">
+            <div className="flex items-center gap-3 py-4 px-6">
+                <UserCircle className="h-10 w-10 text-muted-foreground" />
+                <div className="flex flex-col">
+                    {isLoading ? (
+                        <Skeleton className="h-5 w-32" />
+                    ) : (
+                        <span className="font-semibold">{userName || 'User'}</span>
+                    )}
+                </div>
             </div>
-        </div>
 
-        <div className="flex flex-1 flex-col px-4">
-          <div className="flex-1 space-y-4">
-            <Button
-              variant="ghost"
-              className="w-full justify-start gap-3 text-lg"
-              onClick={navigateToSettings}
-            >
-              <Settings className="h-5 w-5" />
-              Settings
-            </Button>
+            <div className="flex flex-1 flex-col px-4">
+            <div className="flex-1 space-y-4">
+                <Button
+                variant="ghost"
+                className="w-full justify-start gap-3 text-lg"
+                onClick={navigateToSettings}
+                >
+                <Settings className="h-5 w-5" />
+                Settings
+                </Button>
 
-            <div className="flex items-center justify-between px-4 py-2">
-              <Label htmlFor="dark-mode" className="flex items-center gap-3 text-lg">
-                <Moon className="h-5 w-5" />
-                Dark Mode
-              </Label>
-              <Switch
-                id="dark-mode"
-                checked={isDarkMode}
-                onCheckedChange={toggleTheme}
-              />
+                <div className="flex items-center justify-between px-4 py-2">
+                <Label htmlFor="dark-mode" className="flex items-center gap-3 text-lg">
+                    <Moon className="h-5 w-5" />
+                    Dark Mode
+                </Label>
+                <Switch
+                    id="dark-mode"
+                    checked={isDarkMode}
+                    onCheckedChange={toggleTheme}
+                />
+                </div>
             </div>
-          </div>
 
-          <div className="mt-auto">
-            <Separator className="my-4" />
-            <Button
-              variant="ghost"
-              className="w-full justify-start gap-3 text-lg text-destructive hover:text-destructive"
-              onClick={handleLogout}
-            >
-              <LogOut className="h-5 w-5" />
-              Sign Out
-            </Button>
-          </div>
+            <div className="mt-auto">
+                <Separator className="my-4" />
+                <Button
+                variant="ghost"
+                className="w-full justify-start gap-3 text-lg text-destructive hover:text-destructive"
+                onClick={handleLogout}
+                >
+                <LogOut className="h-5 w-5" />
+                Sign Out
+                </Button>
+            </div>
+            </div>
         </div>
       </aside>
   );
