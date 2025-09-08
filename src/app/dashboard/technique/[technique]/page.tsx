@@ -176,56 +176,52 @@ export default function TechniqueDetailPage() {
     const loadPageData = async () => {
       setIsLoading(true);
 
-      // Step 1: Find the base technique details from the JSON file using the slug.
-      const baseDetails = allTechniqueDetails.find(
+      console.log(`[DEBUG] Loading page with slug: ${techniqueSlug}`);
+
+      const matchedTechnique = allTechniqueDetails.find(
         (t) => t.slug === techniqueSlug
       ) as TechniqueDetailsOutput | undefined;
+      
+      console.log('[DEBUG] Matched technique from JSON:', matchedTechnique);
 
-      // If no base details are found, the technique is invalid. Redirect.
-      if (!baseDetails) {
+      if (!matchedTechnique) {
         toast({
           title: 'Error',
-          description: 'Technique details not found.',
+          description: 'Technique details not found. Redirecting to dashboard.',
           variant: 'destructive',
         });
         router.push('/dashboard');
         return;
       }
       
-      // Step 2: Immediately set the details state. This is the crucial fix for the blank content.
-      setDetails(baseDetails);
+      setDetails(matchedTechnique);
 
-      // Step 3: Check if we are editing an existing remix or creating a new one.
       if (remixedTechniqueIdFromUrl) {
-        // We are editing an existing remix. Fetch its data.
         setRemixedTechniqueId(remixedTechniqueIdFromUrl);
         const { data: remixedData, error } = await fetchRemixedTechniqueById(remixedTechniqueIdFromUrl);
         
         if (error) {
           console.error("Error fetching remixed technique:", error);
           toast({ title: 'Error', description: 'Could not load your saved work.' });
-          // Fallback to new remix defaults if fetch fails
           form.reset({
-            technique_name: baseDetails.name,
+            technique_name: matchedTechnique.name,
             project_id: fromProjectId,
-            overview: baseDetails.overview || '',
-            prerequisites: (baseDetails.prerequisites || []).map((p, i) => ({ id: `prereq-${i}`, text: p, checked: false })),
-            executionSteps: (baseDetails.executionSteps || []).map(s => ({ id: `step-${s.step}`, text: `${s.title}: ${s.description}`, checked: false })),
+            overview: matchedTechnique.overview || '',
+            prerequisites: (matchedTechnique.prerequisites || []).map((p, i) => ({ id: `prereq-${i}`, text: p, checked: false })),
+            executionSteps: (matchedTechnique.executionSteps || []).map(s => ({ id: `step-${s.step}`, text: `${s.title}: ${s.description}`, checked: false })),
             date: '', duration: '', teamSize: '', why: '', problemStatement: '', role: '',
             attachments: { files: [], links: [], notes: [] },
           });
         } else if (remixedData) {
-          // If we have saved data, reset the form with it.
           form.reset(remixedData as any);
         }
       } else {
-        // This is a new remix. Populate the form with defaults from the base details.
         form.reset({
-          technique_name: baseDetails.name,
+          technique_name: matchedTechnique.name,
           project_id: fromProjectId,
-          overview: baseDetails.overview || '',
-          prerequisites: (baseDetails.prerequisites || []).map((p, i) => ({ id: `prereq-${i}`, text: p, checked: false })),
-          executionSteps: (baseDetails.executionSteps || []).map(s => ({ id: `step-${s.step}`, text: `${s.title}: ${s.description}`, checked: false })),
+          overview: matchedTechnique.overview || '',
+          prerequisites: (matchedTechnique.prerequisites || []).map((p, i) => ({ id: `prereq-${i}`, text: p, checked: false })),
+          executionSteps: (matchedTechnique.executionSteps || []).map(s => ({ id: `step-${s.step}`, text: `${s.title}: ${s.description}`, checked: false })),
           date: '', duration: '', teamSize: '', why: '', problemStatement: '', role: '',
           attachments: { files: [], links: [], notes: [] },
         });
@@ -238,6 +234,12 @@ export default function TechniqueDetailPage() {
       loadPageData();
     }
   }, [techniqueSlug, remixedTechniqueIdFromUrl, fromProjectId, form, router, toast]);
+
+  useEffect(() => {
+    // This effect runs after the 'details' state has been updated.
+    console.log('[DEBUG] `details` state has been updated:', details);
+  }, [details]);
+
 
   const techniqueName = useMemo(() => details?.name || '', [details]);
 
