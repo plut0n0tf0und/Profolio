@@ -186,7 +186,7 @@ function RequirementsPageContent() {
         if (error) throw error;
         savedData = data;
       } else {
-        const { data, error } = await insertRequirement(sectionData);
+        const { data, error } = await insertRequirement(values); // Pass all values
         if (error) throw error;
         savedData = data;
         if (savedData?.id) {
@@ -259,11 +259,11 @@ function RequirementsPageContent() {
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center border-b border-border bg-background px-4">
         <AlertDialog>
-          <AlertDialogTitle asChild>
+          <AlertDialogTrigger asChild>
             <Button variant="ghost" size="icon" className="shrink-0">
               <ChevronLeft className="h-6 w-6" />
             </Button>
-          </AlertDialogTitle>
+          </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Are you sure you want to leave?</AlertDialogTitle>
@@ -563,5 +563,3 @@ export default function RequirementsPage() {
     </Suspense>
   )
 }
-
-    

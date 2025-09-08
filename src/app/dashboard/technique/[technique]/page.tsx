@@ -312,10 +312,8 @@ export default function TechniqueDetailPage() {
   
   const onSaveAndPreview = (data: TechniqueRemixData) => {
     startSaveTransition(async () => {
-      const payload = {
-        ...data,
-        id: remixedTechniqueId ?? undefined,
-      };
+      // The payload includes the ID if it exists, for updating.
+      const payload = { ...data, id: remixedTechniqueId ?? undefined };
   
       const { data: savedData, error } = await saveOrUpdateRemixedTechnique(payload);
   
@@ -334,7 +332,7 @@ export default function TechniqueDetailPage() {
         setRemixedTechniqueId(savedData.id);
   
         // Ensure the URL reflects the state of the saved data (remixId and projectId)
-        const newUrl = `${window.location.pathname}?edit=true&remixId=${savedData.id}${savedData.project_id ? `&projectId=${savedData.project_id}`: ''}`;
+        const newUrl = `${window.location.pathname}?edit=true&remixId=${savedData.id}${savedData.project_id ? `&projectId=${savedData.project_id}` : ''}`;
         if (window.location.href !== newUrl) {
             router.replace(newUrl);
         }
@@ -639,5 +637,3 @@ export default function TechniqueDetailPage() {
     </>
   );
 }
-
-    
