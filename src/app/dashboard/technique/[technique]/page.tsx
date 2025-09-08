@@ -218,7 +218,7 @@ export default function TechniqueDetailPage() {
 
     loadRemixData();
 
-  }, [techniqueSlug, remixedTechniqueIdFromUrl, fromProjectId, router, toast]);
+  }, [techniqueSlug, remixedTechniqueIdFromUrl, fromProjectId, router, toast, form]);
 
   const { fields: prereqFields, append: appendPrereq, remove: removePrereq } = useFieldArray({
     control: form.control,
