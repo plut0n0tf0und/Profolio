@@ -175,27 +175,25 @@ export default function TechniqueDetailPage() {
   useEffect(() => {
     const loadPageData = async () => {
       setIsLoading(true);
-
-      console.log(`[DEBUG] Loading page with slug: ${techniqueSlug}`);
-
-      const matchedTechnique = allTechniqueDetails.find(
-        (t) => t.slug === techniqueSlug
-      ) as TechniqueDetailsOutput | undefined;
       
-      console.log('[DEBUG] Matched technique from JSON:', matchedTechnique);
+      console.log(`[DEBUG] 1. Looking for technique with slug: ${techniqueSlug}`);
+      const matchedTechnique = allTechniqueDetails.find(t => t.slug === techniqueSlug) as TechniqueDetailsOutput | undefined;
+      console.log('[DEBUG] 2. Matched technique from JSON:', matchedTechnique ? `Found: ${matchedTechnique.name}` : 'Not Found');
 
       if (!matchedTechnique) {
         toast({
-          title: 'Error',
-          description: 'Technique details not found. Redirecting to dashboard.',
+          title: 'Error: Technique Not Found',
+          description: 'The requested technique could not be found. You are being redirected.',
           variant: 'destructive',
         });
         router.push('/dashboard');
         return;
       }
       
+      // CRITICAL FIX: Set details state immediately after finding the match.
       setDetails(matchedTechnique);
 
+      // Now, handle loading remix data or setting defaults
       if (remixedTechniqueIdFromUrl) {
         setRemixedTechniqueId(remixedTechniqueIdFromUrl);
         const { data: remixedData, error } = await fetchRemixedTechniqueById(remixedTechniqueIdFromUrl);
@@ -203,7 +201,8 @@ export default function TechniqueDetailPage() {
         if (error) {
           console.error("Error fetching remixed technique:", error);
           toast({ title: 'Error', description: 'Could not load your saved work.' });
-          form.reset({
+          // Fallback to defaults even if fetch fails
+           form.reset({
             technique_name: matchedTechnique.name,
             project_id: fromProjectId,
             overview: matchedTechnique.overview || '',
@@ -216,6 +215,7 @@ export default function TechniqueDetailPage() {
           form.reset(remixedData as any);
         }
       } else {
+        // This is a new remix, set form defaults from the matched technique
         form.reset({
           technique_name: matchedTechnique.name,
           project_id: fromProjectId,
@@ -235,9 +235,9 @@ export default function TechniqueDetailPage() {
     }
   }, [techniqueSlug, remixedTechniqueIdFromUrl, fromProjectId, form, router, toast]);
 
+  // Log the details state when it changes to confirm it's being set.
   useEffect(() => {
-    // This effect runs after the 'details' state has been updated.
-    console.log('[DEBUG] `details` state has been updated:', details);
+    console.log('[DEBUG] 3. `details` state has been updated:', details ? `Set to: ${details.name}` : 'null');
   }, [details]);
 
 
@@ -339,92 +339,110 @@ export default function TechniqueDetailPage() {
       <Card className="overflow-hidden">
           <CardHeader>
               <CardTitle className="text-3xl font-bold">{techniqueName}</CardTitle>
-              {details && (
+              {details?.bestFor && (
               <div className="flex flex-wrap gap-2 pt-2">
-                  {(details.bestFor || []).slice(0, 3).map(t => <Badge key={t} variant="secondary">{t}</Badge>)}
+                  {details.bestFor.slice(0, 3).map(t => <Badge key={t} variant="secondary">{t}</Badge>)}
               </div>
               )}
           </CardHeader>
-          <CardContent>
-              <p className="text-lg text-muted-foreground">{details?.overview}</p>
-          </CardContent>
+          {details?.overview && 
+            <CardContent>
+                <p className="text-lg text-muted-foreground">{details.overview}</p>
+            </CardContent>
+          }
       </Card>
 
-      <SectionCard title="Prerequisites">
-          <ul className="list-disc space-y-2 pl-5 text-muted-foreground">
-              {details?.prerequisites?.map((item, index) => <li key={index}>{item}</li>)}
-          </ul>
-      </SectionCard>
+      {details?.prerequisites && details.prerequisites.length > 0 &&
+        <SectionCard title="Prerequisites">
+            <ul className="list-disc space-y-2 pl-5 text-muted-foreground">
+                {details.prerequisites.map((item, index) => <li key={index}>{item}</li>)}
+            </ul>
+        </SectionCard>
+      }
       
-      <SectionCard title="Execution Steps" action={
-        <Button variant="outline" size="sm" onClick={() => copyToClipboard(allStepsText)}>
-            <Clipboard className="mr-2 h-4 w-4" />
-            Copy Steps
-        </Button>
-      }>
-          <div className="space-y-4">
-              {details?.executionSteps?.map(step => (
-                  <div key={step.step} className="flex items-start gap-4">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground font-bold text-lg flex-shrink-0">
-                          {step.step}
-                      </div>
-                      <div className="space-y-1">
-                          <p className="font-semibold text-lg">{step.title}</p>
-                          <p className="text-muted-foreground">{step.description}</p>
-                      </div>
-                  </div>
-              ))}
-          </div>
-      </SectionCard>
+      {details?.executionSteps && details.executionSteps.length > 0 &&
+        <SectionCard title="Execution Steps" action={
+          <Button variant="outline" size="sm" onClick={() => copyToClipboard(allStepsText)}>
+              <Clipboard className="mr-2 h-4 w-4" />
+              Copy Steps
+          </Button>
+        }>
+            <div className="space-y-4">
+                {details.executionSteps.map(step => (
+                    <div key={step.step} className="flex items-start gap-4">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground font-bold text-lg flex-shrink-0">
+                            {step.step}
+                        </div>
+                        <div className="space-y-1">
+                            <p className="font-semibold text-lg">{step.title}</p>
+                            <p className="text-muted-foreground">{step.description}</p>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </SectionCard>
+      }
       
-      <SectionCard title="Resource Links">
-          <div className="grid gap-6">
-              <div>
-                  <h4 className="font-semibold text-lg mb-2">Ready-to-use</h4>
-                  <div className="space-y-2">
-                  {details?.resourceLinks?.create?.map(link => (
-                      <a key={link.url} href={link.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-primary hover:underline">
-                          <ExternalLink className="h-4 w-4" />
-                          <span>{link.title}</span>
-                      </a>
-                  ))}
+      {details?.resourceLinks &&
+        <SectionCard title="Resource Links">
+            <div className="grid gap-6">
+                {details.resourceLinks.create?.length > 0 &&
+                  <div>
+                      <h4 className="font-semibold text-lg mb-2">Ready-to-use</h4>
+                      <div className="space-y-2">
+                      {details.resourceLinks.create.map(link => (
+                          <a key={link.url} href={link.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-primary hover:underline">
+                              <ExternalLink className="h-4 w-4" />
+                              <span>{link.title}</span>
+                          </a>
+                      ))}
+                      </div>
                   </div>
-              </div>
-               <div>
-                  <h4 className="font-semibold text-lg mb-2">Best Practices / Guides</h4>
-                  <div className="space-y-2">
-                   {details?.resourceLinks?.guides?.map(link => (
-                      <a key={link.url} href={link.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-primary hover:underline">
-                          <ExternalLink className="h-4 w-4" />
-                          <span>{link.title}</span>
-                      </a>
-                  ))}
+                }
+                 {details.resourceLinks.guides?.length > 0 &&
+                    <div>
+                      <h4 className="font-semibold text-lg mb-2">Best Practices / Guides</h4>
+                      <div className="space-y-2">
+                      {details.resourceLinks.guides.map(link => (
+                          <a key={link.url} href={link.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-primary hover:underline">
+                              <ExternalLink className="h-4 w-4" />
+                              <span>{link.title}</span>
+                          </a>
+                      ))}
+                      </div>
                   </div>
-              </div>
-          </div>
-      </SectionCard>
+                }
+            </div>
+        </SectionCard>
+      }
       
       <div className="grid md:grid-cols-2 gap-8">
-           <SectionCard title="Effort & Timing">
-              <p className="text-muted-foreground">{details?.effortAndTiming}</p>
-          </SectionCard>
-          <SectionCard title="Best For">
+           {details?.effortAndTiming &&
+            <SectionCard title="Effort & Timing">
+              <p className="text-muted-foreground">{details.effortAndTiming}</p>
+            </SectionCard>
+           }
+          {details?.bestFor && details.bestFor.length > 0 &&
+            <SectionCard title="Best For">
                <ul className="list-disc space-y-2 pl-5 text-muted-foreground">
-                 {details?.bestFor?.map((item, index) => <li key={index}>{item}</li>)}
+                 {details.bestFor.map((item, index) => <li key={index}>{item}</li>)}
               </ul>
-          </SectionCard>
+            </SectionCard>
+          }
       </div>
 
-      <SectionCard title="Tips for Good Surveys">
-          <ul className="space-y-3">
-              {details?.tips?.map((tip, index) => (
-                   <li key={index} className="flex items-start gap-3">
-                      <Check className="h-5 w-5 text-green-500 mt-1 flex-shrink-0" />
-                      <span className="text-muted-foreground">{tip}</span>
-                  </li>
-              ))}
-          </ul>
-      </SectionCard>
+      {details?.tips && details.tips.length > 0 &&
+        <SectionCard title="Tips for Success">
+            <ul className="space-y-3">
+                {details.tips.map((tip, index) => (
+                    <li key={index} className="flex items-start gap-3">
+                        <Check className="h-5 w-5 text-green-500 mt-1 flex-shrink-0" />
+                        <span className="text-muted-foreground">{tip}</span>
+                    </li>
+                ))}
+            </ul>
+        </SectionCard>
+      }
     </div>
   );
 
@@ -650,3 +668,5 @@ export default function TechniqueDetailPage() {
     </>
   );
 }
+
+    
