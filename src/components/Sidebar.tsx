@@ -77,7 +77,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   return (
       <aside className={cn(
-          "fixed top-0 left-0 z-40 w-[280px] h-screen bg-card border-r border-border flex flex-col transition-transform duration-300 ease-in-out",
+          "fixed top-0 left-0 z-40 w-[280px] h-screen bg-card border-r border-border flex-col transition-transform duration-300 ease-in-out md:flex",
           isOpen ? 'translate-x-0' : '-translate-x-full'
       )}>
         <div className="flex-1 flex flex-col py-4">

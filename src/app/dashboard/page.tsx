@@ -48,7 +48,10 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    setTip(motivationalTips[Math.floor(Math.random() * motivationalTips.length)]);
+    const getTip = () => {
+        setTip(motivationalTips[Math.floor(Math.random() * motivationalTips.length)]);
+    }
+    getTip();
 
     const loadProjects = async () => {
       setIsLoading(true);

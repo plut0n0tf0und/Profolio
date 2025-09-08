@@ -35,6 +35,22 @@ export default function DashboardLayout({
             {isSidebarOpen ? <PanelLeftClose /> : <PanelLeftOpen />}
             <span className="sr-only">Toggle Sidebar</span>
         </Button>
+        <div className="hidden md:block">
+            <Button
+                variant="outline"
+                size="icon"
+                className={cn(
+                    "fixed top-1/2 -translate-y-1/2 z-20 h-24 w-8 rounded-r-full transition-all duration-300 ease-in-out",
+                    isSidebarOpen ? 'left-[280px]' : 'left-0',
+                    !isSidebarOpen && 'rounded-l-full'
+                )}
+                onClick={() => setSidebarOpen(!isSidebarOpen)}
+            >
+                {isSidebarOpen ? <PanelLeftClose className="h-5 w-5" /> : <PanelLeftOpen className="h-5 w-5" />}
+                <span className="sr-only">Toggle Sidebar</span>
+            </Button>
+        </div>
+
         {children}
       </div>
     </div>
