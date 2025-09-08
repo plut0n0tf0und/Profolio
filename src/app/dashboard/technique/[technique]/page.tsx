@@ -148,14 +148,16 @@ export default function TechniqueDetailPage() {
   }, [searchParams]);
 
   useEffect(() => {
-    // Prevent effect from running twice in dev mode with Strict Mode
-    if (effectRan.current) return;
+    if (process.env.NODE_ENV === 'development' && effectRan.current) {
+        return;
+    }
     effectRan.current = true;
 
     console.log(`[DEBUG] 1. useEffect triggered. Slug: ${techniqueSlug}`);
     if (!techniqueSlug) return;
     
-    // Find the technique in the static JSON data
+    setIsLoading(true);
+
     const matchedTechnique = allTechniqueDetails.find(t => t.slug === techniqueSlug) as TechniqueDetailsOutput | undefined;
     console.log(`[DEBUG] 2. Matched technique from JSON:`, matchedTechnique?.name || 'Not Found');
     
@@ -169,11 +171,11 @@ export default function TechniqueDetailPage() {
       return;
     }
     
-    // Immediately set the static details state. This is the crucial fix.
     setDetails(matchedTechnique);
     
     const loadRemixData = async () => {
       if (remixedTechniqueIdFromUrl) {
+        console.log(`[DEBUG] 3a. Remix ID found: ${remixedTechniqueIdFromUrl}, fetching data...`);
         const { data: remixedData, error } = await fetchRemixedTechniqueById(remixedTechniqueIdFromUrl);
 
         if (remixedData) {
@@ -182,7 +184,7 @@ export default function TechniqueDetailPage() {
           toast({ title: 'Error', description: 'Could not load your saved work.' });
         }
       } else {
-        // This is a new remix, set form defaults from the matched technique
+        console.log(`[DEBUG] 3b. No remix ID, setting default form values from JSON.`);
         form.reset({
           technique_name: matchedTechnique.name,
           project_id: fromProjectId,
@@ -197,8 +199,8 @@ export default function TechniqueDetailPage() {
     };
 
     loadRemixData();
-
-  }, [techniqueSlug]); // Strict dependency array
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [techniqueSlug]);
 
   useEffect(() => {
     console.log('[DEBUG] details state updated:', details);
@@ -333,11 +335,11 @@ export default function TechniqueDetailPage() {
                     </CardDescription>
                 )}
             </CardHeader>
-            {details?.overview && (
-                <CardContent>
+            <CardContent>
+                {details?.overview && (
                     <p className="text-lg text-muted-foreground">{details.overview}</p>
-                </CardContent>
-            )}
+                )}
+            </CardContent>
         </Card>
 
         {details?.prerequisites && details.prerequisites.length > 0 && (
@@ -657,5 +659,3 @@ export default function TechniqueDetailPage() {
     </>
   );
 }
-
-    
