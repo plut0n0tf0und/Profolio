@@ -55,5 +55,14 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
     }
   });
 
+  // Ensure stages from the original full list are present even if empty
+  const allStages = ["Discover", "Define", "Design", "Develop", "Deliver"];
+  allStages.forEach(stage => {
+      if (!recommendations[stage]) {
+          recommendations[stage] = [];
+      }
+  });
+
+
   return recommendations;
 }
