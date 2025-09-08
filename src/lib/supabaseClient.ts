@@ -91,11 +91,10 @@ export type RemixedTechnique = z.infer<typeof TechniqueRemixSchema>;
   attachments jsonb NULL,
   CONSTRAINT remixed_techniques_pkey PRIMARY KEY (id),
   CONSTRAINT remixed_techniques_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id) ON DELETE CASCADE,
+  -- The foreign key "remixed_techniques_project_id_fkey" links the
+  -- "project_id" column of this table to the "id" column of the "public.saved_results" table.
   CONSTRAINT remixed_techniques_project_id_fkey FOREIGN KEY (project_id) REFERENCES public.saved_results(id) ON DELETE SET NULL
 );
-
--- The foreign key "remixed_techniques_project_id_fkey" links the
--- "project_id" column of this table to the "id" column of the "public.saved_results" table.
 
 ALTER TABLE public.remixed_techniques ENABLE ROW LEVEL SECURITY;
 
@@ -140,7 +139,6 @@ ON public.saved_results
 FOR DELETE
 TO authenticated
 USING (auth.uid() = user_id);
-
 
 */
 
@@ -506,15 +504,14 @@ export async function saveOrUpdateRemixedTechnique(
     if (!currentProjectId) {
       const placeholderProject = {
         user_id: user.id,
-        requirement_id: generateUUID(),
+        requirement_id: generateUUID(), // Satisfy NOT NULL constraint
         project_name: `Standalone - ${techniqueData.technique_name || 'Technique'}`,
         role: techniqueData.role || 'N/A',
         problem_statement: techniqueData.problemStatement || 'N/A',
         date: new Date().toISOString(),
-        output_type: ['Presentation'],
-        outcome: ['Insight'],
-        device_type: ['Desktop'],
-        project_type: ['new'],
+        output_type: ['Presentation'], // text[]
+        outcome: ['Insight'], // text[]
+        device_type: ['Desktop'], // text[]
       };
 
       const { data: newProject, error: projectError } = await supabase
