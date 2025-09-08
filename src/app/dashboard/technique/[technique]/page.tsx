@@ -480,7 +480,7 @@ export default function TechniqueDetailPage() {
                 control={form.control}
                 name="date"
                 render={({ field }) => (
-                  <FormItem className="flex flex-col">
+                  <FormItem>
                     <FormLabel>Date</FormLabel>
                     <Popover>
                       <PopoverTrigger asChild>
@@ -713,5 +713,3 @@ export default function TechniqueDetailPage() {
     </>
   );
 }
-
-    
