@@ -76,7 +76,7 @@ export default function DashboardPage() {
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between border-b border-border bg-background px-4">
         <div className="flex items-center gap-4">
-            <Logo className="h-10 w-10 text-primary" />
+            <Logo className="h-8 w-8" />
             <h1 className="text-2xl font-bold">Profolio</h1>
         </div>
         <h1 className="text-xl font-bold hidden md:block">List of Projects</h1>
