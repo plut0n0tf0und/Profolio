@@ -312,63 +312,97 @@ export async function saveOrUpdateRemixedTechnique(
   techniqueData: Partial<RemixedTechnique> & { id?: string }
 ): Promise<{ data: RemixedTechnique | null; error: any | null }> {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError) {
+      console.error("Auth error:", userError);
+      return { data: null, error: userError };
+    }
     if (!user) {
-      return { data: null, error: { message: 'User not authenticated', code: '401' } };
+      return {
+        data: null,
+        error: { message: "User not authenticated", code: "401" },
+      };
     }
 
     let currentProjectId = techniqueData.project_id;
 
+    // 🔹 Create placeholder project if none provided
     if (!currentProjectId) {
       const placeholderProject = {
         user_id: user.id,
-        requirement_id: generateUUID(), // Satisfy NOT NULL constraint
-        project_name: `Standalone - ${techniqueData.technique_name || 'Technique'}`,
-        role: techniqueData.role || 'N/A',
-        problem_statement: techniqueData.problemStatement || 'N/A',
+        requirement_id: generateUUID().toString(), // always string
+        project_name: `Standalone - ${techniqueData.technique_name || "Technique"}`,
+        role: techniqueData.role || "N/A",
+        problem_statement: techniqueData.problemStatement || "N/A",
         date: new Date().toISOString(),
       };
 
       const { data: newProject, error: projectError } = await supabase
-        .from('saved_results')
+        .from("saved_results")
         .insert(placeholderProject)
-        .select('id, project_name')
+        .select("id, project_name")
         .single();
 
-      if (projectError || !newProject?.id) {
-        console.error('Failed to create placeholder project:', projectError);
-        return { data: null, error: projectError || new Error('Could not create placeholder project.') };
+      if (projectError) {
+        console.error("Failed to create placeholder project:", projectError);
+        return { data: null, error: projectError };
+      }
+      if (!newProject?.id) {
+        console.error("No project ID returned from insert");
+        return { data: null, error: new Error("Could not create placeholder project.") };
       }
 
       currentProjectId = newProject.id;
     }
 
-    const dataToSave = { ...techniqueData, user_id: user.id, project_id: currentProjectId };
+    const dataToSave: any = {
+      ...techniqueData,
+      user_id: user.id,
+      project_id: currentProjectId,
+    };
+
     const existingId = dataToSave.id;
     delete dataToSave.id;
 
     if (existingId) {
+      // 🔹 Update
       const { data, error } = await supabase
-        .from('remixed_techniques')
+        .from("remixed_techniques")
         .update(dataToSave)
-        .eq('id', existingId)
-        .eq('user_id', user.id)
+        .eq("id", existingId)
+        .eq("user_id", user.id)
         .select()
-        .single();
-      return { data, error };
+        .maybeSingle();
+
+      if (error) {
+        console.error("Update error:", error);
+        return { data: null, error };
+      }
+      return { data, error: null };
     } else {
+      // 🔹 Insert
       const { data, error } = await supabase
-        .from('remixed_techniques')
+        .from("remixed_techniques")
         .insert(dataToSave)
         .select()
-        .single();
-      return { data, error };
+        .maybeSingle();
+
+      if (error) {
+        console.error("Insert error:", error);
+        return { data: null, error };
+      }
+      return { data, error: null };
     }
   } catch (error: any) {
-    console.error("Error in saveOrUpdateRemixedTechnique:", error);
+    console.error("Unexpected error in saveOrUpdateRemixedTechnique:", error);
     return { data: null, error };
   }
 }
+
 
 export async function fetchRemixedTechniqueById(id: string): Promise<{ data: RemixedTechnique | null; error: PostgrestError | null }> {
     const { data: { user } } = await supabase.auth.getUser();
