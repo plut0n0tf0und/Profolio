@@ -105,9 +105,8 @@ export default function TechniqueDetailPage() {
   const { toast } = useToast();
   
   const techniqueSlug = params.technique as string;
-  
-  const fromProjectId = searchParams.get('projectId');
   const remixedTechniqueIdFromUrl = searchParams.get('remixId');
+  const fromProjectId = searchParams.get('projectId');
 
   const [details, setDetails] = useState<TechniqueDetailsOutput | null>(null);
   const [remixedTechniqueId, setRemixedTechniqueId] = useState<string | null>(remixedTechniqueIdFromUrl);
@@ -118,7 +117,8 @@ export default function TechniqueDetailPage() {
   const [isSharing, startShareTransition] = useTransition();
 
   const shareableContentRef = useRef<HTMLDivElement>(null);
-  
+  const effectRan = useRef(false);
+
   const form = useForm<TechniqueRemixData>({
     resolver: zodResolver(techniqueRemixSchema),
     defaultValues: {
@@ -140,11 +140,6 @@ export default function TechniqueDetailPage() {
       },
     }
   });
-  
-    // Debug log to trace state changes
-    useEffect(() => {
-        console.log('[DEBUG] details state updated:', details);
-    }, [details]);
 
   useEffect(() => {
     if (searchParams.get('edit') === 'true') {
@@ -153,12 +148,14 @@ export default function TechniqueDetailPage() {
   }, [searchParams]);
 
   useEffect(() => {
-    setIsLoading(true);
+    // Prevent effect from running twice in dev mode with Strict Mode
+    if (effectRan.current) return;
+    effectRan.current = true;
+
     console.log(`[DEBUG] 1. useEffect triggered. Slug: ${techniqueSlug}`);
-    
     if (!techniqueSlug) return;
     
-    // --- Step 1: Find the technique in the static JSON data ---
+    // Find the technique in the static JSON data
     const matchedTechnique = allTechniqueDetails.find(t => t.slug === techniqueSlug) as TechniqueDetailsOutput | undefined;
     console.log(`[DEBUG] 2. Matched technique from JSON:`, matchedTechnique?.name || 'Not Found');
     
@@ -172,37 +169,20 @@ export default function TechniqueDetailPage() {
       return;
     }
     
-    // --- Step 2: Immediately set the static details state ---
+    // Immediately set the static details state. This is the crucial fix.
     setDetails(matchedTechnique);
-
+    
     const loadRemixData = async () => {
-      // --- Step 3: Handle loading remix data or setting defaults ---
       if (remixedTechniqueIdFromUrl) {
-        // We have a saved remix, fetch it
-        setRemixedTechniqueId(remixedTechniqueIdFromUrl);
         const { data: remixedData, error } = await fetchRemixedTechniqueById(remixedTechniqueIdFromUrl);
 
-        if (error) {
-          console.error("Error fetching remixed technique:", error);
-          toast({ title: 'Error', description: 'Could not load your saved work.' });
-          // Fallback to default form values from matchedTechnique
-           form.reset({
-            technique_name: matchedTechnique.name,
-            project_id: fromProjectId,
-            overview: matchedTechnique.overview || '',
-            prerequisites: (matchedTechnique.prerequisites || []).map((p, i) => ({ id: `prereq-${i}`, text: p, checked: false })),
-            executionSteps: (matchedTechnique.executionSteps || []).map(s => ({ id: `step-${s.step}`, text: `${s.title}: ${s.description}`, checked: false })),
-            date: '', duration: '', teamSize: '', why: '', problemStatement: '', role: '',
-            attachments: { files: [], links: [], notes: [] },
-          });
-        } else if (remixedData) {
-          // Success: reset the form with the user's saved data
-          console.log('[DEBUG] 3a. Found saved remix data, resetting form.');
+        if (remixedData) {
           form.reset(remixedData as any);
+        } else if (error) {
+          toast({ title: 'Error', description: 'Could not load your saved work.' });
         }
       } else {
         // This is a new remix, set form defaults from the matched technique
-        console.log('[DEBUG] 3b. No remix ID, setting default form values from JSON.');
         form.reset({
           technique_name: matchedTechnique.name,
           project_id: fromProjectId,
@@ -218,7 +198,11 @@ export default function TechniqueDetailPage() {
 
     loadRemixData();
 
-  }, [techniqueSlug, remixedTechniqueIdFromUrl, fromProjectId, router, toast, form]);
+  }, [techniqueSlug]); // Strict dependency array
+
+  useEffect(() => {
+    console.log('[DEBUG] details state updated:', details);
+  },[details]);
 
   const { fields: prereqFields, append: appendPrereq, remove: removePrereq } = useFieldArray({
     control: form.control,
@@ -673,3 +657,5 @@ export default function TechniqueDetailPage() {
     </>
   );
 }
+
+    
