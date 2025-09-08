@@ -3,13 +3,13 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { UserCircle, Search, Plus, Loader2 } from 'lucide-react';
+import { Search, Plus, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Sidebar } from '@/components/Sidebar';
 import Link from 'next/link';
 import { fetchSavedResults, Requirement } from '@/lib/supabaseClient';
 import { ProjectCard } from '@/components/ProjectCard';
 import { useToast } from '@/hooks/use-toast';
+import { Logo } from '@/components/logo';
 
 const motivationalTips = [
   'Your UX journey starts here ✦',
@@ -43,7 +43,6 @@ const StaticPlaceholder = () => (
 export default function DashboardPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [tip, setTip] = useState('');
   const [projects, setProjects] = useState<Requirement[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -71,14 +70,13 @@ export default function DashboardPage() {
   }, [toast]);
 
   return (
-    <div className="flex min-h-screen flex-col bg-grey-900 text-foreground">
-      <Sidebar isOpen={isSidebarOpen} onClose={() => setSidebarOpen(false)} />
-
+    <div className="flex min-h-screen flex-col bg-background text-foreground">
       <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between border-b border-border bg-background px-4">
-        <Button variant="ghost" size="icon" className="h-10 w-10" onClick={() => setSidebarOpen(true)}>
-          <UserCircle className="h-14 w-14" />
-        </Button>
-        <h1 className="text-xl font-bold">List of Projects</h1>
+        <div className="flex items-center gap-2">
+            <Logo className="h-8 w-8 text-primary" />
+            <h1 className="text-xl font-bold">Profolio</h1>
+        </div>
+        <h1 className="text-xl font-bold hidden md:block">List of Projects</h1>
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon">
             <Search className="h-6 w-6" />

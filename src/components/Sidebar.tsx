@@ -4,19 +4,12 @@
 import { useRouter } from 'next/navigation';
 import { supabase, getUserProfile } from '@/lib/supabaseClient';
 import { Button } from '@/components/ui/button';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet';
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { LogOut, Settings, Moon, UserCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Skeleton } from './ui/skeleton';
-import { Logo } from './logo';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -59,11 +52,9 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       setIsLoading(false);
     }
 
-    if (isOpen) {
-        loadProfile();
-    }
+    loadProfile();
 
-  }, [isOpen]);
+  }, []);
 
   const toggleTheme = (isDark: boolean) => {
     setIsDarkMode(isDark);
@@ -82,15 +73,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   };
 
   return (
-    <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent side="left" className="flex w-[280px] flex-col bg-background">
-        <SheetHeader className="text-left">
-          <SheetTitle className="flex items-center gap-3 text-2xl font-bold">
-            <Logo className="h-8 w-8 text-primary" />
-            <span>Profolio</span>
-          </SheetTitle>
-        </SheetHeader>
-        <div className="flex items-center gap-3 py-4">
+      <aside className={`fixed top-0 left-0 z-40 w-[280px] h-screen bg-background border-r border-border flex flex-col transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className="flex items-center gap-3 py-4 px-6 mt-16">
             <UserCircle className="h-10 w-10 text-muted-foreground" />
             <div className="flex flex-col">
                 {isLoading ? (
@@ -101,7 +85,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             </div>
         </div>
 
-        <div className="flex flex-1 flex-col">
+        <div className="flex flex-1 flex-col px-4">
           <div className="flex-1 space-y-4">
             <Button
               variant="ghost"
@@ -137,7 +121,6 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             </Button>
           </div>
         </div>
-      </SheetContent>
-    </Sheet>
+      </aside>
   );
 }
