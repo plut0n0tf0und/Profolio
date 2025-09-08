@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ChevronLeft, Check, Clipboard, ExternalLink, Wand2, PlusCircle, Trash2, Eye, Loader2, Save, Share2, CalendarIcon } from 'lucide-react';
+import { ChevronLeft, Check, Clipboard, ExternalLink, Wand2, PlusCircle, Trash2, Eye, Loader2, Save, Share2, CalendarIcon, CheckSquare } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -466,6 +466,122 @@ export default function TechniqueDetailPage() {
 )};
 
 
+  const ChecklistSection = ({
+    fieldArray,
+    control,
+    name,
+    append,
+    remove,
+    title,
+  }: {
+    fieldArray: any;
+    control: any;
+    name: 'prerequisites' | 'executionSteps';
+    append: (val: any) => void;
+    remove: (indices: number[]) => void;
+    title: string;
+  }) => {
+    const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
+    const watchedItems = form.watch(name);
+  
+    useEffect(() => {
+      const newSelected = watchedItems
+        .map((item, index) => (item.checked ? index : -1))
+        .filter(index => index !== -1);
+      setSelectedIndices(newSelected);
+    }, [watchedItems]);
+  
+    const handleSelectAll = (checked: boolean) => {
+      watchedItems.forEach((_, index) => {
+        form.setValue(`${name}.${index}.checked`, checked);
+      });
+    };
+  
+    const handleDeleteSelected = () => {
+      // Sort indices in descending order to avoid shifting issues
+      const sortedIndices = [...selectedIndices].sort((a, b) => b - a);
+      remove(sortedIndices);
+    };
+
+    const isAllSelected = selectedIndices.length > 0 && selectedIndices.length === watchedItems.length;
+    const showActions = selectedIndices.length > 0;
+  
+    const AddButton = (
+        <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => append({ id: `${name}-${Date.now()}`, text: '', checked: false })}
+        >
+            <PlusCircle className="mr-2 h-4 w-4" /> Add Item
+        </Button>
+    );
+
+    const ActionsToolbar = (
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
+            <Checkbox id={`select-all-${name}`} onCheckedChange={handleSelectAll} checked={isAllSelected}/>
+            <Label htmlFor={`select-all-${name}`} className="text-sm font-medium">
+                Select All
+            </Label>
+        </div>
+        <Button
+          type="button"
+          variant="destructive-outline"
+          size="sm"
+          onClick={handleDeleteSelected}
+        >
+          <Trash2 className="mr-2 h-4 w-4" />
+          Delete ({selectedIndices.length})
+        </Button>
+      </div>
+    );
+  
+    return (
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="text-2xl">{title}</CardTitle>
+          <div className="relative h-9 w-[180px]">
+            <div className={cn("absolute inset-0 transition-all duration-300", !showActions ? "opacity-100 transform-none" : "opacity-0 -translate-x-4")}>
+                {!showActions && AddButton}
+            </div>
+            <div className={cn("absolute inset-0 transition-all duration-300", showActions ? "opacity-100 transform-none" : "opacity-0 translate-x-4")}>
+                {showActions && ActionsToolbar}
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            {fieldArray.map((field: any, index: number) => (
+              <div key={field.id} className="flex items-center gap-2">
+                <FormField
+                  control={control}
+                  name={`${name}.${index}.checked`}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                <Input
+                  {...form.register(`${name}.${index}.text`)}
+                  placeholder="New item..."
+                  className="flex-1"
+                />
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
+
   const renderEditView = () => (
     <FormProvider {...form}>
     <form onSubmit={form.handleSubmit(onSaveAndPreview)} className="space-y-8">
@@ -480,7 +596,7 @@ export default function TechniqueDetailPage() {
                 control={form.control}
                 name="date"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className='flex flex-col'>
                     <FormLabel>Date</FormLabel>
                     <Popover>
                       <PopoverTrigger asChild>
@@ -517,68 +633,25 @@ export default function TechniqueDetailPage() {
           <FormField control={form.control} name="overview" render={({ field }) => ( <FormItem><FormLabel>Overview</FormLabel><Textarea placeholder="A brief overview of your plan." {...field} /></FormItem> )} />
         </CardContent>
       </Card>
-      
-      <SectionCard title="Prerequisites" action={
-        <Button type="button" variant="ghost" size="sm" onClick={() => appendPrereq({ id: `prereq-${Date.now()}`, text: '', checked: false })}>
-          <PlusCircle className="mr-2 h-4 w-4"/> Add Item
-        </Button>
-      }>
-        <div className="space-y-2">
-          {prereqFields.map((field, index) => (
-            <div key={field.id} className="flex items-center gap-2">
-              <FormField
-                control={form.control}
-                name={`prerequisites.${index}.checked`}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-              <Input {...form.register(`prerequisites.${index}.text`)} placeholder="New prerequisite..." className="flex-1"/>
-              <Button type="button" variant="ghost" size="icon" onClick={() => removePrereq(index)}>
-                <Trash2 className="h-4 w-4 text-destructive" />
-              </Button>
-            </div>
-          ))}
-        </div>
-      </SectionCard>
 
-       <SectionCard title="Execution Steps" action={
-        <Button type="button" variant="ghost" size="sm" onClick={() => appendStep({ id: `step-${Date.now()}`, text: '', checked: false })}>
-          <PlusCircle className="mr-2 h-4 w-4"/> Add Step
-        </Button>
-      }>
-        <div className="space-y-2">
-          {stepFields.map((field, index) => (
-            <div key={field.id} className="flex items-center gap-2">
-               <FormField
-                control={form.control}
-                name={`executionSteps.${index}.checked`}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-               <Input {...form.register(`executionSteps.${index}.text`)} placeholder="New execution step..." className="flex-1"/>
-               <Button type="button" variant="ghost" size="icon" onClick={() => removeStep(index)}>
-                <Trash2 className="h-4 w-4 text-destructive" />
-              </Button>
-            </div>
-          ))}
-        </div>
-      </SectionCard>
+      <ChecklistSection
+        title="Prerequisites"
+        fieldArray={prereqFields}
+        control={form.control}
+        name="prerequisites"
+        append={appendPrereq}
+        remove={removePrereq}
+      />
+      
+      <ChecklistSection
+        title="Execution Steps"
+        fieldArray={stepFields}
+        control={form.control}
+        name="executionSteps"
+        append={appendStep}
+        remove={removeStep}
+      />
+
 
       <Card>
         <CardHeader>
