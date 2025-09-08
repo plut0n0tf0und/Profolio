@@ -14,14 +14,18 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ChevronLeft, Check, Clipboard, ExternalLink, Wand2, PlusCircle, Trash2, Eye, Loader2, Save, Share2 } from 'lucide-react';
+import { ChevronLeft, Check, Clipboard, ExternalLink, Wand2, PlusCircle, Trash2, Eye, Loader2, Save, Share2, CalendarIcon } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { getTechniqueDetails, type TechniqueDetailsOutput } from '@/ai/flows/get-technique-details';
+import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
 
 const SectionCard = ({ title, children, action, noPadding }: { title: string, children: React.ReactNode, action?: React.ReactNode, noPadding?: boolean }) => (
   <Card>
@@ -38,7 +42,7 @@ const SectionCard = ({ title, children, action, noPadding }: { title: string, ch
 const techniqueRemixSchema = z.object({
   technique_name: z.string(),
   project_id: z.string().uuid().nullable(),
-  date: z.string(),
+  date: z.union([z.date(), z.string()]),
   duration: z.string(),
   teamSize: z.string(),
   why: z.string(),
@@ -126,7 +130,7 @@ export default function TechniqueDetailPage() {
     defaultValues: {
       technique_name: '',
       project_id: fromProjectId,
-      date: '',
+      date: new Date(),
       duration: '',
       teamSize: '',
       why: '',
@@ -155,7 +159,6 @@ export default function TechniqueDetailPage() {
       
       setIsLoading(true);
       
-      // Step 1: Find the basic metadata from the static JSON file.
       const techniqueMetadata = allTechniqueMetadata.find(t => t.slug === techniqueSlug);
       
       if (!techniqueMetadata) {
@@ -166,7 +169,6 @@ export default function TechniqueDetailPage() {
       console.debug(`[DEBUG] 2. Matched metadata from JSON: ${techniqueMetadata.name}`);
 
       try {
-        // Step 2: Call the AI flow to get the rich, descriptive content.
         const aiGeneratedDetails = await getTechniqueDetails({ techniqueName: techniqueMetadata.name });
         console.debug("[DEBUG] 3. AI flow returned data.", Object.keys(aiGeneratedDetails));
         
@@ -179,16 +181,17 @@ export default function TechniqueDetailPage() {
         setDetails(fullDetails);
         console.debug("[DEBUG] 4. `details` state has been set.", fullDetails.name);
 
-        // Step 3: Load user's remixed data if it exists.
         if (remixedTechniqueIdFromUrl) {
           console.debug(`[DEBUG] 5a. Remix ID found: ${remixedTechniqueIdFromUrl}, fetching data...`);
           const { data: remixedData } = await fetchRemixedTechniqueById(remixedTechniqueIdFromUrl);
           if (remixedData) {
-            form.reset(remixedData as any);
+            form.reset({
+              ...remixedData,
+              date: remixedData.date ? new Date(remixedData.date) : new Date(),
+            } as any);
             console.debug("[DEBUG] 5b. Successfully reset form with user's saved data.");
           }
         } else {
-          // Or set default form values from the newly fetched AI content.
           console.debug(`[DEBUG] 5a. No remix ID, setting default form values from AI content.`);
           form.reset({
             technique_name: fullDetails.name,
@@ -196,7 +199,7 @@ export default function TechniqueDetailPage() {
             overview: fullDetails.overview || '',
             prerequisites: (fullDetails.prerequisites || []).map((p, i) => ({ id: `prereq-${i}`, text: p, checked: false })),
             executionSteps: (fullDetails.executionSteps || []).map(s => ({ id: `step-${s.step}`, text: `${s.title}: ${s.description}`, checked: false })),
-            date: '', duration: '', teamSize: '', why: '', problemStatement: '', role: '',
+            date: new Date(), duration: '', teamSize: '', why: '', problemStatement: '', role: '',
             attachments: { files: [], links: [], notes: [] },
           });
         }
@@ -306,9 +309,14 @@ export default function TechniqueDetailPage() {
   
   const onSaveAndPreview = (data: TechniqueRemixData) => {
     startSaveTransition(async () => {
-      const payload = { ...data, id: remixedTechniqueId ?? undefined };
-  
-      const { data: savedData, error } = await saveOrUpdateRemixedTechnique(payload);
+      // Convert date to ISO string for Supabase
+      const payloadToSave = {
+        ...data,
+        date: data.date instanceof Date ? data.date.toISOString() : data.date,
+        id: remixedTechniqueId ?? undefined,
+      };
+
+      const { data: savedData, error } = await saveOrUpdateRemixedTechnique(payloadToSave);
   
       if (error || !savedData?.id) {
         console.error("Save failed:", error);
@@ -330,7 +338,12 @@ export default function TechniqueDetailPage() {
             router.replace(newUrl);
         }
         
-        form.reset(savedData as any);
+        // Reset form with potentially new data, ensuring date is a Date object
+        form.reset({
+          ...savedData,
+          date: savedData.date ? new Date(savedData.date) : new Date(),
+        } as any);
+
         router.push(`/dashboard/portfolio/${savedData.id}`);
       }
     });
@@ -461,14 +474,47 @@ export default function TechniqueDetailPage() {
           <CardTitle>Technique Details</CardTitle>
           <CardDescription>Basic information about this remixed technique instance.</CardDescription>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <FormField control={form.control} name="date" render={({ field }) => ( <FormItem><FormLabel>Date</FormLabel><Input type="date" {...field} /></FormItem> )} />
-          <FormField control={form.control} name="duration" render={({ field }) => ( <FormItem><FormLabel>Duration</FormLabel><Input placeholder="e.g., 2 weeks" {...field} /></FormItem> )} />
-          <FormField control={form.control} name="teamSize" render={({ field }) => ( <FormItem><FormLabel>Team Size</FormLabel><Input placeholder="e.g., 3 people" {...field} /></FormItem> )} />
-          <FormField control={form.control} name="role" render={({ field }) => ( <FormItem><FormLabel>Your Role</FormLabel><Input placeholder="e.g., Lead UX Researcher" {...field} /></FormItem> )} />
-          <FormField control={form.control} name="problemStatement" render={({ field }) => ( <FormItem className="md:col-span-2"><FormLabel>Problem Statement</FormLabel><Textarea placeholder="What is the core problem you are trying to solve?" {...field} /></FormItem> )} />
-          <FormField control={form.control} name="why" render={({ field }) => ( <FormItem className="md:col-span-2"><FormLabel>Why This Technique?</FormLabel><Textarea placeholder="Explain why this technique was chosen for this problem." {...field} /></FormItem> )} />
-          <FormField control={form.control} name="overview" render={({ field }) => ( <FormItem className="md:col-span-2"><FormLabel>Overview</FormLabel><Textarea placeholder="A brief overview of your plan." {...field} /></FormItem> )} />
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <FormField
+                control={form.control}
+                name="date"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>Date</FormLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant="outline"
+                            className={cn('w-full pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}
+                          >
+                            {field.value ? format(new Date(field.value), 'PPP') : <span>Pick a date</span>}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={field.value instanceof Date ? field.value : new Date(field.value)}
+                          onSelect={field.onChange}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField control={form.control} name="duration" render={({ field }) => ( <FormItem><FormLabel>Duration</FormLabel><FormControl><Input placeholder="e.g., 2 weeks" {...field} /></FormControl><FormMessage /></FormItem> )} />
+              <FormField control={form.control} name="teamSize" render={({ field }) => ( <FormItem><FormLabel>Team Size</FormLabel><FormControl><Input placeholder="e.g., 3 people" {...field} /></FormControl><FormMessage /></FormItem> )} />
+          </div>
+          
+          <FormField control={form.control} name="role" render={({ field }) => ( <FormItem><FormLabel>Your Role</FormLabel><FormControl><Input placeholder="e.g., Lead UX Researcher" {...field} /></FormControl><FormMessage /></FormItem> )} />
+          <FormField control={form.control} name="problemStatement" render={({ field }) => ( <FormItem><FormLabel>Problem Statement</FormLabel><Textarea placeholder="What is the core problem you are trying to solve?" {...field} /></FormItem> )} />
+          <FormField control={form.control} name="why" render={({ field }) => ( <FormItem><FormLabel>Why This Technique?</FormLabel><Textarea placeholder="Explain why this technique was chosen for this problem." {...field} /></FormItem> )} />
+          <FormField control={form.control} name="overview" render={({ field }) => ( <FormItem><FormLabel>Overview</FormLabel><Textarea placeholder="A brief overview of your plan." {...field} /></FormItem> )} />
         </CardContent>
       </Card>
       
@@ -667,3 +713,5 @@ export default function TechniqueDetailPage() {
     </>
   );
 }
+
+    
