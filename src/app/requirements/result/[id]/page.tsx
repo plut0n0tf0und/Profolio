@@ -27,7 +27,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
-import { ChevronLeft, Wand2, Save, Loader2 } from 'lucide-react';
+import { ChevronLeft, Save, Loader2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
 
@@ -53,12 +53,6 @@ const FiveDProcess = ({ techniques, projectId }: { techniques: StageTechniques, 
                         <CardContent className="flex items-center justify-between p-4">
                            <Link href={`/dashboard/technique/${technique.slug}?projectId=${projectId}`} className="font-medium cursor-pointer hover:underline">
                             {technique.name}
-                          </Link>
-                          <Link href={`/dashboard/technique/${technique.slug}?edit=true&projectId=${projectId}`} passHref>
-                              <Button variant="outline" size="sm">
-                                  <Wand2 className="mr-2 h-4 w-4" />
-                                  Remix
-                              </Button>
                           </Link>
                         </CardContent>
                       </Card>
@@ -203,7 +197,7 @@ export default function ResultPage() {
         </AlertDialog>
         
         <h1 className="truncate text-center text-xl font-bold md:flex-1">
-          Project Result
+          UX Recommendations
         </h1>
 
         <div className="flex items-center justify-end gap-2" style={{ minWidth: '80px' }}>
@@ -263,5 +257,3 @@ export default function ResultPage() {
     </div>
   );
 }
-
-    
