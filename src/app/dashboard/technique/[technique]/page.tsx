@@ -8,7 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { toPng } from 'html-to-image-fix';
 import { saveOrUpdateRemixedTechnique, fetchRemixedTechniqueById, RemixedTechnique } from '@/lib/supabaseClient';
-import allTechniqueDetails from '@/data/uxTechniqueDetails.json';
+import allTechniqueMetadata from '@/data/uxTechniqueDetails.json';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
@@ -21,7 +21,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import type { TechniqueDetailsOutput } from '@/ai/flows/get-technique-details';
+import { getTechniqueDetails, type TechniqueDetailsOutput } from '@/ai/flows/get-technique-details';
 
 const SectionCard = ({ title, children, action, noPadding }: { title: string, children: React.ReactNode, action?: React.ReactNode, noPadding?: boolean }) => (
   <Card>
@@ -76,7 +76,7 @@ const techniqueRemixSchema = z.object({
 
 type TechniqueRemixData = z.infer<typeof techniqueRemixSchema>;
 
-type FullTechniqueDetails = TechniqueDetailsOutput & { name: string, slug: string };
+type FullTechniqueDetails = TechniqueDetailsOutput & { name: string; slug: string };
 
 const TechniqueDetailsSkeleton = () => (
   <div className="space-y-6">
@@ -150,46 +150,68 @@ export default function TechniqueDetailPage() {
     effectRan.current = true;
 
     const loadAllData = async () => {
+      console.debug(`[DEBUG] 1. useEffect triggered. Slug: ${techniqueSlug}`);
       if (!techniqueSlug) return;
       
       setIsLoading(true);
-
-      const matchedTechnique = allTechniqueDetails.find(t => t.slug === techniqueSlug) as FullTechniqueDetails | undefined;
-      console.debug("[DEBUG] Static JSON data loaded:", matchedTechnique?.name || "Not Found");
       
-      if (!matchedTechnique) {
+      // Step 1: Find the basic metadata from the static JSON file.
+      const techniqueMetadata = allTechniqueMetadata.find(t => t.slug === techniqueSlug);
+      
+      if (!techniqueMetadata) {
         toast({ title: 'Error: Technique Not Found', variant: 'destructive' });
         router.push('/dashboard');
         return;
       }
-      
-      console.debug("[DEBUG] Calling setDetails with object:", matchedTechnique);
-      setDetails(matchedTechnique);
+      console.debug(`[DEBUG] 2. Matched metadata from JSON: ${techniqueMetadata.name}`);
 
-      if (remixedTechniqueIdFromUrl) {
+      try {
+        // Step 2: Call the AI flow to get the rich, descriptive content.
+        const aiGeneratedDetails = await getTechniqueDetails({ techniqueName: techniqueMetadata.name });
+        console.debug("[DEBUG] 3. AI flow returned data.", Object.keys(aiGeneratedDetails));
+        
+        const fullDetails = {
+          ...aiGeneratedDetails,
+          name: techniqueMetadata.name,
+          slug: techniqueMetadata.slug
+        };
+        
+        setDetails(fullDetails);
+        console.debug("[DEBUG] 4. `details` state has been set.", fullDetails.name);
+
+        // Step 3: Load user's remixed data if it exists.
+        if (remixedTechniqueIdFromUrl) {
+          console.debug(`[DEBUG] 5a. Remix ID found: ${remixedTechniqueIdFromUrl}, fetching data...`);
           const { data: remixedData } = await fetchRemixedTechniqueById(remixedTechniqueIdFromUrl);
-          console.debug("[DEBUG] Dynamic Supabase data fetched and resolved:", remixedData);
           if (remixedData) {
             form.reset(remixedData as any);
+            console.debug("[DEBUG] 5b. Successfully reset form with user's saved data.");
           }
-      } else {
+        } else {
+          // Or set default form values from the newly fetched AI content.
+          console.debug(`[DEBUG] 5a. No remix ID, setting default form values from AI content.`);
           form.reset({
-            technique_name: matchedTechnique.name,
+            technique_name: fullDetails.name,
             project_id: fromProjectId,
-            overview: matchedTechnique.overview || '',
-            prerequisites: (matchedTechnique.prerequisites || []).map((p, i) => ({ id: `prereq-${i}`, text: p, checked: false })),
-            executionSteps: (matchedTechnique.executionSteps || []).map(s => ({ id: `step-${s.step}`, text: `${s.title}: ${s.description}`, checked: false })),
+            overview: fullDetails.overview || '',
+            prerequisites: (fullDetails.prerequisites || []).map((p, i) => ({ id: `prereq-${i}`, text: p, checked: false })),
+            executionSteps: (fullDetails.executionSteps || []).map(s => ({ id: `step-${s.step}`, text: `${s.title}: ${s.description}`, checked: false })),
             date: '', duration: '', teamSize: '', why: '', problemStatement: '', role: '',
             attachments: { files: [], links: [], notes: [] },
           });
+        }
+      } catch (error) {
+        console.error("Failed to get technique details from AI:", error);
+        toast({ title: "Error Loading Content", description: "Could not fetch details for this technique.", variant: 'destructive' });
+      } finally {
+        setIsLoading(false);
+        console.debug("[DEBUG] 6. All data loading finished.");
       }
-
-      setIsLoading(false);
     };
 
     loadAllData();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [techniqueSlug]);
+  }, [techniqueSlug, remixedTechniqueIdFromUrl]);
   
   useEffect(() => {
     if (searchParams.get('edit') === 'true') {
@@ -315,26 +337,28 @@ export default function TechniqueDetailPage() {
   };
 
   const renderReadOnlyView = () => {
-    console.debug("[DEBUG] renderReadOnlyView called. `details` is:", details ? "Populated" : "null");
+    console.debug(`[DEBUG] renderReadOnlyView called. \`details\` is ${details ? 'populated' : 'null'}.`);
+    if (!details) return <TechniqueDetailsSkeleton />; // Fallback just in case
+    
     return (
     <div className="space-y-8" ref={shareableContentRef}>
         <Card className="overflow-hidden">
             <CardHeader>
-                <CardTitle className="text-3xl font-bold">{details?.name || techniqueName}</CardTitle>
-                {details?.bestFor && details.bestFor.length > 0 && (
+                <CardTitle className="text-3xl font-bold">{details.name}</CardTitle>
+                {details.bestFor && details.bestFor.length > 0 && (
                     <CardDescription className="flex flex-wrap gap-2 pt-2">
                         {details.bestFor.slice(0, 3).map(t => <Badge key={t} variant="secondary">{t}</Badge>)}
                     </CardDescription>
                 )}
             </CardHeader>
             <CardContent>
-                {details?.overview && (
+                {details.overview && (
                     <p className="text-lg text-muted-foreground">{details.overview}</p>
                 )}
             </CardContent>
         </Card>
 
-        {details?.prerequisites && details.prerequisites.length > 0 && (
+        {details.prerequisites && details.prerequisites.length > 0 && (
             <SectionCard title="Prerequisites">
                 <ul className="list-disc space-y-2 pl-5 text-muted-foreground">
                     {details.prerequisites.map((item, index) => <li key={index}>{item}</li>)}
@@ -342,7 +366,7 @@ export default function TechniqueDetailPage() {
             </SectionCard>
         )}
 
-        {details?.executionSteps && details.executionSteps.length > 0 && (
+        {details.executionSteps && details.executionSteps.length > 0 && (
             <SectionCard title="Execution Steps" action={
                 <Button variant="outline" size="sm" onClick={() => copyToClipboard(allStepsText)}>
                     <Clipboard className="mr-2 h-4 w-4" />
@@ -365,7 +389,7 @@ export default function TechniqueDetailPage() {
             </SectionCard>
         )}
 
-        {details?.resourceLinks && (details.resourceLinks.create?.length > 0 || details.resourceLinks.guides?.length > 0) && (
+        {details.resourceLinks && (details.resourceLinks.create?.length > 0 || details.resourceLinks.guides?.length > 0) && (
             <SectionCard title="Resource Links">
                 <div className="grid gap-6">
                     {details.resourceLinks.create?.length > 0 && (
@@ -399,12 +423,12 @@ export default function TechniqueDetailPage() {
         )}
 
         <div className="grid md:grid-cols-2 gap-8">
-            {details?.effortAndTiming && (
+            {details.effortAndTiming && (
                 <SectionCard title="Effort & Timing">
                     <p className="text-muted-foreground">{details.effortAndTiming}</p>
                 </SectionCard>
             )}
-            {details?.bestFor && details.bestFor.length > 0 && (
+            {details.bestFor && details.bestFor.length > 0 && (
                 <SectionCard title="Best For">
                     <ul className="list-disc space-y-2 pl-5 text-muted-foreground">
                         {details.bestFor.map((item, index) => <li key={index}>{item}</li>)}
@@ -413,7 +437,7 @@ export default function TechniqueDetailPage() {
             )}
         </div>
 
-        {details?.tips && details.tips.length > 0 && (
+        {details.tips && details.tips.length > 0 && (
             <SectionCard title="Tips for Success">
                 <ul className="space-y-3">
                     {details.tips.map((tip, index) => (
