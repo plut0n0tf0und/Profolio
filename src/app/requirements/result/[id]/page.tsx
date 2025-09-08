@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { fetchRequirementById, Requirement, saveOrUpdateResult } from '@/lib/supabaseClient';
@@ -27,7 +27,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
-import { ChevronLeft, Wand2, Save, Eye } from 'lucide-react';
+import { ChevronLeft, Wand2, Save } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
 
@@ -113,22 +113,10 @@ export default function ResultPage() {
   const [stageTechniques, setStageTechniques] = useState<StageTechniques>({});
   const [isLoading, setIsLoading] = useState(true);
 
-  const handleSaveResult = useCallback(async () => {
+  const handleSaveResult = async () => {
     if (!requirement || !id) return;
   
-    const resultData = {
-      requirement_id: id,
-      project_name: requirement.project_name || '',
-      role: requirement.role || '',
-      date: requirement.date ? new Date(requirement.date).toISOString() : new Date().toISOString(),
-      problem_statement: requirement.problem_statement || '',
-      output_type: Array.isArray(requirement.output_type) ? requirement.output_type : [],
-      outcome: Array.isArray(requirement.outcome) ? requirement.outcome : [],
-      device_type: Array.isArray(requirement.device_type) ? requirement.device_type : [],
-      project_type: requirement.project_type,
-    };
-  
-    const { error } = await saveOrUpdateResult(id, resultData);
+    const { error } = await saveOrUpdateResult(id, requirement);
   
     if (error) {
       console.error("Supabase save error:", error);
@@ -144,7 +132,7 @@ export default function ResultPage() {
       });
       router.push('/dashboard');
     }
-  }, [requirement, id, toast, router]);
+  };
 
   useEffect(() => {
     if (!id) return;

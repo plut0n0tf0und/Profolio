@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import { fetchSavedResultById, deleteSavedResult, Requirement } from '@/lib/supabaseClient';
@@ -137,7 +137,6 @@ export default function ProjectDetailPage() {
         router.push('/dashboard');
       } else if (projectData) {
         setProject(projectData);
-        // Calculate and set the recommended techniques
         const filteredTechniques = getFilteredTechniques(projectData);
         setStageTechniques(filteredTechniques);
       }

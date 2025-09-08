@@ -127,10 +127,6 @@ export default function TechniqueDetailPage() {
   const [isSharing, startShareTransition] = useTransition();
 
   const shareableContentRef = useRef<HTMLDivElement>(null);
-
-  const staticDetails = useMemo(() => {
-    return allTechniqueDetails.find(t => t.name.toLowerCase() === techniqueName.toLowerCase());
-  }, [techniqueName]);
   
   const form = useForm<TechniqueRemixData>({
     resolver: zodResolver(techniqueRemixSchema),
@@ -191,6 +187,7 @@ export default function TechniqueDetailPage() {
     const loadPageData = async () => {
         setIsLoading(true);
 
+        // Step 1: Always load base details from local JSON
         const baseDetails = allTechniqueDetails.find(
             (t) => t.name.toLowerCase() === techniqueName.toLowerCase()
         ) as TechniqueDetailsOutput | undefined;
@@ -200,10 +197,10 @@ export default function TechniqueDetailPage() {
             router.push('/dashboard');
             return;
         }
-
         setDetails(baseDetails);
 
         let remixedDataToLoad: RemixedTechnique | null = null;
+        // Step 2: If there's an ID, load saved data from DB
         if (remixedTechniqueIdFromUrl) {
             const { data, error } = await fetchRemixedTechniqueById(remixedTechniqueIdFromUrl);
             if (error) {
@@ -213,10 +210,12 @@ export default function TechniqueDetailPage() {
             }
         }
 
+        // Step 3: Populate the form
         if (remixedDataToLoad) {
+            // If we have saved data, use it to reset the form
             form.reset(remixedDataToLoad as any);
         } else {
-            // This is a new remix, so set up the form with default values from the static details.
+            // Otherwise, this is a new remix. Set up the form with defaults from base details.
             form.reset({
                 technique_name: techniqueName,
                 project_id: fromProjectId,
@@ -338,12 +337,9 @@ export default function TechniqueDetailPage() {
       <Card className="overflow-hidden">
           <CardHeader>
               <CardTitle className="text-3xl font-bold">{techniqueName}</CardTitle>
-              {staticDetails && (
+              {details && (
               <div className="flex flex-wrap gap-2 pt-2">
-                  {(staticDetails.output_types || []).map(t => <Badge key={t} variant="secondary">{t}</Badge>)}
-                   {(staticDetails.outcomes || []).map(t => <Badge key={t} variant="secondary">{t}</Badge>)}
-                  {(staticDetails.device_types || []).map(t => <Badge key={t} variant="secondary">{t}</Badge>)}
-                  {(staticDetails.project_types || []).map(t => <Badge key={t} variant="secondary">{t === 'New' ? 'New Project' : 'Existing Project'}</Badge>)}
+                  {(details.bestFor || []).slice(0, 3).map(t => <Badge key={t} variant="secondary">{t}</Badge>)}
               </div>
               )}
           </CardHeader>

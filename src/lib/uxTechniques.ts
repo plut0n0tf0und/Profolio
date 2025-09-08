@@ -8,10 +8,11 @@ interface TechniqueDetail {
   outcomes: string[];
   output_types: string[];
   device_types: string[];
-  project_types: string[];
+  project_types: ("New" | "Old")[];
 }
 
-const allTechniques: TechniqueDetail[] = techniqueDetails;
+
+const allTechniques: TechniqueDetail[] = techniqueDetails as TechniqueDetail[];
 
 /**
  * Retrieves a filtered list of UX techniques based on project requirements,
