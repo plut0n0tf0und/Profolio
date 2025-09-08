@@ -72,6 +72,9 @@ const formSchema = z.object({
   }),
 });
 
+type FormSchemaType = z.infer<typeof formSchema>;
+
+
 const sectionSchemas = {
   'item-1': formSchema.pick({ project_name: true, date: true, problem_statement: true, role: true }),
   'item-2': formSchema.pick({ output_type: true }),
@@ -107,7 +110,7 @@ function RequirementsPageContent() {
   const [requirementId, setRequirementId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormSchemaType>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       project_name: '',
@@ -141,6 +144,7 @@ function RequirementsPageContent() {
             output_type: data.output_type || [],
             outcome: data.outcome || [],
             device_type: data.device_type || [],
+            project_type: data.project_type as 'new' | 'old' | undefined,
           });
           toast({
             title: 'Project Loaded',
@@ -159,7 +163,7 @@ function RequirementsPageContent() {
   const handleSaveAndNext = async (currentSection: keyof typeof sectionSchemas) => {
     setIsSubmitting(true);
     
-    const fieldsToValidate = Object.keys(sectionSchemas[currentSection].shape) as (keyof z.infer<typeof formSchema>)[];
+    const fieldsToValidate = Object.keys(sectionSchemas[currentSection].shape) as (keyof FormSchemaType)[];
     const isValid = await form.trigger(fieldsToValidate);
 
     if (!isValid) {
