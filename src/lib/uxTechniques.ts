@@ -11,7 +11,6 @@ interface TechniqueDetail {
   project_types: ("New" | "Old")[];
 }
 
-
 const allTechniques: TechniqueDetail[] = techniqueDetails as TechniqueDetail[];
 
 /**
@@ -63,7 +62,6 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
           recommendations[stage] = [];
       }
   });
-
 
   return recommendations;
 }

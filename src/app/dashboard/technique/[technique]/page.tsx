@@ -191,7 +191,7 @@ export default function TechniqueDetailPage() {
         const baseDetails = allTechniqueDetails.find(
             (t) => t.name.toLowerCase() === techniqueName.toLowerCase()
         ) as TechniqueDetailsOutput | undefined;
-
+        
         if (!baseDetails) {
             toast({ title: 'Error', description: 'Technique details not found.', variant: 'destructive' });
             router.push('/dashboard');
