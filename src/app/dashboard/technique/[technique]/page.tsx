@@ -76,6 +76,10 @@ const techniqueRemixSchema = z.object({
 
 type TechniqueRemixData = z.infer<typeof techniqueRemixSchema>;
 
+// This is a new interface combining the static JSON data with the dynamic form data
+// It's not used directly but helps understand the technique's data model.
+type FullTechniqueDetails = TechniqueDetailsOutput & { name: string, slug: string };
+
 const TechniqueDetailsSkeleton = () => (
   <div className="space-y-6">
     <div className="flex items-center justify-between">
@@ -108,7 +112,7 @@ export default function TechniqueDetailPage() {
   const remixedTechniqueIdFromUrl = searchParams.get('remixId');
   const fromProjectId = searchParams.get('projectId');
 
-  const [details, setDetails] = useState<TechniqueDetailsOutput | null>(null);
+  const [details, setDetails] = useState<FullTechniqueDetails | null>(null);
   const [remixedTechniqueId, setRemixedTechniqueId] = useState<string | null>(remixedTechniqueIdFromUrl);
   const [isLoading, setIsLoading] = useState(true);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -117,6 +121,7 @@ export default function TechniqueDetailPage() {
   const [isSharing, startShareTransition] = useTransition();
 
   const shareableContentRef = useRef<HTMLDivElement>(null);
+  const effectRan = useRef(false);
 
   const form = useForm<TechniqueRemixData>({
     resolver: zodResolver(techniqueRemixSchema),
@@ -139,71 +144,86 @@ export default function TechniqueDetailPage() {
       },
     }
   });
+  
+  // FIX: This is the definitive data-loading hook.
+  // It's structured as a single, sequential flow to prevent race conditions.
+  useEffect(() => {
+    // This guard prevents the effect from running twice in React Strict Mode (development)
+    if (process.env.NODE_ENV === 'development' && effectRan.current) {
+        return;
+    }
+    effectRan.current = true;
+
+    // A single async function to orchestrate all data loading.
+    const loadAllData = async () => {
+        console.debug(`[DEBUG] 1. Data loading sequence started. Slug: ${techniqueSlug}`);
+        if (!techniqueSlug) return;
+        
+        setIsLoading(true);
+
+        // Step 1: Synchronously find the static technique data from the JSON file.
+        const matchedTechnique = allTechniqueDetails.find(t => t.slug === techniqueSlug) as FullTechniqueDetails | undefined;
+        console.debug(`[DEBUG] 2. Matched technique from JSON:`, matchedTechnique?.name || 'Not Found');
+        
+        if (!matchedTechnique) {
+          toast({
+            title: 'Error: Technique Not Found',
+            description: 'The requested technique could not be found. You are being redirected.',
+            variant: 'destructive',
+          });
+          router.push('/dashboard');
+          return;
+        }
+        
+        // Step 2: Set the static details state. This is crucial for rendering the read-only view.
+        setDetails(matchedTechnique);
+
+        // Step 3: Handle dynamic data (saved user work or default form values).
+        if (remixedTechniqueIdFromUrl) {
+            console.debug(`[DEBUG] 3a. Remix ID found: ${remixedTechniqueIdFromUrl}, fetching saved data...`);
+            const { data: remixedData, error } = await fetchRemixedTechniqueById(remixedTechniqueIdFromUrl);
+
+            if (remixedData) {
+              form.reset(remixedData as any);
+            } else if (error) {
+              toast({ title: 'Error', description: 'Could not load your saved work.' });
+            }
+        } else {
+            console.debug(`[DEBUG] 3b. No remix ID, setting default form values from static JSON.`);
+            // When creating a new remix, populate the form with defaults from the static data.
+            form.reset({
+              technique_name: matchedTechnique.name,
+              project_id: fromProjectId,
+              overview: matchedTechnique.overview || '',
+              prerequisites: (matchedTechnique.prerequisites || []).map((p, i) => ({ id: `prereq-${i}`, text: p, checked: false })),
+              executionSteps: (matchedTechnique.executionSteps || []).map(s => ({ id: `step-${s.step}`, text: `${s.title}: ${s.description}`, checked: false })),
+              date: '', duration: '', teamSize: '', why: '', problemStatement: '', role: '',
+              attachments: { files: [], links: [], notes: [] },
+            });
+        }
+
+        // Step 4: All data is loaded, so we can stop the loading indicator.
+        setIsLoading(false);
+        console.debug(`[DEBUG] 4. Data loading finished. isLoading is now false.`);
+    };
+
+    loadAllData();
+  // The hook should only re-run if the slug changes (i.e., user navigates to a new technique).
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [techniqueSlug, remixedTechniqueIdFromUrl, fromProjectId]);
+
+  
+  useEffect(() => {
+    // This effect is purely for debugging, to see when the details state updates.
+    console.debug('[DEBUG] `details` state updated to:', details ? details.name : null);
+  }, [details]);
+
 
   useEffect(() => {
     if (searchParams.get('edit') === 'true') {
       setIsEditMode(true);
     }
   }, [searchParams]);
-
-  // FIX: This effect ONLY handles loading the static descriptive content.
-  // It is synchronous and only depends on the slug from the URL.
-  useEffect(() => {
-    if (!techniqueSlug) return;
-    setIsLoading(true);
-
-    const matchedTechnique = allTechniqueDetails.find(t => t.slug === techniqueSlug) as TechniqueDetailsOutput | undefined;
-    
-    if (!matchedTechnique) {
-      toast({
-        title: 'Error: Technique Not Found',
-        description: 'The requested technique could not be found. You are being redirected.',
-        variant: 'destructive',
-      });
-      router.push('/dashboard');
-      return;
-    }
-    
-    // This is now the ONLY place where setDetails is called.
-    setDetails(matchedTechnique);
-
-  }, [techniqueSlug, router, toast]);
-
-
-  // FIX: This second effect ONLY handles loading the dynamic user data.
-  // It runs AFTER the `details` have been set by the first effect.
-  useEffect(() => {
-    // Wait until the static details are loaded before proceeding.
-    if (!details) return;
-
-    const loadRemixData = async () => {
-      if (remixedTechniqueIdFromUrl) {
-        // If there's a remix ID, fetch the saved data from the database.
-        const { data: remixedData, error } = await fetchRemixedTechniqueById(remixedTechniqueIdFromUrl);
-        if (remixedData) {
-          form.reset(remixedData as any);
-        } else if (error) {
-          toast({ title: 'Error', description: 'Could not load your saved work.' });
-        }
-      } else {
-        // If no remix ID, this is a new remix. Populate the form with defaults from the static `details`.
-        form.reset({
-          technique_name: details.name,
-          project_id: fromProjectId,
-          overview: details.overview || '',
-          prerequisites: (details.prerequisites || []).map((p, i) => ({ id: `prereq-${i}`, text: p, checked: false })),
-          executionSteps: (details.executionSteps || []).map(s => ({ id: `step-${s.step}`, text: `${s.title}: ${s.description}`, checked: false })),
-          date: '', duration: '', teamSize: '', why: '', problemStatement: '', role: '',
-          attachments: { files: [], links: [], notes: [] },
-        });
-      }
-      // All data loading is complete.
-      setIsLoading(false);
-    };
-
-    loadRemixData();
-  }, [details, remixedTechniqueIdFromUrl, fromProjectId, form, toast]);
-
 
   const { fields: prereqFields, append: appendPrereq, remove: removePrereq } = useFieldArray({
     control: form.control,
