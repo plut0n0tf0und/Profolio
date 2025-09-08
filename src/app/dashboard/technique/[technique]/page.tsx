@@ -483,14 +483,24 @@ export default function TechniqueDetailPage() {
     title: string;
   }) => {
     const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
+    const [hasAnimatedIn, setHasAnimatedIn] = useState(false);
     const watchedItems = form.watch(name);
   
     useEffect(() => {
       const newSelected = watchedItems
         .map((item, index) => (item.checked ? index : -1))
         .filter(index => index !== -1);
+      
+      if (newSelected.length > 0 && selectedIndices.length === 0) {
+        setHasAnimatedIn(true);
+      }
+      
+      if (newSelected.length === 0) {
+        setHasAnimatedIn(false);
+      }
+      
       setSelectedIndices(newSelected);
-    }, [watchedItems, name]);
+    }, [watchedItems, selectedIndices.length]);
   
     const handleSelectAll = (checked: boolean) => {
       watchedItems.forEach((_, index) => {
@@ -522,7 +532,7 @@ export default function TechniqueDetailPage() {
       <div className="flex items-center gap-4">
         <div className="flex items-center gap-2">
             <Checkbox id={`select-all-${name}`} onCheckedChange={handleSelectAll} checked={isAllSelected}/>
-            <Label htmlFor={`select-all-${name}`} className="text-sm font-medium">
+            <Label htmlFor={`select-all-${name}`} className="text-sm font-medium whitespace-nowrap">
                 Select All
             </Label>
         </div>
@@ -540,13 +550,13 @@ export default function TechniqueDetailPage() {
   
     return (
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between min-h-[64px]">
+        <CardHeader className="flex flex-row items-center justify-between min-h-[64px] overflow-hidden">
           <CardTitle className="text-2xl">{title}</CardTitle>
-          <div className="relative h-9 w-[190px]">
+          <div className="relative h-9 min-w-[220px]">
             <div className={cn("absolute inset-0 transition-all duration-300 flex items-center justify-end", !showActions ? "opacity-100 transform-none" : "opacity-0 -translate-x-4")}>
                 {!showActions && AddButton}
             </div>
-            <div className={cn("absolute inset-0 transition-all duration-300 flex items-center justify-end", showActions ? "opacity-100 transform-none" : "opacity-0 translate-x-4")}>
+            <div className={cn("absolute inset-0 transition-all duration-300 flex items-center justify-end", showActions ? "opacity-100 transform-none" : "opacity-0 translate-x-4", hasAnimatedIn && "animate-in slide-in-from-left-5")}>
                 {showActions && ActionsToolbar}
             </div>
           </div>
@@ -794,3 +804,5 @@ export default function TechniqueDetailPage() {
     </>
   );
 }
+
+    
