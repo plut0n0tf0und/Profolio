@@ -96,7 +96,7 @@ function RequirementsPageContent() {
   const { toast } = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [openSteps, setOpenSteps] = useState([0]);
+  const [activeStep, setActiveStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [requirementId, setRequirementId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -200,7 +200,11 @@ function RequirementsPageContent() {
       });
 
       if (currentStep < sectionSchemas.length - 1) {
-        setOpenSteps(prev => [...prev.filter(s => s !== currentStep), currentStep + 1]);
+        setActiveStep(currentStep + 1);
+        const nextStepEl = document.getElementById(`step-${currentStep + 1}`);
+        if(nextStepEl) {
+            nextStepEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
       } else {
         const finalId = requirementId || savedData?.id;
         if (finalId) {
@@ -287,13 +291,9 @@ function RequirementsPageContent() {
         <CardContent>
           <Form {...form}>
             <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
-                <VerticalStepper
-                  openSteps={openSteps}
-                  setOpenSteps={setOpenSteps}
-                  completedSteps={Array.from({length: 5}, (_, i) => form.formState.isValid && i < openSteps.reduce((max, v) => Math.max(max,v), -1))}
-                >
+                <VerticalStepper>
                   {/* Step 1 */}
-                  <Step index={0} title="Basic Project Details">
+                  <Step index={0} title="Basic Project Details" id="step-0" isActive={activeStep === 0}>
                     <div className="space-y-4">
                       <FormField
                         control={form.control}
@@ -376,7 +376,7 @@ function RequirementsPageContent() {
                   </Step>
 
                   {/* Step 2 */}
-                  <Step index={1} title="Output Type">
+                  <Step index={1} title="Output Type" id="step-1" isActive={activeStep === 1}>
                     <div className="space-y-4">
                         <FormField
                         control={form.control}
@@ -384,7 +384,7 @@ function RequirementsPageContent() {
                         render={({ field }) => (
                             <FormItem>
                             <FormLabel>What are you creating?</FormLabel>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 max-h-60 overflow-y-auto">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                                 {outputTypes.map((item) => (
                                 <FormItem key={item} className="flex flex-row items-start space-x-3 space-y-0">
                                     <FormControl>
@@ -412,7 +412,7 @@ function RequirementsPageContent() {
                   </Step>
                   
                   {/* Step 3 */}
-                  <Step index={2} title="Desired Outcome">
+                  <Step index={2} title="Desired Outcome" id="step-2" isActive={activeStep === 2}>
                    <div className="space-y-4">
                         <FormField
                         control={form.control}
@@ -448,7 +448,7 @@ function RequirementsPageContent() {
                   </Step>
 
                   {/* Step 4 */}
-                  <Step index={3} title="Device Type">
+                  <Step index={3} title="Device Type" id="step-3" isActive={activeStep === 3}>
                     <div className="space-y-4">
                         <FormField
                         control={form.control}
@@ -484,7 +484,7 @@ function RequirementsPageContent() {
                   </Step>
 
                   {/* Step 5 */}
-                  <Step index={4} title="Project Type">
+                  <Step index={4} title="Project Type" id="step-4" isActive={activeStep === 4}>
                     <div className="space-y-4">
                         <FormField
                             control={form.control}
