@@ -544,7 +544,7 @@ export default function TechniqueDetailPage() {
           variant="destructive-outline"
           size="sm"
           onClick={handleDeleteSelected}
-          disabled={isAllSelected}
+          disabled={watchedItems.length > 0 && selectedIndices.length === watchedItems.length}
         >
           <Trash2 className="mr-2 h-4 w-4" />
           Delete ({selectedIndices.length})
@@ -648,9 +648,7 @@ export default function TechniqueDetailPage() {
               <FormField control={form.control} name="duration" render={({ field }) => ( <FormItem><FormLabel>Duration</FormLabel><FormControl><Input placeholder="e.g., 2 weeks" {...field} /></FormControl><FormMessage /></FormItem> )} />
               <FormField control={form.control} name="teamSize" render={({ field }) => ( <FormItem><FormLabel>Team Size</FormLabel><FormControl><Input placeholder="e.g., 3 people" {...field} /></FormControl><FormMessage /></FormItem> )} />
           </div>
-          
-          <FormField control={form.control} name="role" render={({ field }) => ( <FormItem><FormLabel>Your Role</FormLabel><FormControl><Input placeholder="e.g., Lead UX Researcher" {...field} /></FormControl><FormMessage /></FormItem> )} />
-          
+                    
           <FormField control={form.control} name="why" render={({ field }) => ( <FormItem><FormLabel>Why This Technique?</FormLabel><Textarea placeholder="Explain why this technique was chosen for this problem." {...field} /></FormItem> )} />
           <FormField control={form.control} name="overview" render={({ field }) => ( <FormItem><FormLabel>Overview</FormLabel><Textarea placeholder="A brief overview of your plan." {...field} /></FormItem> )} />
         </CardContent>
