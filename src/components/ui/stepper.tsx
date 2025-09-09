@@ -77,10 +77,11 @@ const Step = React.forwardRef<HTMLDivElement, StepProps>(
         <div className="relative flex flex-col items-center">
           <div
             className={cn(
-              'z-10 flex h-8 w-8 items-center justify-center rounded-full border-2 transition-colors',
+              'z-10 flex h-8 w-8 items-center justify-center rounded-full border-2 font-bold transition-colors group-data-[status=inactive]:cursor-not-allowed',
+              'group-data-[status=completed]:cursor-pointer',
               determinedStatus === 'active' && 'border-primary text-primary',
               determinedStatus === 'completed' && 'bg-primary border-primary text-primary-foreground',
-              determinedStatus === 'inactive' && 'border-border'
+              determinedStatus === 'inactive' && 'border-border text-muted-foreground'
             )}
           >
             {isCompleted ? <Check className="h-5 w-5" /> : <span>{index + 1}</span>}
@@ -88,21 +89,25 @@ const Step = React.forwardRef<HTMLDivElement, StepProps>(
           {!isLastStep && (
             <div
               className={cn(
-                'absolute top-8 h-full w-px -translate-y-1 transition-colors',
+                'absolute top-9 h-[calc(100%-1rem)] w-px -translate-y-1 transition-colors',
                 isCompleted ? 'bg-primary' : 'bg-border'
               )}
             />
           )}
         </div>
-        <div className={cn('flex-1 w-full pt-1', !isActive && 'hidden')}>
-            {children}
-        </div>
-        <div className={cn('flex-1 w-full pt-1', isActive && 'hidden')}>
+        <div className="flex-1 w-full pt-1">
             {React.Children.map(children, child => {
-                if (React.isValidElement(child) && child.type === StepHeader) {
-                    return child;
+                if (!React.isValidElement(child)) return null;
+                
+                // Show content only for the active step
+                if (child.type === StepContent && !isActive) {
+                    return null;
                 }
-                return null;
+                 // Show header for all steps
+                if (child.type === StepHeader) {
+                    return React.cloneElement(child, { 'aria-current': isActive ? 'step' : undefined });
+                }
+                return child;
             })}
         </div>
       </div>
@@ -111,13 +116,14 @@ const Step = React.forwardRef<HTMLDivElement, StepProps>(
 );
 Step.displayName = 'Step';
 
+
 const StepHeader = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, children, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn('flex items-center cursor-pointer', className)}
+    className={cn('flex items-center', className)}
     {...props}
   >
     {children}
@@ -131,7 +137,7 @@ const StepTitle = React.forwardRef<
 >(({ className, children, ...props }, ref) => (
   <h3
     ref={ref}
-    className={cn('text-lg font-semibold text-muted-foreground group-data-[status=active]:text-foreground', className)}
+    className={cn('text-lg font-semibold text-muted-foreground group-data-[status=active]:text-foreground group-data-[status=completed]:text-foreground group-data-[status=completed]:cursor-pointer', className)}
     {...props}
   >
     {children}
@@ -143,7 +149,6 @@ const StepContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, children, ...props }, ref) => {
-    const { activeStep } = React.useContext(StepperContext);
     
     return (
         <div
@@ -159,5 +164,3 @@ StepContent.displayName = 'StepContent';
 
 
 export { VerticalStepper, Step, StepHeader, StepTitle, StepContent };
-
-    

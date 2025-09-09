@@ -70,13 +70,13 @@ const formSchema = z.object({
 type FormSchemaType = z.infer<typeof formSchema>;
 
 
-const sectionSchemas = {
-  0: formSchema.pick({ project_name: true, date: true, problem_statement: true, role: true }),
-  1: formSchema.pick({ output_type: true }),
-  2: formSchema.pick({ outcome: true }),
-  3: formSchema.pick({ device_type: true }),
-  4_5: formSchema.pick({ project_type: true }), // Combined last two
-};
+const sectionSchemas = [
+  formSchema.pick({ project_name: true, date: true, problem_statement: true, role: true }),
+  formSchema.pick({ output_type: true }),
+  formSchema.pick({ outcome: true }),
+  formSchema.pick({ device_type: true }),
+  formSchema.pick({ project_type: true }),
+];
 
 
 const outputTypes = [
@@ -149,8 +149,8 @@ function RequirementsPageContent() {
   }, [searchParams, form, toast]);
 
   const handleNextStep = async (currentStep: number) => {
-    const schemaKey = Object.keys(sectionSchemas)[currentStep] as keyof typeof sectionSchemas;
-    const fieldsToValidate = Object.keys(sectionSchemas[schemaKey].shape) as (keyof FormSchemaType)[];
+    const schemaForStep = sectionSchemas[currentStep];
+    const fieldsToValidate = Object.keys(schemaForStep.shape) as (keyof FormSchemaType)[];
 
     const isValid = await form.trigger(fieldsToValidate);
     
@@ -196,8 +196,9 @@ function RequirementsPageContent() {
         title: 'Progress Saved!',
         description: `Section has been successfully saved.`,
       });
-
-      if (currentStep < 4) {
+      
+      const totalSteps = sectionSchemas.length;
+      if (currentStep < totalSteps - 1) {
         setActiveStep(currentStep + 1);
       } else {
         const finalId = requirementId || savedData?.id;
@@ -233,6 +234,12 @@ function RequirementsPageContent() {
         </CardContent>
     </Card>
   );
+
+  const handleStepClick = (stepIndex: number) => {
+    if (stepIndex < activeStep) {
+        setActiveStep(stepIndex);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -287,13 +294,13 @@ function RequirementsPageContent() {
             <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
                 <VerticalStepper activeStep={activeStep}>
                     <Step>
-                        <StepHeader onClick={() => setActiveStep(0)}>
+                        <StepHeader onClick={() => handleStepClick(0)}>
                             <StepTitle>Basic Project Details</StepTitle>
                         </StepHeader>
                         <StepContent>
                             <div className="space-y-4">
                                 <FormField control={form.control} name="project_name" render={({ field }) => ( <FormItem> <FormLabel>Project Name</FormLabel> <FormControl> <Input placeholder="e.g., AuthNexus Redesign" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
-                                <FormField control={form.control} name="date" render={({ field }) => ( <FormItem> <FormLabel>Date</FormLabel> <Popover> <PopoverTrigger asChild> <FormControl> <Button variant={'outline'} className={cn('w-full pl-3 text-left font-normal',!field.value && 'text-muted-foreground' )}> {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>} <CalendarIcon className="ml-auto h-4 w-4 opacity-50" /> </Button> </FormControl> </PopoverTrigger> <PopoverContent className="w-auto p-0" align="start"> <Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date > new Date() || date < new Date('1900-01-01')} initialFocus /> </PopoverContent> </Popover> <FormMessage /> </FormItem> )}/>
+                                <FormField control={form.control} name="date" render={({ field }) => ( <FormItem className="flex flex-col"> <FormLabel>Date</FormLabel> <Popover> <PopoverTrigger asChild> <FormControl> <Button variant={'outline'} className={cn('w-full pl-3 text-left font-normal',!field.value && 'text-muted-foreground' )}> {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>} <CalendarIcon className="ml-auto h-4 w-4 opacity-50" /> </Button> </FormControl> </PopoverTrigger> <PopoverContent className="w-auto p-0" align="start"> <Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date > new Date() || date < new Date('1900-01-01')} initialFocus /> </PopoverContent> </Popover> <FormMessage /> </FormItem> )}/>
                                 <FormField control={form.control} name="problem_statement" render={({ field }) => ( <FormItem> <FormLabel>Problem Statement</FormLabel> <FormControl> <Textarea placeholder="Describe the core problem your project aims to solve." {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
                                 <FormField control={form.control} name="role" render={({ field }) => ( <FormItem> <FormLabel>Your Role</FormLabel> <FormControl> <Input placeholder="e.g., UX Designer, Product Manager" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
                                 <Button onClick={() => handleNextStep(0)} disabled={isSubmitting} className="w-full">
@@ -304,7 +311,7 @@ function RequirementsPageContent() {
                     </Step>
 
                     <Step>
-                        <StepHeader onClick={() => setActiveStep(1)}>
+                        <StepHeader onClick={() => handleStepClick(1)}>
                             <StepTitle>Output Type</StepTitle>
                         </StepHeader>
                         <StepContent>
@@ -318,7 +325,7 @@ function RequirementsPageContent() {
                     </Step>
 
                     <Step>
-                        <StepHeader onClick={() => setActiveStep(2)}>
+                        <StepHeader onClick={() => handleStepClick(2)}>
                             <StepTitle>Desired Outcome</StepTitle>
                         </StepHeader>
                         <StepContent>
@@ -332,7 +339,7 @@ function RequirementsPageContent() {
                     </Step>
 
                     <Step>
-                        <StepHeader onClick={() => setActiveStep(3)}>
+                        <StepHeader onClick={() => handleStepClick(3)}>
                             <StepTitle>Device Type</StepTitle>
                         </StepHeader>
                         <StepContent>
@@ -346,7 +353,7 @@ function RequirementsPageContent() {
                     </Step>
 
                     <Step>
-                        <StepHeader onClick={() => setActiveStep(4)}>
+                        <StepHeader onClick={() => handleStepClick(4)}>
                             <StepTitle>Project Type</StepTitle>
                         </StepHeader>
                         <StepContent>
@@ -393,5 +400,3 @@ export default function RequirementsPage() {
     </Suspense>
   )
 }
-
-    
