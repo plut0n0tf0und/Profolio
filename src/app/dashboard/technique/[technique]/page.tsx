@@ -482,26 +482,14 @@ export default function TechniqueDetailPage() {
     remove: (indices: number[] | number) => void;
     title: string;
   }) => {
-    const [selectedIndices, setSelectedIndices] = useState<number[]>([]);
-    const [hasAnimatedIn, setHasAnimatedIn] = useState(false);
     const watchedItems = form.watch(name);
-  
-    useEffect(() => {
-      const newSelected = watchedItems
-        .map((item, index) => (item.checked ? index : -1))
-        .filter(index => index !== -1);
-      
-      if (newSelected.length > 0 && selectedIndices.length === 0) {
-        setHasAnimatedIn(true);
-      }
-      
-      if (newSelected.length === 0) {
-        setHasAnimatedIn(false);
-      }
-      
-      setSelectedIndices(newSelected);
-    }, [watchedItems, selectedIndices.length]);
-  
+    const selectedIndices = useMemo(() =>
+        watchedItems
+            .map((item, index) => (item.checked ? index : -1))
+            .filter(index => index !== -1),
+        [watchedItems]
+    );
+
     const handleSelectAll = (checked: boolean) => {
       watchedItems.forEach((_, index) => {
         form.setValue(`${name}.${index}.checked`, checked, { shouldDirty: true });
@@ -509,16 +497,8 @@ export default function TechniqueDetailPage() {
     };
   
     const handleDeleteSelected = () => {
-      if (watchedItems.length - selectedIndices.length < 1) {
-        toast({
-          title: "Action Prohibited",
-          description: "At least one item must remain in the list.",
-          variant: "destructive"
-        });
-        return;
-      }
-      const sortedIndices = [...selectedIndices].sort((a, b) => b - a);
-      remove(sortedIndices);
+        const sortedIndices = [...selectedIndices].sort((a, b) => b - a);
+        remove(sortedIndices);
     };
 
     const isAllSelected = watchedItems.length > 0 && selectedIndices.length === watchedItems.length;
@@ -548,6 +528,7 @@ export default function TechniqueDetailPage() {
           variant="outline"
           size="sm"
           onClick={handleDeleteSelected}
+          disabled={isAllSelected}
         >
           <Trash2 className="mr-2 h-4 w-4" />
           Delete ({selectedIndices.length})
@@ -560,12 +541,12 @@ export default function TechniqueDetailPage() {
         <CardHeader className="flex flex-row items-center justify-between min-h-[64px] overflow-hidden">
           <CardTitle className="text-2xl">{title}</CardTitle>
           <div className="relative h-9 min-w-[220px]">
-            <div className={cn("absolute inset-0 transition-all duration-300 flex items-center justify-end", !showActions ? "opacity-100 transform-none" : "opacity-0 -translate-x-4")}>
-                {!showActions && AddButton}
-            </div>
-            <div className={cn("absolute inset-0 transition-all duration-300 flex items-center justify-end", showActions ? "opacity-100 transform-none" : "opacity-0 translate-x-4", hasAnimatedIn && "animate-in slide-in-from-left-5")}>
-                {showActions && ActionsToolbar}
-            </div>
+              <div className={cn("absolute inset-0 transition-opacity duration-200 flex items-center justify-end", !showActions ? "opacity-100" : "opacity-0 pointer-events-none")}>
+                  {AddButton}
+              </div>
+              <div className={cn("absolute inset-0 transition-opacity duration-200 flex items-center justify-end", showActions ? "opacity-100" : "opacity-0 pointer-events-none")}>
+                  {ActionsToolbar}
+              </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -811,7 +792,3 @@ export default function TechniqueDetailPage() {
     </>
   );
 }
-
-    
-
-    
