@@ -168,7 +168,7 @@ export default function ProjectDetailPage() {
             <span className="hidden md:inline">Back to Dashboard</span>
         </Button>
         <h1 className="text-xl font-bold text-center flex-1 truncate">
-            {isLoading ? 'Loading...' : project?.project_name || 'Project Details'}
+            UX Recommendations
         </h1>
         <div className="flex items-center gap-2">
             <Link href="/dashboard/full-portfolio" passHref>
