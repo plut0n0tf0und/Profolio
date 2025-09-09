@@ -293,7 +293,7 @@ function RequirementsPageContent() {
           <Form {...form}>
             <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
                 <VerticalStepper activeStep={activeStep}>
-                    <Step>
+                    <Step index={0}>
                         <StepHeader onClick={() => handleStepClick(0)}>
                             <StepTitle>Basic Project Details</StepTitle>
                         </StepHeader>
@@ -310,7 +310,7 @@ function RequirementsPageContent() {
                         </StepContent>
                     </Step>
 
-                    <Step>
+                    <Step index={1}>
                         <StepHeader onClick={() => handleStepClick(1)}>
                             <StepTitle>Output Type</StepTitle>
                         </StepHeader>
@@ -324,7 +324,7 @@ function RequirementsPageContent() {
                         </StepContent>
                     </Step>
 
-                    <Step>
+                    <Step index={2}>
                         <StepHeader onClick={() => handleStepClick(2)}>
                             <StepTitle>Desired Outcome</StepTitle>
                         </StepHeader>
@@ -338,7 +338,7 @@ function RequirementsPageContent() {
                         </StepContent>
                     </Step>
 
-                    <Step>
+                    <Step index={3}>
                         <StepHeader onClick={() => handleStepClick(3)}>
                             <StepTitle>Device Type</StepTitle>
                         </StepHeader>
@@ -352,7 +352,7 @@ function RequirementsPageContent() {
                         </StepContent>
                     </Step>
 
-                    <Step>
+                    <Step index={4}>
                         <StepHeader onClick={() => handleStepClick(4)}>
                             <StepTitle>Project Type</StepTitle>
                         </StepHeader>
