@@ -27,6 +27,7 @@ import { getTechniqueDetails, type TechniqueDetailsOutput } from '@/ai/flows/get
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const SectionCard = ({ title, children, action, noPadding }: { title: string, children: React.ReactNode, action?: React.ReactNode, noPadding?: boolean }) => (
   <Card>
@@ -105,6 +106,9 @@ const TechniqueDetailsSkeleton = () => (
   </div>
 );
 
+const durationOptions = ["1 week", "2 weeks", "1 month", "3 months", "6 months", "Custom"];
+const teamSizeOptions = ["Solo", "2–3", "4–6", "7–10", "11–15", "15+", "Custom"];
+
 export default function TechniqueDetailPage() {
   const router = useRouter();
   const params = useParams();
@@ -122,6 +126,9 @@ export default function TechniqueDetailPage() {
   const [isSaving, startSaveTransition] = useTransition();
   const [isBackAlertOpen, setIsBackAlertOpen] = useState(false);
   const [isSharing, startShareTransition] = useTransition();
+  
+  const [showCustomDuration, setShowCustomDuration] = useState(false);
+  const [showCustomTeamSize, setShowCustomTeamSize] = useState(false);
 
   const shareableContentRef = useRef<HTMLDivElement>(null);
   const effectRan = useRef(false);
@@ -190,6 +197,13 @@ export default function TechniqueDetailPage() {
               ...remixedData,
               date: remixedData.date ? new Date(remixedData.date) : new Date(),
             } as any);
+
+            if (remixedData.duration && !durationOptions.includes(remixedData.duration)) {
+                setShowCustomDuration(true);
+            }
+             if (remixedData.teamSize && !teamSizeOptions.includes(remixedData.teamSize)) {
+                setShowCustomTeamSize(true);
+            }
             console.debug("[DEBUG] 5b. Successfully reset form with user's saved data.");
           }
         } else {
@@ -613,7 +627,7 @@ export default function TechniqueDetailPage() {
           <CardDescription>Basic information about this remixed technique instance.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <FormField
                 control={form.control}
                 name="date"
@@ -645,8 +659,81 @@ export default function TechniqueDetailPage() {
                   </FormItem>
                 )}
               />
-              <FormField control={form.control} name="duration" render={({ field }) => ( <FormItem><FormLabel>Duration</FormLabel><FormControl><Input placeholder="e.g., 2 weeks" {...field} /></FormControl><FormMessage /></FormItem> )} />
-              <FormField control={form.control} name="teamSize" render={({ field }) => ( <FormItem><FormLabel>Team Size</FormLabel><FormControl><Input placeholder="e.g., 3 people" {...field} /></FormControl><FormMessage /></FormItem> )} />
+              <div />
+              
+              <FormField
+                control={form.control}
+                name="duration"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Duration</FormLabel>
+                     <Select
+                        onValueChange={(value) => {
+                          const isCustom = value === 'Custom';
+                          setShowCustomDuration(isCustom);
+                          if (!isCustom) {
+                            field.onChange(value);
+                          } else {
+                            field.onChange('');
+                          }
+                        }}
+                        defaultValue={durationOptions.includes(field.value) ? field.value : 'Custom'}
+                     >
+                        <FormControl>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select a duration" />
+                            </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                            {durationOptions.map(option => <SelectItem key={option} value={option}>{option}</SelectItem>)}
+                        </SelectContent>
+                     </Select>
+                     {showCustomDuration && (
+                        <FormControl>
+                            <Input placeholder="Enter custom duration" {...field} className="mt-2" />
+                        </FormControl>
+                     )}
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+            <FormField
+                control={form.control}
+                name="teamSize"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Team Size</FormLabel>
+                     <Select
+                        onValueChange={(value) => {
+                          const isCustom = value === 'Custom';
+                          setShowCustomTeamSize(isCustom);
+                           if (!isCustom) {
+                            field.onChange(value);
+                          } else {
+                            field.onChange('');
+                          }
+                        }}
+                        defaultValue={teamSizeOptions.includes(field.value) ? field.value : 'Custom'}
+                     >
+                        <FormControl>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select team size" />
+                            </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                            {teamSizeOptions.map(option => <SelectItem key={option} value={option}>{option}</SelectItem>)}
+                        </SelectContent>
+                     </Select>
+                     {showCustomTeamSize && (
+                        <FormControl>
+                            <Input placeholder="Enter custom team size" {...field} className="mt-2" />
+                        </FormControl>
+                     )}
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
           </div>
                     
           <FormField control={form.control} name="why" render={({ field }) => ( <FormItem><FormLabel>Why This Technique?</FormLabel><Textarea placeholder="Explain why this technique was chosen for this problem." {...field} /></FormItem> )} />
