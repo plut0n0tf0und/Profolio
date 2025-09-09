@@ -7,38 +7,33 @@ import { Check } from 'lucide-react';
 
 interface StepperContextValue {
   activeStep: number;
-  totalSteps: number;
 }
 
 const StepperContext = React.createContext<StepperContextValue>({
   activeStep: 0,
-  totalSteps: 0,
 });
 
-// Vertical Stepper Component
 const VerticalStepper = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, children, ...props }, ref) => {
+  React.HTMLAttributes<HTMLDivElement> & { activeStep: number }
+>(({ className, children, activeStep, ...props }, ref) => {
   const steps = React.Children.toArray(children);
   const totalSteps = steps.length;
-  const [activeStep, setActiveStep] = React.useState(0);
 
   return (
-    <StepperContext.Provider value={{ activeStep, totalSteps }}>
+    <StepperContext.Provider value={{ activeStep }}>
       <div
         ref={ref}
-        className={cn('relative flex flex-col', className)}
+        className={cn('relative flex flex-col gap-4', className)}
         {...props}
       >
         {steps.map((step, index) => {
           if (!React.isValidElement(step)) return null;
-          return React.cloneElement(step as React.ReactElement, {
+          return React.cloneElement(step as React.ReactElement<StepProps>, {
             index,
             isActive: index === activeStep,
             isCompleted: index < activeStep,
             isLastStep: index === totalSteps - 1,
-            setActiveStep,
           });
         })}
       </div>
@@ -47,15 +42,12 @@ const VerticalStepper = React.forwardRef<
 });
 VerticalStepper.displayName = 'VerticalStepper';
 
-
-// Step Component
 interface StepProps extends React.HTMLAttributes<HTMLDivElement> {
   index?: number;
   status?: 'active' | 'completed' | 'inactive';
   isActive?: boolean;
   isCompleted?: boolean;
   isLastStep?: boolean;
-  setActiveStep?: (step: number) => void;
 }
 
 const Step = React.forwardRef<HTMLDivElement, StepProps>(
@@ -67,7 +59,7 @@ const Step = React.forwardRef<HTMLDivElement, StepProps>(
       isActive = false,
       isCompleted = false,
       isLastStep = false,
-      status, // Allow manual status override
+      status,
       ...props
     },
     ref
@@ -78,45 +70,54 @@ const Step = React.forwardRef<HTMLDivElement, StepProps>(
     return (
       <div
         ref={ref}
-        className={cn('relative flex items-start', className)}
+        className={cn('flex items-start gap-4', className)}
         data-status={determinedStatus}
         {...props}
       >
-        <div className="flex flex-col items-center mr-4">
+        <div className="relative flex flex-col items-center">
           <div
             className={cn(
-              'flex items-center justify-center w-8 h-8 rounded-full border-2',
+              'z-10 flex h-8 w-8 items-center justify-center rounded-full border-2 transition-colors',
               determinedStatus === 'active' && 'border-primary text-primary',
               determinedStatus === 'completed' && 'bg-primary border-primary text-primary-foreground',
               determinedStatus === 'inactive' && 'border-border'
             )}
           >
-            {isCompleted ? <Check className="w-5 h-5" /> : <span>{index + 1}</span>}
+            {isCompleted ? <Check className="h-5 w-5" /> : <span>{index + 1}</span>}
           </div>
           {!isLastStep && (
             <div
               className={cn(
-                'flex-grow w-px my-2',
+                'absolute top-8 h-full w-px -translate-y-1 transition-colors',
                 isCompleted ? 'bg-primary' : 'bg-border'
               )}
             />
           )}
         </div>
-        <div className="flex-1 w-full">{children}</div>
+        <div className={cn('flex-1 w-full pt-1', !isActive && 'hidden')}>
+            {children}
+        </div>
+        <div className={cn('flex-1 w-full pt-1', isActive && 'hidden')}>
+            {React.Children.map(children, child => {
+                if (React.isValidElement(child) && child.type === StepHeader) {
+                    return child;
+                }
+                return null;
+            })}
+        </div>
       </div>
     );
   }
 );
 Step.displayName = 'Step';
 
-// Step Header Component
 const StepHeader = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, children, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn('flex items-center py-1 cursor-pointer', className)}
+    className={cn('flex items-center cursor-pointer', className)}
     {...props}
   >
     {children}
@@ -124,14 +125,13 @@ const StepHeader = React.forwardRef<
 ));
 StepHeader.displayName = 'StepHeader';
 
-// Step Title Component
 const StepTitle = React.forwardRef<
   HTMLHeadingElement,
   React.HTMLAttributes<HTMLHeadingElement>
 >(({ className, children, ...props }, ref) => (
   <h3
     ref={ref}
-    className={cn('text-lg font-semibold', className)}
+    className={cn('text-lg font-semibold text-muted-foreground group-data-[status=active]:text-foreground', className)}
     {...props}
   >
     {children}
@@ -139,19 +139,25 @@ const StepTitle = React.forwardRef<
 ));
 StepTitle.displayName = 'StepTitle';
 
-// Step Content Component
 const StepContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
->(({ className, children, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn('pl-12 pb-4', className)}
-    {...props}
-  >
-    {children}
-  </div>
-));
+>(({ className, children, ...props }, ref) => {
+    const { activeStep } = React.useContext(StepperContext);
+    
+    return (
+        <div
+            ref={ref}
+            className={cn('mt-2 border-t border-border pt-4', className)}
+            {...props}
+        >
+            {children}
+        </div>
+    );
+});
 StepContent.displayName = 'StepContent';
 
+
 export { VerticalStepper, Step, StepHeader, StepTitle, StepContent };
+
+    

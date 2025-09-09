@@ -27,12 +27,7 @@ import {
   CardDescription,
   CardContent,
 } from '@/components/ui/card';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
+import { VerticalStepper, Step, StepHeader, StepTitle, StepContent } from '@/components/ui/stepper';
 import { useToast } from '@/hooks/use-toast';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import {
@@ -76,11 +71,11 @@ type FormSchemaType = z.infer<typeof formSchema>;
 
 
 const sectionSchemas = {
-  'item-1': formSchema.pick({ project_name: true, date: true, problem_statement: true, role: true }),
-  'item-2': formSchema.pick({ output_type: true }),
-  'item-3': formSchema.pick({ outcome: true }),
-  'item-4': formSchema.pick({ device_type: true }),
-  'item-5': formSchema.pick({ project_type: true }),
+  0: formSchema.pick({ project_name: true, date: true, problem_statement: true, role: true }),
+  1: formSchema.pick({ output_type: true }),
+  2: formSchema.pick({ outcome: true }),
+  3: formSchema.pick({ device_type: true }),
+  4_5: formSchema.pick({ project_type: true }), // Combined last two
 };
 
 
@@ -99,13 +94,11 @@ const outputTypes = [
 const outcomes = ['Qualitative', 'Quantitative', 'Insight'];
 const deviceTypes = ['Mobile', 'Desktop', 'Electronics', 'Kiosk'];
 
-const accordionItems = ['item-1', 'item-2', 'item-3', 'item-4', 'item-5'];
-
 function RequirementsPageContent() {
   const { toast } = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [activeAccordionItem, setActiveAccordionItem] = useState('item-1');
+  const [activeStep, setActiveStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [requirementId, setRequirementId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -146,10 +139,6 @@ function RequirementsPageContent() {
             device_type: data.device_type || [],
             project_type: data.project_type as 'new' | 'old' | undefined,
           });
-          toast({
-            title: 'Project Loaded',
-            description: 'You are now editing an existing project.',
-          });
         }
         setIsLoading(false);
       };
@@ -159,23 +148,23 @@ function RequirementsPageContent() {
     }
   }, [searchParams, form, toast]);
 
+  const handleNextStep = async (currentStep: number) => {
+    const schemaKey = Object.keys(sectionSchemas)[currentStep] as keyof typeof sectionSchemas;
+    const fieldsToValidate = Object.keys(sectionSchemas[schemaKey].shape) as (keyof FormSchemaType)[];
 
-  const handleSaveAndNext = async (currentSection: keyof typeof sectionSchemas) => {
-    setIsSubmitting(true);
-    
-    const fieldsToValidate = Object.keys(sectionSchemas[currentSection].shape) as (keyof FormSchemaType)[];
     const isValid = await form.trigger(fieldsToValidate);
-
+    
     if (!isValid) {
-      toast({
-        title: 'Validation Error',
-        description: 'Please fill in all required fields for this section.',
-        variant: 'destructive'
-      });
-      setIsSubmitting(false);
-      return;
+        toast({
+            title: 'Validation Error',
+            description: 'Please fill in all required fields for this section.',
+            variant: 'destructive',
+        });
+        return;
     }
 
+    setIsSubmitting(true);
+    
     const values = form.getValues();
     const sectionData = fieldsToValidate.reduce((acc, key) => {
       acc[key] = values[key];
@@ -198,9 +187,8 @@ function RequirementsPageContent() {
         savedData = data;
         if (savedData?.id) {
           setRequirementId(savedData.id);
-           // Update URL without navigation to persist the ID
-          const newUrl = `${window.location.pathname}?id=${savedData.id}`;
-          window.history.replaceState({ ...window.history.state, as: newUrl, url: newUrl }, '', newUrl);
+           const newUrl = `${window.location.pathname}?id=${savedData.id}`;
+           window.history.replaceState({ ...window.history.state, as: newUrl, url: newUrl }, '', newUrl);
         }
       }
 
@@ -209,9 +197,8 @@ function RequirementsPageContent() {
         description: `Section has been successfully saved.`,
       });
 
-      const currentIndex = accordionItems.indexOf(currentSection);
-      if (currentIndex < accordionItems.length - 1) {
-        setActiveAccordionItem(accordionItems[currentIndex + 1]);
+      if (currentStep < 4) {
+        setActiveStep(currentStep + 1);
       } else {
         const finalId = requirementId || savedData?.id;
         if (finalId) {
@@ -230,7 +217,7 @@ function RequirementsPageContent() {
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }
 
   const PageSkeleton = () => (
     <Card className="w-full">
@@ -298,245 +285,80 @@ function RequirementsPageContent() {
         <CardContent>
           <Form {...form}>
             <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
-              <Accordion
-                type="single"
-                collapsible
-                className="w-full space-y-4"
-                value={activeAccordionItem}
-                onValueChange={setActiveAccordionItem}
-              >
-                <AccordionItem value="item-1">
-                  <AccordionTrigger className="text-xl font-semibold">
-                    1. Basic Project Details
-                  </AccordionTrigger>
-                  <AccordionContent className="pt-4 space-y-4">
-                     <FormField
-                      control={form.control}
-                      name="project_name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Project Name</FormLabel>
-                          <FormControl>
-                            <Input placeholder="e.g., AuthNexus Redesign" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="date"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-col">
-                          <FormLabel>Date</FormLabel>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <FormControl>
-                                <Button
-                                  variant={'outline'}
-                                  className={cn(
-                                    'w-full pl-3 text-left font-normal',
-                                    !field.value && 'text-muted-foreground'
-                                  )}
-                                >
-                                  {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}
-                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                <VerticalStepper activeStep={activeStep}>
+                    <Step>
+                        <StepHeader onClick={() => setActiveStep(0)}>
+                            <StepTitle>Basic Project Details</StepTitle>
+                        </StepHeader>
+                        <StepContent>
+                            <div className="space-y-4">
+                                <FormField control={form.control} name="project_name" render={({ field }) => ( <FormItem> <FormLabel>Project Name</FormLabel> <FormControl> <Input placeholder="e.g., AuthNexus Redesign" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
+                                <FormField control={form.control} name="date" render={({ field }) => ( <FormItem> <FormLabel>Date</FormLabel> <Popover> <PopoverTrigger asChild> <FormControl> <Button variant={'outline'} className={cn('w-full pl-3 text-left font-normal',!field.value && 'text-muted-foreground' )}> {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>} <CalendarIcon className="ml-auto h-4 w-4 opacity-50" /> </Button> </FormControl> </PopoverTrigger> <PopoverContent className="w-auto p-0" align="start"> <Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date > new Date() || date < new Date('1900-01-01')} initialFocus /> </PopoverContent> </Popover> <FormMessage /> </FormItem> )}/>
+                                <FormField control={form.control} name="problem_statement" render={({ field }) => ( <FormItem> <FormLabel>Problem Statement</FormLabel> <FormControl> <Textarea placeholder="Describe the core problem your project aims to solve." {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
+                                <FormField control={form.control} name="role" render={({ field }) => ( <FormItem> <FormLabel>Your Role</FormLabel> <FormControl> <Input placeholder="e.g., UX Designer, Product Manager" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
+                                <Button onClick={() => handleNextStep(0)} disabled={isSubmitting} className="w-full">
+                                    {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save & Next'}
                                 </Button>
-                              </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                              <Calendar
-                                mode="single"
-                                selected={field.value}
-                                onSelect={field.onChange}
-                                disabled={(date) => date > new Date() || date < new Date('1900-01-01')}
-                                initialFocus
-                              />
-                            </PopoverContent>
-                          </Popover>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="problem_statement"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Problem Statement</FormLabel>
-                          <FormControl>
-                            <Textarea placeholder="Describe the core problem your project aims to solve." {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="role"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Your Role</FormLabel>
-                          <FormControl>
-                            <Input placeholder="e.g., UX Designer, Product Manager" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <Button onClick={() => handleSaveAndNext('item-1')} disabled={isSubmitting} className="w-full">
-                       {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save & Next'}
-                    </Button>
-                  </AccordionContent>
-                </AccordionItem>
-                
-                <AccordionItem value="item-2">
-                  <AccordionTrigger className="text-xl font-semibold">2. Output Type</AccordionTrigger>
-                  <AccordionContent className="pt-4 space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="output_type"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>What are you creating?</FormLabel>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 max-h-60 overflow-y-auto">
-                            {outputTypes.map((item) => (
-                              <FormItem key={item} className="flex flex-row items-start space-x-3 space-y-0">
-                                <FormControl>
-                                  <Checkbox
-                                    checked={field.value?.includes(item)}
-                                    onCheckedChange={(checked) => {
-                                      return checked
-                                        ? field.onChange([...(field.value || []), item])
-                                        : field.onChange(field.value?.filter((value) => value !== item));
-                                    }}
-                                  />
-                                </FormControl>
-                                <FormLabel className="font-normal text-sm">{item}</FormLabel>
-                              </FormItem>
-                            ))}
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <Button onClick={() => handleSaveAndNext('item-2')} disabled={isSubmitting} className="w-full">
-                       {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save & Next'}
-                    </Button>
-                  </AccordionContent>
-                </AccordionItem>
+                            </div>
+                        </StepContent>
+                    </Step>
 
-                <AccordionItem value="item-3">
-                  <AccordionTrigger className="text-xl font-semibold">3. Desired Outcome</AccordionTrigger>
-                  <AccordionContent className="pt-4 space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="outcome"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>What kind of results are you looking for?</FormLabel>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                            {outcomes.map((item) => (
-                               <FormItem key={item} className="flex flex-row items-start space-x-3 space-y-0">
-                                <FormControl>
-                                  <Checkbox
-                                    checked={field.value?.includes(item)}
-                                    onCheckedChange={(checked) => {
-                                      return checked
-                                        ? field.onChange([...(field.value || []), item])
-                                        : field.onChange(field.value?.filter((value) => value !== item));
-                                    }}
-                                  />
-                                </FormControl>
-                                <FormLabel className="font-normal text-sm">{item}</FormLabel>
-                              </FormItem>
-                            ))}
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                     <Button onClick={() => handleSaveAndNext('item-3')} disabled={isSubmitting} className="w-full">
-                       {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save & Next'}
-                    </Button>
-                  </AccordionContent>
-                </AccordionItem>
+                    <Step>
+                        <StepHeader onClick={() => setActiveStep(1)}>
+                            <StepTitle>Output Type</StepTitle>
+                        </StepHeader>
+                        <StepContent>
+                            <div className="space-y-4">
+                               <FormField control={form.control} name="output_type" render={({ field }) => ( <FormItem> <FormLabel>What are you creating?</FormLabel> <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 max-h-60 overflow-y-auto"> {outputTypes.map((item) => ( <FormItem key={item} className="flex flex-row items-start space-x-3 space-y-0"> <FormControl> <Checkbox checked={field.value?.includes(item)} onCheckedChange={(checked) => { return checked ? field.onChange([...(field.value || []), item]) : field.onChange(field.value?.filter((value) => value !== item)); }}/> </FormControl> <FormLabel className="font-normal text-sm">{item}</FormLabel> </FormItem> ))} </div> <FormMessage /> </FormItem> )}/>
+                                <Button onClick={() => handleNextStep(1)} disabled={isSubmitting} className="w-full">
+                                    {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save & Next'}
+                                </Button>
+                            </div>
+                        </StepContent>
+                    </Step>
 
-                 <AccordionItem value="item-4">
-                  <AccordionTrigger className="text-xl font-semibold">4. Device Type</AccordionTrigger>
-                  <AccordionContent className="pt-4 space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="device_type"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Which devices are you targeting?</FormLabel>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                            {deviceTypes.map((item) => (
-                              <FormItem key={item} className="flex flex-row items-start space-x-3 space-y-0">
-                                <FormControl>
-                                  <Checkbox
-                                    checked={field.value?.includes(item)}
-                                    onCheckedChange={(checked) => {
-                                      return checked
-                                        ? field.onChange([...(field.value || []), item])
-                                        : field.onChange(field.value?.filter((value) => value !== item));
-                                    }}
-                                  />
-                                </FormControl>
-                                <FormLabel className="font-normal text-sm">{item}</FormLabel>
-                              </FormItem>
-                            ))}
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <Button onClick={() => handleSaveAndNext('item-4')} disabled={isSubmitting} className="w-full">
-                       {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save & Next'}
-                    </Button>
-                  </AccordionContent>
-                </AccordionItem>
+                    <Step>
+                        <StepHeader onClick={() => setActiveStep(2)}>
+                            <StepTitle>Desired Outcome</StepTitle>
+                        </StepHeader>
+                        <StepContent>
+                             <div className="space-y-4">
+                                <FormField control={form.control} name="outcome" render={({ field }) => ( <FormItem> <FormLabel>What kind of results are you looking for?</FormLabel> <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2"> {outcomes.map((item) => ( <FormItem key={item} className="flex flex-row items-start space-x-3 space-y-0"> <FormControl> <Checkbox checked={field.value?.includes(item)} onCheckedChange={(checked) => { return checked ? field.onChange([...(field.value || []), item]) : field.onChange(field.value?.filter((value) => value !== item)); }}/> </FormControl> <FormLabel className="font-normal text-sm">{item}</FormLabel> </FormItem> ))} </div> <FormMessage /> </FormItem> )}/>
+                                <Button onClick={() => handleNextStep(2)} disabled={isSubmitting} className="w-full">
+                                    {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save & Next'}
+                                </Button>
+                             </div>
+                        </StepContent>
+                    </Step>
 
-                 <AccordionItem value="item-5">
-                  <AccordionTrigger className="text-xl font-semibold">5. Project Type</AccordionTrigger>
-                  <AccordionContent className="pt-4 space-y-4">
-                     <FormField
-                      control={form.control}
-                      name="project_type"
-                      render={({ field }) => (
-                        <FormItem>
-                           <FormLabel>Is this a new or existing project?</FormLabel>
-                          <FormControl>
-                            <RadioGroup
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                              className="flex gap-8 pt-2"
-                            >
-                              <FormItem className="flex items-center space-x-3 space-y-0">
-                                <FormControl>
-                                  <RadioGroupItem value="new" />
-                                </FormControl>
-                                <FormLabel className="font-normal text-sm">New Project</FormLabel>
-                              </FormItem>
-                              <FormItem className="flex items-center space-x-3 space-y-0">
-                                <FormControl>
-                                  <RadioGroupItem value="old" />
-                                </FormControl>
-                                <FormLabel className="font-normal text-sm">Existing Project</FormLabel>
-                              </FormItem>
-                            </RadioGroup>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <Button onClick={() => handleSaveAndNext('item-5')} disabled={isSubmitting} className="w-full">
-                       {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Show Recommendations'}
-                    </Button>
-                  </AccordionContent>
-                </AccordionItem>
-              </Accordion>
+                    <Step>
+                        <StepHeader onClick={() => setActiveStep(3)}>
+                            <StepTitle>Device Type</StepTitle>
+                        </StepHeader>
+                        <StepContent>
+                             <div className="space-y-4">
+                                <FormField control={form.control} name="device_type" render={({ field }) => ( <FormItem> <FormLabel>Which devices are you targeting?</FormLabel> <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2"> {deviceTypes.map((item) => ( <FormItem key={item} className="flex flex-row items-start space-x-3 space-y-0"> <FormControl> <Checkbox checked={field.value?.includes(item)} onCheckedChange={(checked) => { return checked ? field.onChange([...(field.value || []), item]) : field.onChange(field.value?.filter((value) => value !== item)); }}/> </FormControl> <FormLabel className="font-normal text-sm">{item}</FormLabel> </FormItem> ))} </div> <FormMessage /> </FormItem> )}/>
+                                <Button onClick={() => handleNextStep(3)} disabled={isSubmitting} className="w-full">
+                                    {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save & Next'}
+                                </Button>
+                             </div>
+                        </StepContent>
+                    </Step>
+
+                    <Step>
+                        <StepHeader onClick={() => setActiveStep(4)}>
+                            <StepTitle>Project Type</StepTitle>
+                        </StepHeader>
+                        <StepContent>
+                            <div className="space-y-4">
+                                <FormField control={form.control} name="project_type" render={({ field }) => ( <FormItem> <FormLabel>Is this a new or existing project?</FormLabel> <FormControl> <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex gap-8 pt-2"> <FormItem className="flex items-center space-x-3 space-y-0"> <FormControl> <RadioGroupItem value="new" /> </FormControl> <FormLabel className="font-normal text-sm">New Project</FormLabel> </FormItem> <FormItem className="flex items-center space-x-3 space-y-0"> <FormControl> <RadioGroupItem value="old" /> </FormControl> <FormLabel className="font-normal text-sm">Existing Project</FormLabel> </FormItem> </RadioGroup> </FormControl> <FormMessage /> </FormItem> )}/>
+                                <Button onClick={() => handleNextStep(4)} disabled={isSubmitting} className="w-full">
+                                    {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Show Recommendations'}
+                                </Button>
+                            </div>
+                        </StepContent>
+                    </Step>
+                </VerticalStepper>
             </form>
           </Form>
         </CardContent>
@@ -571,3 +393,5 @@ export default function RequirementsPage() {
     </Suspense>
   )
 }
+
+    
