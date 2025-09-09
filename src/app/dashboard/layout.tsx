@@ -42,8 +42,8 @@ export default function DashboardLayout({
                 variant="outline"
                 size="icon"
                 className={cn(
-                    "fixed top-1/4 -translate-y-1/2 z-20 h-24 w-8 rounded-r-full transition-all duration-300 ease-in-out",
-                    isSidebarOpen ? 'left-[280px]' : 'left-0',
+                    "fixed top-1/4 -translate-y-1/2 z-20 h-24 w-8 rounded-r-full border-y-sidebar-border border-r-sidebar-border bg-sidebar text-sidebar-foreground transition-all duration-300 ease-in-out hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                    isSidebarOpen ? 'left-[280px] border-l-0' : 'left-0 border-l-sidebar-border',
                     !isSidebarOpen && 'rounded-l-full'
                 )}
                 onClick={() => setSidebarOpen(!isSidebarOpen)}
