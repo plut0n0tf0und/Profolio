@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -92,6 +92,14 @@ const outputTypes = [
 const outcomes = ['Qualitative', 'Quantitative', 'Insight'];
 const deviceTypes = ['Mobile', 'Desktop', 'Electronics', 'Kiosk'];
 
+const steps = [
+    { id: 'step-0', title: 'Basic Project Details' },
+    { id: 'step-1', title: 'Output Type' },
+    { id: 'step-2', title: 'Desired Outcome' },
+    { id: 'step-3', title: 'Device Type' },
+    { id: 'step-4', title: 'Project Type' },
+]
+
 function RequirementsPageContent() {
   const { toast } = useToast();
   const router = useRouter();
@@ -100,6 +108,7 @@ function RequirementsPageContent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [requirementId, setRequirementId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const stepRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   const form = useForm<FormSchemaType>({
     resolver: zodResolver(formSchema),
@@ -136,10 +145,6 @@ function RequirementsPageContent() {
             outcome: data.outcome || [],
             device_type: data.device_type || [],
             project_type: data.project_type as 'new' | 'old' | undefined,
-          });
-          toast({
-            title: 'Project Loaded',
-            description: 'You are now editing an existing project.',
           });
         }
         setIsLoading(false);
@@ -194,17 +199,13 @@ function RequirementsPageContent() {
         }
       }
 
-      toast({
-        title: 'Progress Saved!',
-        description: `Section has been successfully saved.`,
-      });
-
-      if (currentStep < sectionSchemas.length - 1) {
-        setActiveStep(currentStep + 1);
-        const nextStepEl = document.getElementById(`step-${currentStep + 1}`);
-        if(nextStepEl) {
-            nextStepEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
+      if (currentStep < steps.length - 1) {
+        const nextStep = currentStep + 1;
+        setActiveStep(nextStep);
+        stepRefs.current[nextStep]?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+        });
       } else {
         const finalId = requirementId || savedData?.id;
         if (finalId) {
@@ -256,6 +257,36 @@ function RequirementsPageContent() {
     )
   }
 
+  const renderStepContent = (stepIndex: number) => {
+    switch(stepIndex) {
+        case 0:
+            return (
+                <div className="space-y-4">
+                    <FormField control={form.control} name="project_name" render={({ field }) => (<FormItem><FormLabel>Project Name</FormLabel><FormControl><Input placeholder="e.g., AuthNexus Redesign" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    <FormField control={form.control} name="date" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel>Date</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={'outline'} className={cn('w-full pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}>{field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date > new Date() || date < new Date('1900-01-01')} initialFocus /></PopoverContent></Popover><FormMessage /></FormItem>)} />
+                    <FormField control={form.control} name="problem_statement" render={({ field }) => (<FormItem><FormLabel>Problem Statement</FormLabel><FormControl><Textarea placeholder="Describe the core problem your project aims to solve." {...field} /></FormControl><FormMessage /></FormItem>)} />
+                    <FormField control={form.control} name="role" render={({ field }) => (<FormItem><FormLabel>Your Role</FormLabel><FormControl><Input placeholder="e.g., UX Designer, Product Manager" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                </div>
+            )
+        case 1:
+            return (
+                <FormField control={form.control} name="output_type" render={({ field }) => (<FormItem><div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">{outputTypes.map((item) => (<FormItem key={item} className="flex flex-row items-start space-x-3 space-y-0"><FormControl><Checkbox checked={field.value?.includes(item)} onCheckedChange={(checked) => {return checked ? field.onChange([...(field.value || []), item]) : field.onChange(field.value?.filter((value) => value !== item));}} /></FormControl><FormLabel className="font-normal text-sm">{item}</FormLabel></FormItem>))}</div><FormMessage /></FormItem>)} />
+            )
+        case 2:
+            return (
+                <FormField control={form.control} name="outcome" render={({ field }) => (<FormItem><div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">{outcomes.map((item) => (<FormItem key={item} className="flex flex-row items-start space-x-3 space-y-0"><FormControl><Checkbox checked={field.value?.includes(item)} onCheckedChange={(checked) => {return checked ? field.onChange([...(field.value || []), item]) : field.onChange(field.value?.filter((value) => value !== item));}} /></FormControl><FormLabel className="font-normal text-sm">{item}</FormLabel></FormItem>))}</div><FormMessage /></FormItem>)} />
+            )
+        case 3:
+            return (
+                 <FormField control={form.control} name="device_type" render={({ field }) => (<FormItem><div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">{deviceTypes.map((item) => (<FormItem key={item} className="flex flex-row items-start space-x-3 space-y-0"><FormControl><Checkbox checked={field.value?.includes(item)} onCheckedChange={(checked) => {return checked ? field.onChange([...(field.value || []), item]) : field.onChange(field.value?.filter((value) => value !== item));}} /></FormControl><FormLabel className="font-normal text-sm">{item}</FormLabel></FormItem>))}</div><FormMessage /></FormItem>)} />
+            )
+        case 4:
+            return (
+                <FormField control={form.control} name="project_type" render={({ field }) => (<FormItem><FormControl><RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex gap-8 pt-2"><FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="new" /></FormControl><FormLabel className="font-normal text-sm">New Project</FormLabel></FormItem><FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="old" /></FormControl><FormLabel className="font-normal text-sm">Existing Project</FormLabel></FormItem></RadioGroup></FormControl><FormMessage /></FormItem>)} />
+            )
+    }
+  }
+
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center border-b border-border bg-background px-4">
@@ -292,236 +323,30 @@ function RequirementsPageContent() {
           <Form {...form}>
             <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
                 <VerticalStepper>
-                  {/* Step 1 */}
-                  <Step index={0} title="Basic Project Details" id="step-0" isActive={activeStep === 0}>
-                    <div className="space-y-4">
-                      <FormField
-                        control={form.control}
-                        name="project_name"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Project Name</FormLabel>
-                            <FormControl>
-                              <Input placeholder="e.g., AuthNexus Redesign" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="date"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-col">
-                            <FormLabel>Date</FormLabel>
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <FormControl>
-                                  <Button
-                                    variant={'outline'}
-                                    className={cn(
-                                      'w-full pl-3 text-left font-normal',
-                                      !field.value && 'text-muted-foreground'
+                    {steps.map((step, index) => (
+                        <Step
+                            key={step.id}
+                            ref={(el) => (stepRefs.current[index] = el)}
+                            index={index}
+                            title={step.title}
+                            isCompleted={index < activeStep}
+                            isActive={index === activeStep}
+                        >
+                            <div className="space-y-6">
+                                {renderStepContent(index)}
+                                <Button onClick={() => handleSaveAndNext(index)} disabled={isSubmitting} className="w-full">
+                                    {isSubmitting ? (
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    ) : index === steps.length - 1 ? (
+                                        'Show Recommendations'
+                                    ) : (
+                                        'Save & Next'
                                     )}
-                                  >
-                                    {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}
-                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                  </Button>
-                                </FormControl>
-                              </PopoverTrigger>
-                              <PopoverContent className="w-auto p-0" align="start">
-                                <Calendar
-                                  mode="single"
-                                  selected={field.value}
-                                  onSelect={field.onChange}
-                                  disabled={(date) => date > new Date() || date < new Date('1900-01-01')}
-                                  initialFocus
-                                />
-                              </PopoverContent>
-                            </Popover>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="problem_statement"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Problem Statement</FormLabel>
-                            <FormControl>
-                              <Textarea placeholder="Describe the core problem your project aims to solve." {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="role"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Your Role</FormLabel>
-                            <FormControl>
-                              <Input placeholder="e.g., UX Designer, Product Manager" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <Button onClick={() => handleSaveAndNext(0)} disabled={isSubmitting} className="w-full">
-                        {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save & Next'}
-                      </Button>
-                    </div>
-                  </Step>
-
-                  {/* Step 2 */}
-                  <Step index={1} title="Output Type" id="step-1" isActive={activeStep === 1}>
-                    <div className="space-y-4">
-                        <FormField
-                        control={form.control}
-                        name="output_type"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>What are you creating?</FormLabel>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                                {outputTypes.map((item) => (
-                                <FormItem key={item} className="flex flex-row items-start space-x-3 space-y-0">
-                                    <FormControl>
-                                    <Checkbox
-                                        checked={field.value?.includes(item)}
-                                        onCheckedChange={(checked) => {
-                                        return checked
-                                            ? field.onChange([...(field.value || []), item])
-                                            : field.onChange(field.value?.filter((value) => value !== item));
-                                        }}
-                                    />
-                                    </FormControl>
-                                    <FormLabel className="font-normal text-sm">{item}</FormLabel>
-                                </FormItem>
-                                ))}
+                                </Button>
                             </div>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                        />
-                        <Button onClick={() => handleSaveAndNext(1)} disabled={isSubmitting} className="w-full">
-                        {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save & Next'}
-                        </Button>
-                    </div>
-                  </Step>
-                  
-                  {/* Step 3 */}
-                  <Step index={2} title="Desired Outcome" id="step-2" isActive={activeStep === 2}>
-                   <div className="space-y-4">
-                        <FormField
-                        control={form.control}
-                        name="outcome"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>What kind of results are you looking for?</FormLabel>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                                {outcomes.map((item) => (
-                                <FormItem key={item} className="flex flex-row items-start space-x-3 space-y-0">
-                                    <FormControl>
-                                    <Checkbox
-                                        checked={field.value?.includes(item)}
-                                        onCheckedChange={(checked) => {
-                                        return checked
-                                            ? field.onChange([...(field.value || []), item])
-                                            : field.onChange(field.value?.filter((value) => value !== item));
-                                        }}
-                                    />
-                                    </FormControl>
-                                    <FormLabel className="font-normal text-sm">{item}</FormLabel>
-                                </FormItem>
-                                ))}
-                            </div>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                        />
-                        <Button onClick={() => handleSaveAndNext(2)} disabled={isSubmitting} className="w-full">
-                        {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save & Next'}
-                        </Button>
-                    </div>
-                  </Step>
-
-                  {/* Step 4 */}
-                  <Step index={3} title="Device Type" id="step-3" isActive={activeStep === 3}>
-                    <div className="space-y-4">
-                        <FormField
-                        control={form.control}
-                        name="device_type"
-                        render={({ field }) => (
-                            <FormItem>
-                            <FormLabel>Which devices are you targeting?</FormLabel>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                                {deviceTypes.map((item) => (
-                                <FormItem key={item} className="flex flex-row items-start space-x-3 space-y-0">
-                                    <FormControl>
-                                    <Checkbox
-                                        checked={field.value?.includes(item)}
-                                        onCheckedChange={(checked) => {
-                                        return checked
-                                            ? field.onChange([...(field.value || []), item])
-                                            : field.onChange(field.value?.filter((value) => value !== item));
-                                        }}
-                                    />
-                                    </FormControl>
-                                    <FormLabel className="font-normal text-sm">{item}</FormLabel>
-                                </FormItem>
-                                ))}
-                            </div>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                        />
-                        <Button onClick={() => handleSaveAndNext(3)} disabled={isSubmitting} className="w-full">
-                        {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save & Next'}
-                        </Button>
-                    </div>
-                  </Step>
-
-                  {/* Step 5 */}
-                  <Step index={4} title="Project Type" id="step-4" isActive={activeStep === 4}>
-                    <div className="space-y-4">
-                        <FormField
-                            control={form.control}
-                            name="project_type"
-                            render={({ field }) => (
-                                <FormItem>
-                                <FormLabel>Is this a new or existing project?</FormLabel>
-                                <FormControl>
-                                    <RadioGroup
-                                    onValueChange={field.onChange}
-                                    defaultValue={field.value}
-                                    className="flex gap-8 pt-2"
-                                    >
-                                    <FormItem className="flex items-center space-x-3 space-y-0">
-                                        <FormControl>
-                                        <RadioGroupItem value="new" />
-                                        </FormControl>
-                                        <FormLabel className="font-normal text-sm">New Project</FormLabel>
-                                    </FormItem>
-                                    <FormItem className="flex items-center space-x-3 space-y-0">
-                                        <FormControl>
-                                        <RadioGroupItem value="old" />
-                                        </FormControl>
-                                        <FormLabel className="font-normal text-sm">Existing Project</FormLabel>
-                                    </FormItem>
-                                    </RadioGroup>
-                                </FormControl>
-                                <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <Button onClick={() => handleSaveAndNext(4)} disabled={isSubmitting} className="w-full">
-                        {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Show Recommendations'}
-                        </Button>
-                    </div>
-                  </Step>
-              </VerticalStepper>
+                        </Step>
+                    ))}
+                </VerticalStepper>
             </form>
           </Form>
         </CardContent>
@@ -531,27 +356,10 @@ function RequirementsPageContent() {
   );
 }
 
-const PageSkeleton = () => (
-    <main className="container mx-auto max-w-3xl flex-1 p-4 md:p-8">
-        <Card className="w-full">
-            <CardHeader>
-                <Skeleton className="h-9 w-3/5" />
-                <Skeleton className="h-4 w-4/5 mt-2" />
-            </CardHeader>
-            <CardContent className="space-y-4">
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-                <Skeleton className="h-12 w-full" />
-            </CardContent>
-        </Card>
-    </main>
-);
-
 
 export default function RequirementsPage() {
   return (
-    <Suspense fallback={<PageSkeleton />}>
+    <Suspense>
       <RequirementsPageContent />
     </Suspense>
   )
