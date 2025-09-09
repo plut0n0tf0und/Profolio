@@ -78,6 +78,22 @@ const sectionSchemas = [
 ];
 
 const outputTypes = [
+    "Mobile App",
+    "Web App",
+    "Desktop Software",
+    "Smartwatch Interface",
+    "TV or Console Experience",
+    "AR/VR Application",
+    "Service Blueprint",
+    "Journey Map",
+    "Persona Profile",
+    "Usability Report",
+    "Design System",
+    "Accessibility Audio",
+    "KPI Dashboard/Analytics Report",
+    "Storyboards",
+    "Content Strategy",
+    "Chatbot/Voice Interface",
     "Presentation",
     "Video",
     "Interactive Prototype",
@@ -329,7 +345,6 @@ function RequirementsPageContent() {
                             ref={(el) => (stepRefs.current[index] = el)}
                             index={index}
                             title={step.title}
-                            isCompleted={index < activeStep}
                             isActive={index === activeStep}
                         >
                             <div className="space-y-6">
