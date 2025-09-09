@@ -193,15 +193,16 @@ export default function TechniqueDetailPage() {
           console.debug(`[DEBUG] 5a. Remix ID found: ${remixedTechniqueIdFromUrl}, fetching data...`);
           const { data: remixedData } = await fetchRemixedTechniqueById(remixedTechniqueIdFromUrl);
           if (remixedData) {
-            form.reset({
+            const formData = {
               ...remixedData,
               date: remixedData.date ? new Date(remixedData.date) : new Date(),
-            } as any);
+            };
+            form.reset(formData as any);
 
-            if (remixedData.duration && !durationOptions.includes(remixedData.duration)) {
+            if (formData.duration && !durationOptions.includes(formData.duration)) {
                 setShowCustomDuration(true);
             }
-             if (remixedData.teamSize && !teamSizeOptions.includes(remixedData.teamSize)) {
+             if (formData.teamSize && !teamSizeOptions.includes(formData.teamSize)) {
                 setShowCustomTeamSize(true);
             }
             console.debug("[DEBUG] 5b. Successfully reset form with user's saved data.");
@@ -627,7 +628,7 @@ export default function TechniqueDetailPage() {
           <CardDescription>Basic information about this remixed technique instance.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <FormField
                 control={form.control}
                 name="date"
@@ -659,7 +660,6 @@ export default function TechniqueDetailPage() {
                   </FormItem>
                 )}
               />
-              <div />
               
               <FormField
                 control={form.control}
@@ -667,31 +667,38 @@ export default function TechniqueDetailPage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Duration</FormLabel>
-                     <Select
-                        onValueChange={(value) => {
-                          const isCustom = value === 'Custom';
-                          setShowCustomDuration(isCustom);
-                          if (!isCustom) {
-                            field.onChange(value);
-                          } else {
-                            field.onChange('');
-                          }
-                        }}
-                        defaultValue={durationOptions.includes(field.value) ? field.value : 'Custom'}
-                     >
+                     {showCustomDuration ? (
                         <FormControl>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select a duration" />
-                            </SelectTrigger>
+                            <Input 
+                                placeholder="Enter custom duration" 
+                                {...field} 
+                                onBlur={() => {
+                                    if (!field.value) setShowCustomDuration(false);
+                                }}
+                                autoFocus
+                            />
                         </FormControl>
-                        <SelectContent>
-                            {durationOptions.map(option => <SelectItem key={option} value={option}>{option}</SelectItem>)}
-                        </SelectContent>
-                     </Select>
-                     {showCustomDuration && (
-                        <FormControl>
-                            <Input placeholder="Enter custom duration" {...field} className="mt-2" />
-                        </FormControl>
+                     ) : (
+                         <Select
+                            onValueChange={(value) => {
+                              if (value === 'Custom') {
+                                setShowCustomDuration(true);
+                                field.onChange('');
+                              } else {
+                                field.onChange(value);
+                              }
+                            }}
+                            value={field.value}
+                         >
+                            <FormControl>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select a duration" />
+                                </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                {durationOptions.map(option => <SelectItem key={option} value={option}>{option}</SelectItem>)}
+                            </SelectContent>
+                         </Select>
                      )}
                     <FormMessage />
                   </FormItem>
@@ -704,31 +711,38 @@ export default function TechniqueDetailPage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Team Size</FormLabel>
-                     <Select
-                        onValueChange={(value) => {
-                          const isCustom = value === 'Custom';
-                          setShowCustomTeamSize(isCustom);
-                           if (!isCustom) {
-                            field.onChange(value);
-                          } else {
-                            field.onChange('');
-                          }
-                        }}
-                        defaultValue={teamSizeOptions.includes(field.value) ? field.value : 'Custom'}
-                     >
+                     {showCustomTeamSize ? (
                         <FormControl>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select team size" />
-                            </SelectTrigger>
+                            <Input 
+                                placeholder="Enter custom team size" 
+                                {...field}
+                                onBlur={() => {
+                                    if (!field.value) setShowCustomTeamSize(false);
+                                }}
+                                autoFocus
+                            />
                         </FormControl>
-                        <SelectContent>
-                            {teamSizeOptions.map(option => <SelectItem key={option} value={option}>{option}</SelectItem>)}
-                        </SelectContent>
-                     </Select>
-                     {showCustomTeamSize && (
-                        <FormControl>
-                            <Input placeholder="Enter custom team size" {...field} className="mt-2" />
-                        </FormControl>
+                     ) : (
+                         <Select
+                            onValueChange={(value) => {
+                              if (value === 'Custom') {
+                                setShowCustomTeamSize(true);
+                                field.onChange('');
+                              } else {
+                                field.onChange(value);
+                              }
+                            }}
+                            value={field.value}
+                         >
+                            <FormControl>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select team size" />
+                                </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                {teamSizeOptions.map(option => <SelectItem key={option} value={option}>{option}</SelectItem>)}
+                            </SelectContent>
+                         </Select>
                      )}
                     <FormMessage />
                   </FormItem>
@@ -893,3 +907,5 @@ export default function TechniqueDetailPage() {
     </>
   );
 }
+
+    
