@@ -7,7 +7,7 @@ import { useForm, useFieldArray, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { toPng } from 'html-to-image-fix';
-import { saveOrUpdateRemixedTechnique, fetchRemixedTechniqueById, RemixedTechnique } from '@/lib/supabaseClient';
+import { saveOrUpdateRemixedTechnique, fetchRemixedTechniqueById, RemixedTechnique, fetchSavedResultById } from '@/lib/supabaseClient';
 import allTechniqueMetadata from '@/data/uxTechniqueDetails.json';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -193,16 +193,32 @@ export default function TechniqueDetailPage() {
             console.debug("[DEBUG] 5b. Successfully reset form with user's saved data.");
           }
         } else {
-          console.debug(`[DEBUG] 5a. No remix ID, setting default form values from AI content.`);
-          form.reset({
-            technique_name: fullDetails.name,
-            project_id: fromProjectId,
-            overview: fullDetails.overview || '',
-            prerequisites: (fullDetails.prerequisites || []).map((p, i) => ({ id: `prereq-${i}`, text: p, checked: false })),
-            executionSteps: (fullDetails.executionSteps || []).map(s => ({ id: `step-${s.step}`, text: `${s.title}: ${s.description}`, checked: false })),
-            date: new Date(), duration: '', teamSize: '', why: '', problemStatement: '', role: '',
-            attachments: { files: [], links: [], notes: [] },
-          });
+            console.debug(`[DEBUG] 5a. No remix ID, setting default form values from AI content.`);
+            let projectProblemStatement = '';
+            let projectRole = '';
+
+            if (fromProjectId) {
+                const { data: projectData } = await fetchSavedResultById(fromProjectId);
+                if (projectData) {
+                    projectProblemStatement = projectData.problem_statement || '';
+                    projectRole = projectData.role || '';
+                }
+            }
+
+            form.reset({
+                technique_name: fullDetails.name,
+                project_id: fromProjectId,
+                overview: fullDetails.overview || '',
+                prerequisites: (fullDetails.prerequisites || []).map((p, i) => ({ id: `prereq-${i}`, text: p, checked: false })),
+                executionSteps: (fullDetails.executionSteps || []).map(s => ({ id: `step-${s.step}`, text: `${s.title}: ${s.description}`, checked: false })),
+                date: new Date(),
+                duration: '',
+                teamSize: '',
+                why: '',
+                problemStatement: projectProblemStatement,
+                role: projectRole,
+                attachments: { files: [], links: [], notes: [] },
+            });
         }
       } catch (error) {
         console.error("Failed to get technique details from AI:", error);
@@ -525,7 +541,7 @@ export default function TechniqueDetailPage() {
         </div>
         <Button
           type="button"
-          variant="outline"
+          variant="destructive-outline"
           size="sm"
           onClick={handleDeleteSelected}
           disabled={isAllSelected}
@@ -634,7 +650,7 @@ export default function TechniqueDetailPage() {
           </div>
           
           <FormField control={form.control} name="role" render={({ field }) => ( <FormItem><FormLabel>Your Role</FormLabel><FormControl><Input placeholder="e.g., Lead UX Researcher" {...field} /></FormControl><FormMessage /></FormItem> )} />
-          <FormField control={form.control} name="problemStatement" render={({ field }) => ( <FormItem><FormLabel>Problem Statement</FormLabel><Textarea placeholder="What is the core problem you are trying to solve?" {...field} /></FormItem> )} />
+          
           <FormField control={form.control} name="why" render={({ field }) => ( <FormItem><FormLabel>Why This Technique?</FormLabel><Textarea placeholder="Explain why this technique was chosen for this problem." {...field} /></FormItem> )} />
           <FormField control={form.control} name="overview" render={({ field }) => ( <FormItem><FormLabel>Overview</FormLabel><Textarea placeholder="A brief overview of your plan." {...field} /></FormItem> )} />
         </CardContent>
