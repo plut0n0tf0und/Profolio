@@ -4,15 +4,21 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 import { Check } from 'lucide-react';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 
 interface StepperProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
-  activeStep: number;
-  setActiveStep: (step: number) => void;
+  openSteps: number[];
+  setOpenSteps: React.Dispatch<React.SetStateAction<number[]>>;
+  completedSteps: boolean[];
 }
 
 const VerticalStepper = React.forwardRef<HTMLDivElement, StepperProps>(
-  ({ className, children, activeStep, setActiveStep, ...props }, ref) => {
+  ({ className, children, openSteps, setOpenSteps, completedSteps, ...props }, ref) => {
     const steps = React.Children.toArray(children);
     const totalSteps = steps.length;
 
@@ -26,12 +32,17 @@ const VerticalStepper = React.forwardRef<HTMLDivElement, StepperProps>(
           if (!React.isValidElement(child)) {
             return null;
           }
-          return React.cloneElement(child as React.ReactElement, {
-            index,
-            isActive: index === activeStep,
-            isCompleted: index < activeStep,
+          return React.cloneElement(child as React.ReactElement<StepProps>, {
+            isOpen: openSteps.includes(index),
+            setIsOpen: (isOpen) => {
+              setOpenSteps((prev) =>
+                isOpen
+                  ? [...prev.filter((s) => s !== index), index]
+                  : prev.filter((s) => s !== index)
+              );
+            },
+            isCompleted: completedSteps[index] || false,
             isLastStep: index === totalSteps - 1,
-            setActiveStep,
           });
         })}
       </div>
@@ -41,11 +52,12 @@ const VerticalStepper = React.forwardRef<HTMLDivElement, StepperProps>(
 VerticalStepper.displayName = 'VerticalStepper';
 
 interface StepProps extends React.HTMLAttributes<HTMLDivElement> {
-  index?: number;
-  isActive?: boolean;
+  index: number;
+  title: string;
+  isOpen?: boolean;
+  setIsOpen?: (isOpen: boolean) => void;
   isCompleted?: boolean;
   isLastStep?: boolean;
-  setActiveStep?: (step: number) => void;
   children: React.ReactNode;
 }
 
@@ -54,27 +66,29 @@ const Step = React.forwardRef<HTMLDivElement, StepProps>(
     {
       className,
       children,
-      index = 0,
-      isActive = false,
+      index,
+      title,
+      isOpen = false,
+      setIsOpen = () => {},
       isCompleted = false,
       isLastStep = false,
       ...props
     },
     ref
   ) => {
-    const status = isActive ? 'active' : isCompleted ? 'completed' : 'inactive';
+    const status = isCompleted ? 'completed' : isOpen ? 'active' : 'inactive';
 
     return (
       <div
         ref={ref}
-        className={cn('relative flex items-start', className)}
+        className={cn('relative flex items-start gap-4', className)}
         data-status={status}
         {...props}
       >
-        <div className="flex flex-col items-center mr-4">
+        <div className="flex flex-col items-center">
           <div
             className={cn(
-              'flex items-center justify-center w-8 h-8 rounded-full border-2',
+              'flex items-center justify-center w-8 h-8 rounded-full border-2 transition-all',
               status === 'active' && 'border-primary text-primary',
               status === 'completed' && 'bg-primary border-primary text-primary-foreground',
               status === 'inactive' && 'border-border'
@@ -85,56 +99,30 @@ const Step = React.forwardRef<HTMLDivElement, StepProps>(
           {!isLastStep && (
             <div
               className={cn(
-                'flex-grow w-px my-2',
+                'flex-grow w-px my-2 transition-colors',
                 isCompleted ? 'bg-primary' : 'bg-border'
               )}
             />
           )}
         </div>
-        <div className="flex-1 w-full pt-1.5">{children}</div>
+        <Collapsible
+          open={isOpen}
+          onOpenChange={setIsOpen}
+          className="flex-1 w-full"
+        >
+          <CollapsibleTrigger asChild>
+            <div className="flex items-center cursor-pointer w-full text-left pt-1.5">
+              <h3 className="text-xl font-semibold flex-1">{title}</h3>
+            </div>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <div className="pt-4">{children}</div>
+          </CollapsibleContent>
+        </Collapsible>
       </div>
     );
   }
 );
 Step.displayName = 'Step';
 
-const StepHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, children, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn('flex items-center pb-4 cursor-pointer', className)}
-      {...props}
-    >
-      {children}
-    </div>
-  )
-);
-StepHeader.displayName = 'StepHeader';
-
-const StepTitle = React.forwardRef<HTMLHeadingElement, React.HTMLAttributes<HTMLHeadingElement>>(
-  ({ className, children, ...props }, ref) => (
-    <h3
-      ref={ref}
-      className={cn('text-xl font-semibold', className)}
-      {...props}
-    >
-      {children}
-    </h3>
-  )
-);
-StepTitle.displayName = 'StepTitle';
-
-const StepContent = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
-  ({ className, children, ...props }, ref) => (
-    <div
-      ref={ref}
-      className={cn('pb-4 border-l border-border ml-[15px] pl-8', className)}
-      {...props}
-    >
-      {children}
-    </div>
-  )
-);
-StepContent.displayName = 'StepContent';
-
-export { VerticalStepper, Step, StepHeader, StepTitle, StepContent };
+export { VerticalStepper, Step };

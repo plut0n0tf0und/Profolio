@@ -46,10 +46,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
-import {
-  VerticalStepper,
-  Step,
-} from '@/components/ui/stepper';
+import { VerticalStepper, Step } from '@/components/ui/stepper';
 
 const formSchema = z.object({
   project_name: z.string().min(1, 'Project name is required.'),
@@ -99,7 +96,7 @@ function RequirementsPageContent() {
   const { toast } = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [activeStep, setActiveStep] = useState(0);
+  const [openSteps, setOpenSteps] = useState([0]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [requirementId, setRequirementId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -203,7 +200,7 @@ function RequirementsPageContent() {
       });
 
       if (currentStep < sectionSchemas.length - 1) {
-        setActiveStep(currentStep + 1);
+        setOpenSteps(prev => [...prev.filter(s => s !== currentStep), currentStep + 1]);
       } else {
         const finalId = requirementId || savedData?.id;
         if (finalId) {
@@ -290,7 +287,11 @@ function RequirementsPageContent() {
         <CardContent>
           <Form {...form}>
             <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
-                <VerticalStepper activeStep={activeStep} setActiveStep={setActiveStep}>
+                <VerticalStepper
+                  openSteps={openSteps}
+                  setOpenSteps={setOpenSteps}
+                  completedSteps={Array.from({length: 5}, (_, i) => form.formState.isValid && i < openSteps.reduce((max, v) => Math.max(max,v), -1))}
+                >
                   {/* Step 1 */}
                   <Step index={0} title="Basic Project Details">
                     <div className="space-y-4">
@@ -555,5 +556,3 @@ export default function RequirementsPage() {
     </Suspense>
   )
 }
-
-    
