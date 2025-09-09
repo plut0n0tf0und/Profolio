@@ -27,7 +27,12 @@ import {
   CardDescription,
   CardContent,
 } from '@/components/ui/card';
-import { VerticalStepper, Step } from '@/components/ui/stepper';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 import { useToast } from '@/hooks/use-toast';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
 import {
@@ -98,7 +103,7 @@ function RequirementsPageContent() {
   const { toast } = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [activeStep, setActiveStep] = useState(0);
+  const [activeAccordion, setActiveAccordion] = useState("item-0");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [requirementId, setRequirementId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -148,9 +153,9 @@ function RequirementsPageContent() {
     }
   }, [searchParams, form, toast]);
 
-  const handleNextStep = async (currentStep: number) => {
-    const schemaForStep = sectionSchemas[currentStep];
-    const fieldsToValidate = Object.keys(schemaForStep.shape) as (keyof FormSchemaType)[];
+  const handleNextSection = async (currentSection: number) => {
+    const schemaForSection = sectionSchemas[currentSection];
+    const fieldsToValidate = Object.keys(schemaForSection.shape) as (keyof FormSchemaType)[];
 
     const isValid = await form.trigger(fieldsToValidate);
     
@@ -194,12 +199,13 @@ function RequirementsPageContent() {
 
       toast({
         title: 'Progress Saved!',
-        description: `Section has been successfully saved.`,
+        description: `Section ${currentSection + 1} has been successfully saved.`,
       });
       
-      const totalSteps = sectionSchemas.length;
-      if (currentStep < totalSteps - 1) {
-        setActiveStep(currentStep + 1);
+      const nextSection = currentSection + 1;
+      const totalSections = sectionSchemas.length;
+      if (nextSection < totalSections) {
+        setActiveAccordion(`item-${nextSection}`);
       } else {
         const finalId = requirementId || savedData?.id;
         if (finalId) {
@@ -234,12 +240,6 @@ function RequirementsPageContent() {
         </CardContent>
     </Card>
   );
-
-  const handleStepClick = (stepIndex: number) => {
-    if (stepIndex < activeStep) {
-        setActiveStep(stepIndex);
-    }
-  };
 
   if (isLoading) {
     return (
@@ -292,58 +292,62 @@ function RequirementsPageContent() {
         <CardContent>
           <Form {...form}>
             <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
-                <VerticalStepper
-                    activeStep={activeStep}
-                    onStepClick={handleStepClick}
-                >
-                    <Step title="Basic Project Details">
-                        <div className="space-y-4">
-                            <FormField control={form.control} name="project_name" render={({ field }) => ( <FormItem> <FormLabel>Project Name</FormLabel> <FormControl> <Input placeholder="e.g., AuthNexus Redesign" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
-                            <FormField control={form.control} name="date" render={({ field }) => ( <FormItem className="flex flex-col"> <FormLabel>Date</FormLabel> <Popover> <PopoverTrigger asChild> <FormControl> <Button variant={'outline'} className={cn('w-full pl-3 text-left font-normal',!field.value && 'text-muted-foreground' )}> {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>} <CalendarIcon className="ml-auto h-4 w-4 opacity-50" /> </Button> </FormControl> </PopoverTrigger> <PopoverContent className="w-auto p-0" align="start"> <Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date > new Date() || date < new Date('1900-01-01')} initialFocus /> </PopoverContent> </Popover> <FormMessage /> </FormItem> )}/>
-                            <FormField control={form.control} name="problem_statement" render={({ field }) => ( <FormItem> <FormLabel>Problem Statement</FormLabel> <FormControl> <Textarea placeholder="Describe the core problem your project aims to solve." {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
-                            <FormField control={form.control} name="role" render={({ field }) => ( <FormItem> <FormLabel>Your Role</FormLabel> <FormControl> <Input placeholder="e.g., UX Designer, Product Manager" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
-                            <Button onClick={() => handleNextStep(0)} disabled={isSubmitting} className="w-full">
-                                {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save & Next'}
-                            </Button>
-                        </div>
-                    </Step>
-                    
-                    <Step title="Output Type">
-                        <div className="space-y-4">
-                            <FormField control={form.control} name="output_type" render={({ field }) => ( <FormItem> <FormLabel>What are you creating?</FormLabel> <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 max-h-60 overflow-y-auto"> {outputTypes.map((item) => ( <FormItem key={item} className="flex flex-row items-start space-x-3 space-y-0"> <FormControl> <Checkbox checked={field.value?.includes(item)} onCheckedChange={(checked) => { return checked ? field.onChange([...(field.value || []), item]) : field.onChange(field.value?.filter((value) => value !== item)); }}/> </FormControl> <FormLabel className="font-normal text-sm">{item}</FormLabel> </FormItem> ))} </div> <FormMessage /> </FormItem> )}/>
-                            <Button onClick={() => handleNextStep(1)} disabled={isSubmitting} className="w-full">
-                                {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save & Next'}
-                            </Button>
-                        </div>
-                    </Step>
-                    
-                    <Step title="Desired Outcome">
-                        <div className="space-y-4">
-                            <FormField control={form.control} name="outcome" render={({ field }) => ( <FormItem> <FormLabel>What kind of results are you looking for?</FormLabel> <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2"> {outcomes.map((item) => ( <FormItem key={item} className="flex flex-row items-start space-x-3 space-y-0"> <FormControl> <Checkbox checked={field.value?.includes(item)} onCheckedChange={(checked) => { return checked ? field.onChange([...(field.value || []), item]) : field.onChange(field.value?.filter((value) => value !== item)); }}/> </FormControl> <FormLabel className="font-normal text-sm">{item}</FormLabel> </FormItem> ))} </div> <FormMessage /> </FormItem> )}/>
-                            <Button onClick={() => handleNextStep(2)} disabled={isSubmitting} className="w-full">
-                                {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save & Next'}
-                            </Button>
-                        </div>
-                    </Step>
-                    
-                    <Step title="Device Type">
-                        <div className="space-y-4">
-                            <FormField control={form.control} name="device_type" render={({ field }) => ( <FormItem> <FormLabel>Which devices are you targeting?</FormLabel> <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2"> {deviceTypes.map((item) => ( <FormItem key={item} className="flex flex-row items-start space-x-3 space-y-0"> <FormControl> <Checkbox checked={field.value?.includes(item)} onCheckedChange={(checked) => { return checked ? field.onChange([...(field.value || []), item]) : field.onChange(field.value?.filter((value) => value !== item)); }}/> </FormControl> <FormLabel className="font-normal text-sm">{item}</FormLabel> </FormItem> ))} </div> <FormMessage /> </FormItem> )}/>
-                            <Button onClick={() => handleNextStep(3)} disabled={isSubmitting} className="w-full">
-                                {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save & Next'}
-                            </Button>
-                        </div>
-                    </Step>
-                    
-                    <Step title="Project Type">
-                        <div className="space-y-4">
-                            <FormField control={form.control} name="project_type" render={({ field }) => ( <FormItem> <FormLabel>Is this a new or existing project?</FormLabel> <FormControl> <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex gap-8 pt-2"> <FormItem className="flex items-center space-x-3 space-y-0"> <FormControl> <RadioGroupItem value="new" /> </FormControl> <FormLabel className="font-normal text-sm">New Project</FormLabel> </FormItem> <FormItem className="flex items-center space-x-3 space-y-0"> <FormControl> <RadioGroupItem value="old" /> </FormControl> <FormLabel className="font-normal text-sm">Existing Project</FormLabel> </FormItem> </RadioGroup> </FormControl> <FormMessage /> </FormItem> )}/>
-                            <Button onClick={() => handleNextStep(4)} disabled={isSubmitting} className="w-full">
-                                {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Show Recommendations'}
-                            </Button>
-                        </div>
-                    </Step>
-                </VerticalStepper>
+              <Accordion type="single" collapsible value={activeAccordion} onValueChange={setActiveAccordion} className="w-full">
+                
+                <AccordionItem value="item-0">
+                  <AccordionTrigger>Section 1: Basic Project Details</AccordionTrigger>
+                  <AccordionContent className="space-y-4">
+                    <FormField control={form.control} name="project_name" render={({ field }) => ( <FormItem> <FormLabel>Project Name</FormLabel> <FormControl> <Input placeholder="e.g., AuthNexus Redesign" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
+                    <FormField control={form.control} name="date" render={({ field }) => ( <FormItem className="flex flex-col"> <FormLabel>Date</FormLabel> <Popover> <PopoverTrigger asChild> <FormControl> <Button variant={'outline'} className={cn('w-full pl-3 text-left font-normal',!field.value && 'text-muted-foreground' )}> {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>} <CalendarIcon className="ml-auto h-4 w-4 opacity-50" /> </Button> </FormControl> </PopoverTrigger> <PopoverContent className="w-auto p-0" align="start"> <Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date > new Date() || date < new Date('1900-01-01')} initialFocus /> </PopoverContent> </Popover> <FormMessage /> </FormItem> )}/>
+                    <FormField control={form.control} name="problem_statement" render={({ field }) => ( <FormItem> <FormLabel>Problem Statement</FormLabel> <FormControl> <Textarea placeholder="Describe the core problem your project aims to solve." {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
+                    <FormField control={form.control} name="role" render={({ field }) => ( <FormItem> <FormLabel>Your Role</FormLabel> <FormControl> <Input placeholder="e.g., UX Designer, Product Manager" {...field} /> </FormControl> <FormMessage /> </FormItem> )}/>
+                    <Button onClick={() => handleNextSection(0)} disabled={isSubmitting} className="w-full">
+                        {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save & Next'}
+                    </Button>
+                  </AccordionContent>
+                </AccordionItem>
+                
+                <AccordionItem value="item-1">
+                  <AccordionTrigger>Section 2: Output Type</AccordionTrigger>
+                  <AccordionContent className="space-y-4">
+                    <FormField control={form.control} name="output_type" render={({ field }) => ( <FormItem> <FormLabel>What are you creating?</FormLabel> <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 max-h-60 overflow-y-auto"> {outputTypes.map((item) => ( <FormItem key={item} className="flex flex-row items-start space-x-3 space-y-0"> <FormControl> <Checkbox checked={field.value?.includes(item)} onCheckedChange={(checked) => { return checked ? field.onChange([...(field.value || []), item]) : field.onChange(field.value?.filter((value) => value !== item)); }}/> </FormControl> <FormLabel className="font-normal text-sm">{item}</FormLabel> </FormItem> ))} </div> <FormMessage /> </FormItem> )}/>
+                    <Button onClick={() => handleNextSection(1)} disabled={isSubmitting} className="w-full">
+                        {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save & Next'}
+                    </Button>
+                  </AccordionContent>
+                </AccordionItem>
+                
+                <AccordionItem value="item-2">
+                  <AccordionTrigger>Section 3: Desired Outcome</AccordionTrigger>
+                  <AccordionContent className="space-y-4">
+                    <FormField control={form.control} name="outcome" render={({ field }) => ( <FormItem> <FormLabel>What kind of results are you looking for?</FormLabel> <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2"> {outcomes.map((item) => ( <FormItem key={item} className="flex flex-row items-start space-x-3 space-y-0"> <FormControl> <Checkbox checked={field.value?.includes(item)} onCheckedChange={(checked) => { return checked ? field.onChange([...(field.value || []), item]) : field.onChange(field.value?.filter((value) => value !== item)); }}/> </FormControl> <FormLabel className="font-normal text-sm">{item}</FormLabel> </FormItem> ))} </div> <FormMessage /> </FormItem> )}/>
+                     <Button onClick={() => handleNextSection(2)} disabled={isSubmitting} className="w-full">
+                        {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save & Next'}
+                    </Button>
+                  </AccordionContent>
+                </AccordionItem>
+                
+                <AccordionItem value="item-3">
+                  <AccordionTrigger>Section 4: Device Type</AccordionTrigger>
+                  <AccordionContent className="space-y-4">
+                    <FormField control={form.control} name="device_type" render={({ field }) => ( <FormItem> <FormLabel>Which devices are you targeting?</FormLabel> <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2"> {deviceTypes.map((item) => ( <FormItem key={item} className="flex flex-row items-start space-x-3 space-y-0"> <FormControl> <Checkbox checked={field.value?.includes(item)} onCheckedChange={(checked) => { return checked ? field.onChange([...(field.value || []), item]) : field.onChange(field.value?.filter((value) => value !== item)); }}/> </FormControl> <FormLabel className="font-normal text-sm">{item}</FormLabel> </FormItem> ))} </div> <FormMessage /> </FormItem> )}/>
+                     <Button onClick={() => handleNextSection(3)} disabled={isSubmitting} className="w-full">
+                        {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Save & Next'}
+                    </Button>
+                  </AccordionContent>
+                </AccordionItem>
+                
+                <AccordionItem value="item-4">
+                  <AccordionTrigger>Section 5: Project Type</AccordionTrigger>
+                  <AccordionContent className="space-y-4">
+                    <FormField control={form.control} name="project_type" render={({ field }) => ( <FormItem> <FormLabel>Is this a new or existing project?</FormLabel> <FormControl> <RadioGroup onValueChange={field.onChange} defaultValue={field.value} className="flex gap-8 pt-2"> <FormItem className="flex items-center space-x-3 space-y-0"> <FormControl> <RadioGroupItem value="new" /> </FormControl> <FormLabel className="font-normal text-sm">New Project</FormLabel> </FormItem> <FormItem className="flex items-center space-x-3 space-y-0"> <FormControl> <RadioGroupItem value="old" /> </FormControl> <FormLabel className="font-normal text-sm">Existing Project</FormLabel> </FormItem> </RadioGroup> </FormControl> <FormMessage /> </FormItem> )}/>
+                    <Button onClick={() => handleNextSection(4)} disabled={isSubmitting} className="w-full">
+                        {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Show Recommendations'}
+                    </Button>
+                  </AccordionContent>
+                </AccordionItem>
+
+              </Accordion>
             </form>
           </Form>
         </CardContent>
