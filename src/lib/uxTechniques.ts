@@ -10,6 +10,7 @@ interface TechniqueDetail {
   output_types: string[];
   device_types: string[];
   project_types: ("New" | "Old")[];
+  user_base: ("new" | "existing")[]; // Added user_base property
 }
 
 const allTechniques: TechniqueDetail[] = techniqueDetails as TechniqueDetail[];
@@ -42,6 +43,10 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
       ? tech.project_types.some(pType => pType.toLowerCase() === requirement.project_type!.toLowerCase())
       : true;
 
+    // New logic for matching based on existing users
+    const userContext = requirement.existing_users ? "existing" : "new";
+    const userBaseMatch = tech.user_base ? tech.user_base.includes(userContext) : true;
+
     const outcomeMatch = doArraysIntersect(requirement.outcome, tech.outcomes);
     const deviceTypeMatch = doArraysIntersect(requirement.device_type, tech.device_types);
 
@@ -49,7 +54,7 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
     const isEarlyStage = earlyStages.includes(tech.stage);
     const outputTypeMatch = isEarlyStage || doArraysIntersect(requirement.output_type, tech.output_types);
 
-    if (projectTypeMatch && outcomeMatch && deviceTypeMatch && outputTypeMatch) {
+    if (projectTypeMatch && outcomeMatch && deviceTypeMatch && outputTypeMatch && userBaseMatch) {
       if (recommendations[tech.stage] && !recommendations[tech.stage].find(t => t.name === tech.name)) {
         recommendations[tech.stage].push({ name: tech.name, slug: tech.slug });
       }

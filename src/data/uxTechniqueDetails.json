@@ -1,4 +1,3 @@
-
 [
   {
     "name": "User Interviews",
@@ -7,7 +6,8 @@
     "outcomes": ["Qualitative", "Insight"],
     "output_types": ["Usability Report", "Persona Profile", "Journey Map", "Content Strategy", "Presentation", "Video"],
     "device_types": ["Mobile", "Desktop", "Electronics", "Kiosk"],
-    "project_types": ["New", "Old"]
+    "project_types": ["New", "Old"],
+    "user_base": ["new", "existing"]
   },
   {
     "name": "Contextual Inquiry (Shadowing)",
@@ -16,7 +16,8 @@
     "outcomes": ["Qualitative", "Insight"],
     "output_types": ["Usability Report", "Persona Profile", "Journey Map", "Storyboards", "Presentation", "Video"],
     "device_types": ["Mobile", "Desktop", "Electronics", "Kiosk"],
-    "project_types": ["New", "Old"]
+    "project_types": ["New", "Old"],
+    "user_base": ["new", "existing"]
   },
   {
     "name": "Surveys & Questionnaires",
@@ -25,7 +26,8 @@
     "outcomes": ["Quantitative", "Qualitative"],
     "output_types": ["Usability Report", "KPI Dashboard/Analytics Report", "Presentation"],
     "device_types": ["Mobile", "Desktop"],
-    "project_types": ["New", "Old"]
+    "project_types": ["New", "Old"],
+    "user_base": ["existing"]
   },
   {
     "name": "Web/App Analytics Review",
@@ -34,7 +36,8 @@
     "outcomes": ["Quantitative"],
     "output_types": ["KPI Dashboard/Analytics Report", "Presentation"],
     "device_types": ["Mobile", "Desktop"],
-    "project_types": ["Old"]
+    "project_types": ["Old"],
+    "user_base": ["existing"]
   },
   {
     "name": "Competitor Benchmarking",
@@ -43,7 +46,8 @@
     "outcomes": ["Quantitative", "Insight"],
     "output_types": ["KPI Dashboard/Analytics Report", "Content Strategy", "Presentation"],
     "device_types": ["Mobile", "Desktop"],
-    "project_types": ["New", "Old"]
+    "project_types": ["New", "Old"],
+    "user_base": ["new", "existing"]
   },
   {
     "name": "Persona Creation & Validation",
@@ -52,7 +56,8 @@
     "outcomes": ["Qualitative", "Insight"],
     "output_types": ["Persona Profile", "Presentation"],
     "device_types": ["Mobile", "Desktop", "Electronics", "Kiosk"],
-    "project_types": ["New", "Old"]
+    "project_types": ["New", "Old"],
+    "user_base": ["new", "existing"]
   },
   {
     "name": "Customer Journey Mapping",
@@ -61,7 +66,8 @@
     "outcomes": ["Qualitative", "Insight"],
     "output_types": ["Journey Map", "Service Blueprint", "Presentation"],
     "device_types": ["Mobile", "Desktop", "Electronics", "Kiosk"],
-    "project_types": ["New", "Old"]
+    "project_types": ["New", "Old"],
+    "user_base": ["new", "existing"]
   },
   {
     "name": "Affinity Diagramming",
@@ -70,7 +76,8 @@
     "outcomes": ["Insight"],
     "output_types": ["Journey Map", "Persona Profile", "Presentation"],
     "device_types": ["Mobile", "Desktop", "Electronics", "Kiosk"],
-    "project_types": ["New", "Old"]
+    "project_types": ["New", "Old"],
+    "user_base": ["new", "existing"]
   },
   {
     "name": "Prioritization Matrices (MoSCoW, Kano, etc.)",
@@ -79,7 +86,8 @@
     "outcomes": ["Quantitative"],
     "output_types": ["KPI Dashboard/Analytics Report", "Presentation"],
     "device_types": ["Mobile", "Desktop", "Electronics", "Kiosk"],
-    "project_types": ["New", "Old"]
+    "project_types": ["New", "Old"],
+    "user_base": ["new", "existing"]
   },
   {
     "name": "Wireframing",
@@ -88,7 +96,8 @@
     "outcomes": [],
     "output_types": ["Mobile App", "Web App", "Desktop Software", "Smartwatch Interface", "TV or Console Experience", "Wireframe", "Interactive Prototype"],
     "device_types": ["Mobile", "Desktop"],
-    "project_types": ["New"]
+    "project_types": ["New"],
+    "user_base": ["new"]
   },
   {
     "name": "Low-fidelity Prototyping",
@@ -97,7 +106,8 @@
     "outcomes": [],
     "output_types": ["Mobile App", "Web App", "Desktop Software", "Smartwatch Interface", "TV or Console Experience", "Interactive Prototype"],
     "device_types": ["Mobile", "Desktop"],
-    "project_types": ["New"]
+    "project_types": ["New"],
+    "user_base": ["new"]
   },
   {
     "name": "Information Architecture (Sitemaps, Task Flows)",
@@ -106,7 +116,8 @@
     "outcomes": [],
     "output_types": ["Mobile App", "Web App", "Desktop Software", "Content Strategy", "Information Architecture", "Wireframe"],
     "device_types": ["Mobile", "Desktop", "Kiosk"],
-    "project_types": ["New", "Old"]
+    "project_types": ["New", "Old"],
+    "user_base": ["new", "existing"]
   },
   {
     "name": "High-fidelity Prototyping",
@@ -115,7 +126,8 @@
     "outcomes": [],
     "output_types": ["Mobile App", "Web App", "Desktop Software", "Smartwatch Interface", "TV or Console Experience", "AR/VR Application", "Interactive Prototype", "UI Design", "Visual Design"],
     "device_types": ["Mobile", "Desktop"],
-    "project_types": ["New", "Old"]
+    "project_types": ["New", "Old"],
+    "user_base": ["new", "existing"]
   },
   {
     "name": "UI Design (Screens, Components)",
@@ -124,7 +136,8 @@
     "outcomes": [],
     "output_types": ["Mobile App", "Web App", "Desktop Software", "Smartwatch Interface", "TV or Console Experience", "Design System", "UI Design", "Visual Design"],
     "device_types": ["Mobile", "Desktop"],
-    "project_types": ["New", "Old"]
+    "project_types": ["New", "Old"],
+    "user_base": ["new", "existing"]
   },
   {
     "name": "Motion Design / Microinteractions",
@@ -133,7 +146,8 @@
     "outcomes": [],
     "output_types": ["Mobile App", "Web App", "Desktop Software", "Smartwatch Interface", "TV or Console Experience", "AR/VR Application", "Motion Design", "Animation", "Interactive Prototype"],
     "device_types": ["Mobile", "Desktop"],
-    "project_types": ["New", "Old"]
+    "project_types": ["New", "Old"],
+    "user_base": ["new", "existing"]
   },
   {
     "name": "Accessibility Testing",
@@ -142,7 +156,8 @@
     "outcomes": ["Qualitative", "Quantitative"],
     "output_types": ["Usability Report", "Accessibility Audio", "UI Design", "Interactive Prototype"],
     "device_types": ["Mobile", "Desktop"],
-    "project_types": ["New", "Old"]
+    "project_types": ["New", "Old"],
+    "user_base": ["new", "existing"]
   },
   {
     "name": "A/B Testing",
@@ -151,7 +166,8 @@
     "outcomes": ["Quantitative"],
     "output_types": ["KPI Dashboard/Analytics Report", "UI Design", "Visual Design", "Motion Design"],
     "device_types": ["Mobile", "Desktop"],
-    "project_types": ["Old"]
+    "project_types": ["Old"],
+    "user_base": ["existing"]
   },
   {
     "name": "Usability Observation (Validation)",
@@ -160,7 +176,8 @@
     "outcomes": ["Qualitative", "Insight"],
     "output_types": ["Usability Report", "Video", "Interactive Prototype"],
     "device_types": ["Mobile", "Desktop", "Kiosk"],
-    "project_types": ["Old"]
+    "project_types": ["Old"],
+    "user_base": ["existing"]
   },
   {
     "name": "Post-Launch Analytics Review",
@@ -169,7 +186,8 @@
     "outcomes": ["Quantitative"],
     "output_types": ["KPI Dashboard/Analytics Report", "Presentation"],
     "device_types": ["Mobile", "Desktop"],
-    "project_types": ["Old"]
+    "project_types": ["Old"],
+    "user_base": ["existing"]
   },
   {
     "name": "Success Metrics & KPIs Tracking",
@@ -178,6 +196,7 @@
     "outcomes": ["Quantitative"],
     "output_types": ["KPI Dashboard/Analytics Report", "Presentation"],
     "device_types": ["Mobile", "Desktop", "Electronics", "Kiosk"],
-    "project_types": ["Old"]
+    "project_types": ["Old"],
+    "user_base": ["existing"]
   }
 ]
