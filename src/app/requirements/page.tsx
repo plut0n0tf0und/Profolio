@@ -48,27 +48,36 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 
+// Define the base schema without any refinements.
 const baseFormSchema = z.object({
   project_name: z.string().min(1, 'Project name is required.'),
   date: z.date(),
   problem_statement: z.string().min(1, 'Problem statement is required.'),
   role: z.string().min(1, 'Your role is required.'),
-  output_type: z.array(z.string()).refine((value) => value.some((item) => item), {
-    message: 'You have to select at least one output type.',
-  }),
-  outcome: z.array(z.string()).refine((value) => value.some((item) => item), {
-    message: 'You have to select at least one outcome.',
-  }),
-  device_type: z.array(z.string()).refine((value) => value.some((item) => item), {
-    message: 'You have to select at least one device type.',
-  }),
+  output_type: z.array(z.string()),
+  outcome: z.array(z.string()),
+  device_type: z.array(z.string()),
   project_type: z.enum(['new', 'old'], {
     required_error: 'You need to select a project type.',
   }),
   existing_users: z.string().optional(),
 });
-      
-const formSchema = baseFormSchema.refine(data => {
+
+// Now create the final schema for the form by applying refinements.
+const formSchema = baseFormSchema
+  .refine((data) => data.output_type.length > 0, {
+    message: 'You have to select at least one output type.',
+    path: ['output_type'],
+  })
+  .refine((data) => data.outcome.length > 0, {
+    message: 'You have to select at least one outcome.',
+    path: ['outcome'],
+  })
+  .refine((data) => data.device_type.length > 0, {
+    message: 'You have to select at least one device type.',
+    path: ['device_type'],
+  })
+  .refine(data => {
     if (data.project_type === 'new') {
       return true;
     }
@@ -81,12 +90,13 @@ const formSchema = baseFormSchema.refine(data => {
 
 type FormSchemaType = z.infer<typeof formSchema>;
 
+// Section schemas should pick from the unrefined base schema.
 const sectionSchemas = [
   baseFormSchema.pick({ project_name: true, date: true, problem_statement: true, role: true }),
   baseFormSchema.pick({ output_type: true }),
   baseFormSchema.pick({ outcome: true }),
   baseFormSchema.pick({ device_type: true }),
-  formSchema.pick({ project_type: true, existing_users: true }),
+  baseFormSchema.pick({ project_type: true, existing_users: true }),
 ];
 
 const outputTypes = [
@@ -363,5 +373,3 @@ export default function RequirementsPage() {
     </Suspense>
   )
 }
-
-    
