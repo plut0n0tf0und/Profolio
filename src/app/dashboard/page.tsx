@@ -105,7 +105,7 @@ export default function DashboardPage() {
                     type="search"
                     placeholder="Search projects..."
                     className={cn(
-                        "h-9 w-48 origin-right scale-x-0 transform rounded-full pl-10 pr-4 opacity-0 transition-transform duration-300 ease-in-out",
+                        "absolute right-0 h-9 w-48 origin-right scale-x-0 transform rounded-full pl-4 pr-10 opacity-0 transition-all duration-300 ease-in-out",
                         isSearchOpen && "scale-x-100 opacity-100"
                     )}
                     value={searchTerm}
@@ -119,8 +119,10 @@ export default function DashboardPage() {
                     size="icon" 
                     className="h-9 w-9 shrink-0 rounded-full"
                     onClick={() => {
-                        setIsSearchOpen(true);
-                        searchInputRef.current?.focus();
+                        setIsSearchOpen(!isSearchOpen);
+                        if (!isSearchOpen) {
+                          searchInputRef.current?.focus();
+                        }
                     }}
                 >
                     <Search className="h-5 w-5 text-muted-foreground" />
