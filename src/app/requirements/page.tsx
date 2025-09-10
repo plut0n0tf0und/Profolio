@@ -86,7 +86,7 @@ const sectionSchemas = [
   baseFormSchema.pick({ output_type: true }),
   baseFormSchema.pick({ outcome: true }),
   baseFormSchema.pick({ device_type: true }),
-  baseFormSchema.pick({ project_type: true, existing_users: true }),
+  formSchema.pick({ project_type: true, existing_users: true }),
 ];
 
 const outputTypes = [
@@ -261,7 +261,7 @@ function RequirementsPageContent() {
             );
         case 1:
             return (
-                <FormField control={form.control} name="output_type" render={({ field }) => (<FormItem><div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">{outputTypes.map((item) => (<FormItem key={item} className="flex flex-row items-start space-x-3 space-y-0"><FormControl><Checkbox checked={field.value?.includes(item)} onCheckedChange={(checked) => {return checked ? field.onChange([...(field.value || []), item]) : field.onChange(field.value?.filter((value) => value !== item));}} /></FormControl><FormLabel className="font-normal text-sm">{item}</FormLabel></FormItem>))}</div><FormMessage /></FormItem>)} />
+                <FormField control={form.control} name="output_type" render={({ field }) => (<FormItem><div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">{outputTypes.map((item) => (<FormItem key={item} className="flex flex-row items-start space-x-3 space-y-0"><FormControl><Checkbox checked={field.value?.includes(item)} onCheckedChange={(checked) => {return checked ? field.onChange([...(field.value || []), item]) : field.onChange(field.value?.filter((value) => value !== item));}} /></FormControl><FormLabel className="font-normal text-sm">{item}</FormLabel></FormItem>))}</div><FormMessage /></FormItem>)} />
             );
         case 2:
             return (
