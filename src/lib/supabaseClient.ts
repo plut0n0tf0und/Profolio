@@ -59,7 +59,7 @@ const RequirementSchema = z.object({
   id: z.string().uuid(),
   created_at: z.string().optional(),
   user_id: z.string().uuid().optional(),
-  project_name: z.string().min(1, 'Project name is required.'),
+  project_name: z.string().min(1, 'Project name is required.').nullable(),
   date: z.union([z.date(), z.string()]).optional(),
   problem_statement: z.string().optional(),
   role: z.string().optional(),
@@ -490,5 +490,7 @@ export async function fetchRemixedTechniquesByProjectId(projectId: string): Prom
     if (error) console.error("Error fetching remixed techniques by project ID:", error);
     return { data, error };
 }
+
+    
 
     
