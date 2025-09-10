@@ -222,6 +222,7 @@ function RequirementsPageContent() {
         }
       }
     } catch (error: any) {
+      console.error("Save error:", error);
       toast({ title: 'Uh oh! Something went wrong.', description: error.message || 'There was a problem saving.', variant: 'destructive' });
     } finally {
       setSavingSectionIndex(null);
@@ -313,7 +314,7 @@ function RequirementsPageContent() {
                   open={expandedSections[section.index]}
                   onOpenChange={(isOpen) => setExpandedSections(prev => ({...prev, [section.index]: isOpen}))}
                 >
-                  <Card ref={el => sectionRefs.current[section.index] = el}>
+                  <Card ref={el => { sectionRefs.current[section.index] = el; }}>
                     <CardHeader>
                       <CollapsibleTrigger className="flex w-full items-center justify-between">
                         <div className="flex items-center gap-3">
@@ -362,5 +363,3 @@ export default function RequirementsPage() {
     </Suspense>
   )
 }
-
-    
