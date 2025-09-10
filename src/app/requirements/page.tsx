@@ -339,13 +339,16 @@ function RequirementsPageContent() {
           <Form {...form}>
             <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
                 <VerticalStepper>
-                    {steps.map((step, index) => (
+                    {steps.map((step, index) => {
+                      const isCompleted = index < activeStep;
+                      return (
                         <Step
                             key={step.id}
                             ref={(el) => (stepRefs.current[index] = el)}
                             index={index}
                             title={step.title}
                             isActive={index === activeStep}
+                            isCompleted={isCompleted}
                         >
                             <div className="space-y-6">
                                 {renderStepContent(index)}
@@ -360,7 +363,8 @@ function RequirementsPageContent() {
                                 </Button>
                             </div>
                         </Step>
-                    ))}
+                      );
+                    })}
                 </VerticalStepper>
             </form>
           </Form>

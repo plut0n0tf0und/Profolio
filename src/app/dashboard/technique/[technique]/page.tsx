@@ -907,5 +907,3 @@ export default function TechniqueDetailPage() {
     </>
   );
 }
-
-    
