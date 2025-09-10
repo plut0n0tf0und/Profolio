@@ -67,23 +67,25 @@ const RequirementSchema = z.object({
   outcome: z.array(z.string()).optional(),
   device_type: z.array(z.string()).optional(),
   project_type: z.string().optional(),
+  existing_users: z.boolean().nullable(), // added field
 });
 export type Requirement = z.infer<typeof RequirementSchema>;
 
 // Zod schema for the 'saved_results' table
 const SavedResultSchema = z.object({
-    id: z.string().uuid(),
-    user_id: z.string().uuid(),
-    requirement_id: z.string(),
-    project_name: z.string().nullable(),
-    role: z.string().nullable(),
-    date: z.string().nullable(), // timestamp
-    problem_statement: z.string().nullable(),
-    output_type: z.array(z.string()).nullable(),
-    outcome: z.array(z.string()).nullable(),
-    device_type: z.array(z.string()).nullable(),
-    stage_techniques: z.any().nullable(), // jsonb
-    created_at: z.string().optional(), // timestamp
+  id: z.string().uuid(),
+  user_id: z.string().uuid(),
+  requirement_id: z.string(),
+  project_name: z.string().nullable(),
+  role: z.string().nullable(),
+  date: z.string().nullable(), // timestamp
+  problem_statement: z.string().nullable(),
+  output_type: z.array(z.string()).nullable(),
+  outcome: z.array(z.string()).nullable(),
+  device_type: z.array(z.string()).nullable(),
+  stage_techniques: z.any().nullable(), // jsonb
+  created_at: z.string().optional(), // timestamp
+  existing_users: z.boolean().nullable(), // added field
 });
 export type SavedResult = z.infer<typeof SavedResultSchema>;
 
@@ -241,7 +243,7 @@ export async function saveOrUpdateResult(
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return { data: null, error: { message: 'User not authenticated', code: '401' } };
 
-    const dataToSave = {
+    const dataToSave: Partial<SavedResult> = {
         user_id: user.id,
         requirement_id: requirement.id,
         project_name: requirement.project_name,
@@ -252,6 +254,7 @@ export async function saveOrUpdateResult(
         outcome: requirement.outcome,
         device_type: requirement.device_type,
         stage_techniques: null, // This can be updated later
+        existing_users: requirement.existing_users,
     };
 
     const { data: existingResult, error: selectError } = await supabase
@@ -490,7 +493,3 @@ export async function fetchRemixedTechniquesByProjectId(projectId: string): Prom
     if (error) console.error("Error fetching remixed techniques by project ID:", error);
     return { data, error };
 }
-
-    
-
-    
