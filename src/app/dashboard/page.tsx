@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, Plus, Loader2 } from 'lucide-react';
+import { Search, Plus, Loader2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { fetchSavedResults, Requirement } from '@/lib/supabaseClient';
@@ -119,13 +119,18 @@ export default function DashboardPage() {
                     size="icon" 
                     className="h-9 w-9 shrink-0 rounded-full"
                     onClick={() => {
-                        setIsSearchOpen(!isSearchOpen);
-                        if (!isSearchOpen) {
-                          setTimeout(() => searchInputRef.current?.focus(), 100);
+                        if (isSearchOpen && searchTerm) {
+                            setSearchTerm('');
+                        } else {
+                            setIsSearchOpen(!isSearchOpen);
                         }
                     }}
                 >
-                    <Search className="h-5 w-5 text-muted-foreground" />
+                    {isSearchOpen ? (
+                        <X className="h-6 w-6 text-muted-foreground" />
+                    ) : (
+                        <Search className="h-5 w-5 text-muted-foreground" />
+                    )}
                 </Button>
             </div>
           <Link href="/requirements" passHref>
