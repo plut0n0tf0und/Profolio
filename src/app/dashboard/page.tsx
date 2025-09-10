@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, Plus, Loader2, X } from 'lucide-react';
+import { Search, Plus, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { fetchSavedResults, Requirement } from '@/lib/supabaseClient';
@@ -97,19 +97,16 @@ export default function DashboardPage() {
             <Logo className="h-8 w-8" />
             <h1 className="text-2xl font-bold">Profolio</h1>
         </div>
-        <h1 className="text-xl font-bold hidden md:block">List of Projects</h1>
+        <h1 className="text-xl font-bold hidden md:block absolute left-1/2 -translate-x-1/2">List of Projects</h1>
         <div className="flex items-center gap-2">
-            <div className={cn(
-                "relative flex items-center transition-all duration-300 ease-in-out",
-                isSearchOpen ? "w-48" : "w-10"
-            )}>
+            <div className="relative flex items-center">
                 <Input
                     ref={searchInputRef}
                     type="search"
                     placeholder="Search projects..."
                     className={cn(
-                        "pl-10 h-9 transition-all duration-300 ease-in-out",
-                        isSearchOpen ? "w-full opacity-100" : "w-0 opacity-0"
+                        "h-9 w-48 origin-right scale-x-0 transform rounded-full pl-10 pr-4 opacity-0 transition-transform duration-300 ease-in-out",
+                        isSearchOpen && "scale-x-100 opacity-100"
                     )}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
@@ -117,14 +114,14 @@ export default function DashboardPage() {
                         if (!searchTerm) setIsSearchOpen(false)
                     }}
                 />
-                <Button 
+                 <Button 
                     variant="ghost" 
                     size="icon" 
-                    className={cn(
-                        "absolute right-0 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full",
-                        isSearchOpen && "left-0"
-                    )}
-                    onClick={() => setIsSearchOpen(true)}
+                    className="h-9 w-9 shrink-0 rounded-full"
+                    onClick={() => {
+                        setIsSearchOpen(true);
+                        searchInputRef.current?.focus();
+                    }}
                 >
                     <Search className="h-5 w-5 text-muted-foreground" />
                 </Button>
