@@ -47,8 +47,8 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import { VerticalStepper, Step } from '@/components/ui/stepper';
-      
-const formSchema = z.object({
+
+const baseFormSchema = z.object({
   project_name: z.string().min(1, 'Project name is required.'),
   date: z.date(),
   problem_statement: z.string().min(1, 'Problem statement is required.'),
@@ -68,26 +68,29 @@ const formSchema = z.object({
   existing_users: z.string({
     required_error: 'Please select an answer.',
   }).transform(value => value === 'true'),
-}).refine(data => {
-    // If project_type is 'new', existing_users is not required.
+});
+      
+const formSchema = baseFormSchema.refine(data => {
+    // If project_type is 'new', existing_users is not required to be validated.
     if (data.project_type === 'new') {
       return true;
     }
     // If project_type is 'old', existing_users must be defined.
-    return data.existing_users !== undefined;
+    return typeof data.existing_users === 'boolean';
 }, {
     message: "Please specify if there are existing users for this project.",
     path: ["existing_users"],
 });
 
+
 type FormSchemaType = z.infer<typeof formSchema>;
 
 const sectionSchemas = [
-  formSchema.pick({ project_name: true, date: true, problem_statement: true, role: true }),
-  formSchema.pick({ output_type: true }),
-  formSchema.pick({ outcome: true }),
-  formSchema.pick({ device_type: true }),
-  formSchema.pick({ project_type: true, existing_users: true }),
+  baseFormSchema.pick({ project_name: true, date: true, problem_statement: true, role: true }),
+  baseFormSchema.pick({ output_type: true }),
+  baseFormSchema.pick({ outcome: true }),
+  baseFormSchema.pick({ device_type: true }),
+  baseFormSchema.pick({ project_type: true, existing_users: true }),
 ];
 
 const outputTypes = [
@@ -232,7 +235,7 @@ function RequirementsPageContent() {
         if (fullData.project_type === 'new') {
             existingUsersValue = false;
         } else {
-            existingUsersValue = fullData.existing_users === 'true';
+            existingUsersValue = String(fullData.existing_users) === 'true';
         }
 
         const dataToInsert = {
@@ -444,7 +447,7 @@ function RequirementsPageContent() {
                       return (
                         <Step
                             key={step.id}
-                            ref={(el) => (stepRefs.current[index] = el)}
+                            ref={(el) => { stepRefs.current[index] = el; }}
                             index={index}
                             title={step.title}
                             isActive={index === activeStep}
