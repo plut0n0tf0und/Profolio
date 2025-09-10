@@ -1,9 +1,9 @@
 
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, Plus, Loader2 } from 'lucide-react';
+import { Search, Plus, Loader2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { fetchSavedResults, Requirement } from '@/lib/supabaseClient';
@@ -11,6 +11,7 @@ import { ProjectCard } from '@/components/ProjectCard';
 import { useToast } from '@/hooks/use-toast';
 import { Logo } from '@/components/logo';
 import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
 
 const motivationalTips = [
   'Your UX journey starts here ✦',
@@ -48,6 +49,8 @@ export default function DashboardPage() {
   const [projects, setProjects] = useState<Requirement[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const getTip = () => {
@@ -80,6 +83,12 @@ export default function DashboardPage() {
     );
   }, [projects, searchTerm]);
 
+  useEffect(() => {
+    if (isSearchOpen && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [isSearchOpen]);
+
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
@@ -90,16 +99,36 @@ export default function DashboardPage() {
         </div>
         <h1 className="text-xl font-bold hidden md:block">List of Projects</h1>
         <div className="flex items-center gap-2">
-           <div className="relative w-full max-w-xs">
-             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-             <Input 
-                type="search"
-                placeholder="Search projects..."
-                className="pl-10 h-9"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-             />
-           </div>
+            <div className={cn(
+                "relative flex items-center transition-all duration-300 ease-in-out",
+                isSearchOpen ? "w-48" : "w-10"
+            )}>
+                <Input
+                    ref={searchInputRef}
+                    type="search"
+                    placeholder="Search projects..."
+                    className={cn(
+                        "pl-10 h-9 transition-all duration-300 ease-in-out",
+                        isSearchOpen ? "w-full opacity-100" : "w-0 opacity-0"
+                    )}
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onBlur={() => {
+                        if (!searchTerm) setIsSearchOpen(false)
+                    }}
+                />
+                <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className={cn(
+                        "absolute right-0 top-1/2 -translate-y-1/2 h-9 w-9 rounded-full",
+                        isSearchOpen && "left-0"
+                    )}
+                    onClick={() => setIsSearchOpen(true)}
+                >
+                    <Search className="h-5 w-5 text-muted-foreground" />
+                </Button>
+            </div>
           <Link href="/requirements" passHref>
             <Button variant="ghost" size="icon">
               <Plus className="h-6 w-6" />

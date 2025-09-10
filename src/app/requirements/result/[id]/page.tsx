@@ -203,7 +203,7 @@ export default function ResultPage() {
         <div className="flex items-center justify-end gap-2" style={{ minWidth: '80px' }}>
           <Button variant="default" size="sm" onClick={handleProceedToDashboard} disabled={isLoading || isSaving || !savedResultId}>
             {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-            Done
+            Save as Project
           </Button>
         </div>
       </header>
