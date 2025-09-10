@@ -223,7 +223,7 @@ export default function ResultPage() {
                   <h4 className="font-semibold mb-2">Problem Statement</h4>
                   <p className="text-muted-foreground">{requirement.problem_statement || 'N/A'}</p>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
                   <div>
                       <h4 className="font-semibold mb-2">Output Types</h4>
                       <div className="flex flex-wrap gap-2">
@@ -241,6 +241,18 @@ export default function ResultPage() {
                       <div className="flex flex-wrap gap-2">
                          {requirement.device_type?.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
                       </div>
+                  </div>
+                   <div>
+                    <h4 className="font-semibold mb-2">Project Type</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {requirement.project_type && <Badge variant="secondary" className="capitalize">{requirement.project_type}</Badge>}
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold mb-2">Existing Users</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {requirement.existing_users !== null && <Badge variant="secondary">{requirement.existing_users ? 'Yes' : 'No'}</Badge>}
+                    </div>
                   </div>
                </div>
               </CardContent>
