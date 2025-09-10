@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search, Plus, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -10,6 +10,7 @@ import { fetchSavedResults, Requirement } from '@/lib/supabaseClient';
 import { ProjectCard } from '@/components/ProjectCard';
 import { useToast } from '@/hooks/use-toast';
 import { Logo } from '@/components/logo';
+import { Input } from '@/components/ui/input';
 
 const motivationalTips = [
   'Your UX journey starts here ✦',
@@ -46,6 +47,7 @@ export default function DashboardPage() {
   const [tip, setTip] = useState('');
   const [projects, setProjects] = useState<Requirement[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     const getTip = () => {
@@ -71,6 +73,13 @@ export default function DashboardPage() {
 
     loadProjects();
   }, [toast]);
+  
+  const filteredProjects = useMemo(() => {
+    return projects.filter(project => 
+        project.project_name?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [projects, searchTerm]);
+
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
@@ -81,9 +90,16 @@ export default function DashboardPage() {
         </div>
         <h1 className="text-xl font-bold hidden md:block">List of Projects</h1>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon">
-            <Search className="h-6 w-6" />
-          </Button>
+           <div className="relative w-full max-w-xs">
+             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+             <Input 
+                type="search"
+                placeholder="Search projects..."
+                className="pl-10 h-9"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+             />
+           </div>
           <Link href="/requirements" passHref>
             <Button variant="ghost" size="icon">
               <Plus className="h-6 w-6" />
@@ -99,7 +115,7 @@ export default function DashboardPage() {
             </div>
         ) : projects.length > 0 ? (
             <div className="mx-auto max-w-4xl space-y-4">
-                {projects.map((project) => (
+                {filteredProjects.map((project) => (
                     <ProjectCard
                         key={project.id}
                         id={project.id!}
@@ -108,6 +124,11 @@ export default function DashboardPage() {
                         onClick={() => router.push(`/dashboard/${project.id}`)}
                     />
                 ))}
+                 {filteredProjects.length === 0 && (
+                    <div className="text-center py-10">
+                        <p className="text-muted-foreground">No projects found for &quot;{searchTerm}&quot;.</p>
+                    </div>
+                )}
             </div>
         ) : (
             <div className="flex h-full flex-col items-center justify-center text-center">
