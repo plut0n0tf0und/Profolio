@@ -47,7 +47,7 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import { VerticalStepper, Step } from '@/components/ui/stepper';
-
+      
 const formSchema = z.object({
   project_name: z.string().min(1, 'Project name is required.'),
   date: z.date(),
@@ -66,8 +66,18 @@ const formSchema = z.object({
     required_error: 'You need to select a project type.',
   }),
   existing_users: z.string({
-    required_error: 'You need to select an answer.',
+    required_error: 'Please select an answer.',
   }).transform(value => value === 'true'),
+}).refine(data => {
+    // If project_type is 'new', existing_users is not required.
+    if (data.project_type === 'new') {
+      return true;
+    }
+    // If project_type is 'old', existing_users must be defined.
+    return data.existing_users !== undefined;
+}, {
+    message: "Please specify if there are existing users for this project.",
+    path: ["existing_users"],
 });
 
 type FormSchemaType = z.infer<typeof formSchema>;
@@ -77,8 +87,7 @@ const sectionSchemas = [
   formSchema.pick({ output_type: true }),
   formSchema.pick({ outcome: true }),
   formSchema.pick({ device_type: true }),
-  formSchema.pick({ project_type: true }),
-  formSchema.pick({ existing_users: true }),
+  formSchema.pick({ project_type: true, existing_users: true }),
 ];
 
 const outputTypes = [
@@ -117,8 +126,7 @@ const steps = [
     { id: 'step-1', title: 'Output Type' },
     { id: 'step-2', title: 'Desired Outcome' },
     { id: 'step-3', title: 'Device Type' },
-    { id: 'step-4', title: 'Project Type' },
-    { id: 'step-5', title: 'Existing Users' },
+    { id: 'step-4', title: 'Project Context' },
 ]
 
 function RequirementsPageContent() {
@@ -144,6 +152,8 @@ function RequirementsPageContent() {
     },
   });
 
+  const watchedProjectType = form.watch('project_type');
+
   useEffect(() => {
     const id = searchParams.get('id');
     setIsLoading(true);
@@ -166,7 +176,7 @@ function RequirementsPageContent() {
             outcome: data.outcome || [],
             device_type: data.device_type || [],
             project_type: data.project_type as 'new' | 'old' | undefined,
-            existing_users: data.existing_users === null ? undefined : String(data.existing_users),
+            existing_users: data.existing_users === null || typeof data.existing_users === 'undefined' ? undefined : String(data.existing_users),
           } as any);
         }
         setIsLoading(false);
@@ -218,9 +228,16 @@ function RequirementsPageContent() {
         savedData = data;
       } else {
         const fullData = form.getValues();
+        let existingUsersValue = fullData.existing_users;
+        if (fullData.project_type === 'new') {
+            existingUsersValue = false;
+        } else {
+            existingUsersValue = fullData.existing_users === 'true';
+        }
+
         const dataToInsert = {
           ...fullData,
-          existing_users: fullData.existing_users === 'true'
+          existing_users: existingUsersValue,
         }
         const { data, error } = await insertRequirement(dataToInsert as any);
         if (error) throw error;
@@ -296,7 +313,7 @@ function RequirementsPageContent() {
             return (
                 <div className="space-y-4">
                     <FormField control={form.control} name="project_name" render={({ field }) => (<FormItem><FormLabel>Project Name</FormLabel><FormControl><Input placeholder="e.g., AuthNexus Redesign" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                    <FormField control={form.control} name="date" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel>Date</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={'outline'} className={cn('w-full pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}>{field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value instanceof Date ? field.value : new Date(field.value)} onSelect={field.onChange} disabled={(date) => date > new Date() || date < new Date('1900-01-01')} initialFocus /></PopoverContent></Popover><FormMessage /></FormItem>)} />
+                    <FormField control={form.control} name="date" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel>Date</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={'outline'} className={cn('w-full pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}>{field.value ? format(new Date(field.value), 'PPP') : <span>Pick a date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value instanceof Date ? field.value : new Date(field.value)} onSelect={field.onChange} disabled={(date) => date > new Date() || date < new Date('1900-01-01')} initialFocus /></PopoverContent></Popover><FormMessage /></FormItem>)} />
                     <FormField control={form.control} name="problem_statement" render={({ field }) => (<FormItem><FormLabel>Problem Statement</FormLabel><FormControl><Textarea placeholder="Describe the core problem your project aims to solve." {...field} /></FormControl><FormMessage /></FormItem>)} />
                     <FormField control={form.control} name="role" render={({ field }) => (<FormItem><FormLabel>Your Role</FormLabel><FormControl><Input placeholder="e.g., UX Designer, Product Manager" {...field} /></FormControl><FormMessage /></FormItem>)} />
                 </div>
@@ -315,40 +332,73 @@ function RequirementsPageContent() {
             )
         case 4:
             return (
-                <FormField control={form.control} name="project_type" render={({ field }) => (<FormItem><FormControl><RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-8 pt-2"><FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="new" /></FormControl><FormLabel className="font-normal text-sm">New Project</FormLabel></FormItem><FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="old" /></FormControl><FormLabel className="font-normal text-sm">Existing Project</FormLabel></FormItem></RadioGroup></FormControl><FormMessage /></FormItem>)} />
-            )
-        case 5:
-            return (
+              <div className="space-y-6">
                 <FormField
-                    control={form.control}
-                    name="existing_users"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Does this project already have existing users?</FormLabel>
+                  control={form.control}
+                  name="project_type"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Project Type</FormLabel>
+                      <FormControl>
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          value={field.value}
+                          className="flex gap-8 pt-2"
+                        >
+                          <FormItem className="flex items-center space-x-3 space-y-0">
                             <FormControl>
-                                <RadioGroup
-                                    onValueChange={field.onChange}
-                                    value={field.value}
-                                    className="flex gap-8 pt-2"
-                                >
-                                    <FormItem className="flex items-center space-x-3 space-y-0">
-                                        <FormControl>
-                                            <RadioGroupItem value="true" />
-                                        </FormControl>
-                                        <FormLabel className="font-normal text-sm">Yes</FormLabel>
-                                    </FormItem>
-                                    <FormItem className="flex items-center space-x-3 space-y-0">
-                                        <FormControl>
-                                            <RadioGroupItem value="false" />
-                                        </FormControl>
-                                        <FormLabel className="font-normal text-sm">No</FormLabel>
-                                    </FormItem>
-                                </RadioGroup>
+                              <RadioGroupItem value="new" />
                             </FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )}
+                            <FormLabel className="font-normal text-sm">New Project</FormLabel>
+                          </FormItem>
+                          <FormItem className="flex items-center space-x-3 space-y-0">
+                            <FormControl>
+                              <RadioGroupItem value="old" />
+                            </FormControl>
+                            <FormLabel className="font-normal text-sm">Existing Project</FormLabel>
+                          </FormItem>
+                        </RadioGroup>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
+                
+                {watchedProjectType === 'old' && (
+                  <div className="ml-4 pl-4 border-l-2 border-border transition-all animate-in fade-in duration-300">
+                    <FormField
+                      control={form.control}
+                      name="existing_users"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Does this project already have users?</FormLabel>
+                          <FormControl>
+                            <RadioGroup
+                              onValueChange={field.onChange}
+                              value={String(field.value)}
+                              className="flex gap-8 pt-2"
+                            >
+                              <FormItem className="flex items-center space-x-3 space-y-0">
+                                <FormControl>
+                                  <RadioGroupItem value="true" />
+                                </FormControl>
+                                <FormLabel className="font-normal text-sm">Yes</FormLabel>
+                              </FormItem>
+                              <FormItem className="flex items-center space-x-3 space-y-0">
+                                <FormControl>
+                                  <RadioGroupItem value="false" />
+                                </FormControl>
+                                <FormLabel className="font-normal text-sm">No</FormLabel>
+                              </FormItem>
+                            </RadioGroup>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                )}
+              </div>
             )
     }
   }
@@ -433,5 +483,3 @@ export default function RequirementsPage() {
     </Suspense>
   )
 }
-
-    
