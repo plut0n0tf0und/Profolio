@@ -41,7 +41,11 @@ const FiveDProcess = ({ techniques, projectId }: { techniques: StageTechniques, 
         <CardDescription>Recommended UX techniques for your project.</CardDescription>
       </CardHeader>
       <CardContent>
-        <Accordion type="multiple" defaultValue={Object.keys(techniques)} className="w-full">
+        <Accordion 
+          type="multiple" 
+          defaultValue={Object.keys(techniques).filter(stage => techniques[stage].length > 0)} 
+          className="w-full"
+        >
           {Object.entries(techniques).map(([stage, stageTechs]) => (
             <AccordionItem value={stage} key={stage}>
               <AccordionTrigger className="text-lg font-semibold">{stage}</AccordionTrigger>
