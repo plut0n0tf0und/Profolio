@@ -27,10 +27,10 @@ const doArraysIntersect = (reqArray: readonly string[] | undefined | null, techA
     if (!reqArray || reqArray.length === 0) {
       return false;
     }
-    const lowercasedReqArray = reqArray.map(item => item.toLowerCase());
+    const lowercasedReqArray = new Set(reqArray.map(item => item.toLowerCase()));
     const lowercasedTechArray = techArray.map(item => item.toLowerCase());
 
-    return lowercasedReqArray.some(item => lowercasedTechArray.includes(item));
+    return lowercasedTechArray.some(item => lowercasedReqArray.has(item));
 };
 
 /**
@@ -57,25 +57,22 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
     let isMatch = true;
 
     // 1. Project Type Match (case-insensitive)
-    if (requirement.project_type) {
-        const lowercasedTechProjectTypes = tech.project_types.map(p => p.toLowerCase());
-        if (!lowercasedTechProjectTypes.includes(requirement.project_type.toLowerCase())) {
-            isMatch = false;
-        }
+    if (requirement.project_type && !tech.project_types.some(p => p.toLowerCase() === requirement.project_type!.toLowerCase())) {
+      isMatch = false;
     }
 
     // 2. User Base Match
     if (isMatch && !tech.user_base.includes(userContext)) {
-        isMatch = false;
+      isMatch = false;
     }
 
     // 3. Primary Goal Match (case-insensitive)
     if (isMatch && requirement.primary_goal) {
-      if (!tech.goals.map(g => g.toLowerCase()).includes(requirement.primary_goal.toLowerCase())) {
+      if (!tech.goals.some(g => g.toLowerCase() === requirement.primary_goal!.toLowerCase())) {
         isMatch = false;
       }
     }
-
+    
     // 4. Constraints Match (case-insensitive)
     if (isMatch && requirement.constraints && requirement.constraints.length > 0) {
         const lowercasedTechConstraints = tech.constraints.map(c => c.toLowerCase());
@@ -86,19 +83,20 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
     
     // 5. Array intersection checks (all case-insensitive)
     if (isMatch && !doArraysIntersect(requirement.outcome, tech.outcomes)) {
-        isMatch = false;
+      isMatch = false;
     }
     if (isMatch && !doArraysIntersect(requirement.device_type, tech.device_types)) {
-        isMatch = false;
+      isMatch = false;
     }
     if (isMatch && !doArraysIntersect(requirement.output_type, tech.output_types)) {
-        isMatch = false;
+      isMatch = false;
     }
 
     // If the technique survived all checks, add it to the recommendations.
     if (isMatch) {
-      if (recommendations[tech.stage] && !recommendations[tech.stage].some(t => t.name === tech.name)) {
-        recommendations[tech.stage].push({ name: tech.name, slug: tech.slug });
+      const stage = tech.stage.charAt(0).toUpperCase() + tech.stage.slice(1).toLowerCase();
+      if (recommendations[stage] && !recommendations[stage].some(t => t.name === tech.name)) {
+        recommendations[stage].push({ name: tech.name, slug: tech.slug });
       }
     }
   });
