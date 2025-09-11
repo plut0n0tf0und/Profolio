@@ -159,6 +159,9 @@ function RequirementsPageContent() {
         } else if (data) {
           form.reset({
             ...data,
+            project_name: data.project_name || '',
+            problem_statement: data.problem_statement || '',
+            role: data.role || '',
             date: data.date ? new Date(data.date) : new Date(),
             output_type: data.output_type || [],
             outcome: data.outcome || [],
@@ -377,5 +380,3 @@ export default function RequirementsPage() {
     </Suspense>
   )
 }
-
-    
