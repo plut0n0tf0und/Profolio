@@ -33,46 +33,49 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
 
   if (!requirement) return recommendations;
 
-  const doArraysIntersect = (reqArray: readonly string[] | undefined, techArray: readonly string[]): boolean => {
+  const doArraysIntersect = (reqArray: readonly string[] | undefined | null, techArray: readonly string[]): boolean => {
     if (!reqArray || reqArray.length === 0) return true; // If user didn't specify, it's a match.
-    if (techArray.length === 0) return false; // If tech has no values, it can't match.
+    if (!techArray || techArray.length === 0) return false; // If tech has no values for this, it can't match.
     return reqArray.some(item => techArray.includes(item));
   };
   
   allTechniques.forEach(tech => {
-    // 1. Project Type Match: Must include the selected project_type.
+    // 1. Project Type Match
     const projectTypeMatch = requirement.project_type
       ? tech.project_types.some(p => p.toLowerCase() === requirement.project_type!.toLowerCase())
       : false;
 
-    // 2. User Base Match: Must support new or existing users.
+    // 2. User Base Match
     const userContext = requirement.existing_users ? "existing" : "new";
     const userBaseMatch = tech.user_base.includes(userContext);
 
-    // 3. Goal Match: Must include the primary_goal.
+    // 3. Goal Match
     const goalMatch = requirement.primary_goal
       ? tech.goals.includes(requirement.primary_goal)
       : false;
       
-    // 4. Constraint Match: Technique must include ALL constraints from the requirement.
-    const constraintMatch = requirement.constraints && requirement.constraints.length > 0
-        ? requirement.constraints.every(c => tech.constraints.includes(c))
-        : true; // If no constraints are required, it's a match.
+    // 4. Constraint Compatibility Check
+    // A technique is compatible if it does NOT have a constraint that the user's project also has.
+    // Example: If tech has "Tight Deadline" constraint, it's only suitable for projects WITHOUT that constraint.
+    // So, if the user's project has a "Tight Deadline", this technique should be excluded.
+    const hasConflictingConstraint = tech.constraints.some(techConstraint => 
+        requirement.constraints?.includes(techConstraint)
+    );
 
-    // 5. Outcome Match: Arrays must intersect.
+    // 5. Outcome Match
     const outcomeMatch = doArraysIntersect(requirement.outcome, tech.outcomes);
 
-    // 6. Device Type Match: Arrays must intersect.
+    // 6. Device Type Match
     const deviceTypeMatch = doArraysIntersect(requirement.device_type, tech.device_types);
 
-    // 7. Output Type Match: Arrays must intersect.
+    // 7. Output Type Match
     const outputTypeMatch = doArraysIntersect(requirement.output_type, tech.output_types);
 
     if (
       projectTypeMatch &&
       userBaseMatch &&
       goalMatch &&
-      constraintMatch &&
+      !hasConflictingConstraint && // The logic is now correctly inverted.
       outcomeMatch &&
       deviceTypeMatch &&
       outputTypeMatch
