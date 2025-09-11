@@ -19,13 +19,13 @@ const allTechniques: TechniqueDetail[] = techniqueDetails as TechniqueDetail[];
 
 /**
  * Checks for a non-empty intersection between two string arrays.
- * @param reqArray - The user's selections.
- * @param techArray - The technique's supported options.
+ * @param arr1 - First array (e.g., from user requirements).
+ * @param arr2 - Second array (e.g., from technique data).
  * @returns True if they share at least one common element, false otherwise.
  */
 const doArraysIntersect = (reqArray: readonly string[] | undefined | null, techArray: readonly string[]): boolean => {
     if (!reqArray || reqArray.length === 0 || !techArray || techArray.length === 0) {
-      return false;
+      return false; // No intersection if either array is empty or undefined.
     }
     return reqArray.some(item => techArray.includes(item));
 };
@@ -59,7 +59,7 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
     const userBaseMatch = tech.user_base.includes(userContext);
 
     // 3. Goal Match: Must match if a primary goal is selected.
-    const goalMatch = requirement.primary_goal && typeof requirement.primary_goal === 'string'
+    const goalMatch = requirement.primary_goal
       ? tech.goals.includes(requirement.primary_goal)
       : false;
 
@@ -68,6 +68,7 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
     const constraintMatch = requirement.constraints && requirement.constraints.length > 0
       ? requirement.constraints.every(c => tech.constraints.includes(c))
       : true;
+
 
     // 5. Outcome Match: There must be an intersection.
     const outcomeMatch = doArraysIntersect(requirement.outcome, tech.outcomes);
