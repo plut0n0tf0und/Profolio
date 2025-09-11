@@ -25,7 +25,7 @@ const allTechniques: TechniqueDetail[] = techniqueDetails as TechniqueDetail[];
  */
 const doArraysIntersect = (reqArray: readonly string[] | undefined | null, techArray: readonly string[]): boolean => {
     if (!reqArray || reqArray.length === 0 || !techArray || techArray.length === 0) {
-      return false; // No intersection if either array is empty or undefined.
+      return false;
     }
     return reqArray.some(item => techArray.includes(item));
 };
@@ -50,31 +50,32 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
 
   allTechniques.forEach(tech => {
     
-    // Rule 1: Project Type Match
+    // 1. Project Type Match: Must match if a project type is selected.
     const projectTypeMatch = requirement.project_type
       ? tech.project_types.some(p => p.toLowerCase() === requirement.project_type!.toLowerCase())
       : false;
 
-    // Rule 2: User Base Match
+    // 2. User Base Match: Must match the user context ('new' or 'existing').
     const userBaseMatch = tech.user_base.includes(userContext);
 
-    // Rule 3: Goal Match
-    const goalMatch = requirement.primary_goal
+    // 3. Goal Match: Must match if a primary goal is selected.
+    const goalMatch = requirement.primary_goal && typeof requirement.primary_goal === 'string'
       ? tech.goals.includes(requirement.primary_goal)
       : false;
 
-    // Rule 4: Constraint Match - Technique must satisfy ALL project constraints.
+    // 4. Constraint Match: The technique must satisfy ALL of the project's constraints.
+    // A technique is a match if its constraints array contains every constraint the user has specified.
     const constraintMatch = requirement.constraints && requirement.constraints.length > 0
       ? requirement.constraints.every(c => tech.constraints.includes(c))
-      : true; // If user has no constraints, this check passes.
+      : true;
 
-    // Rule 5: Outcome Match (Intersection)
+    // 5. Outcome Match: There must be an intersection.
     const outcomeMatch = doArraysIntersect(requirement.outcome, tech.outcomes);
 
-    // Rule 6: Device Type Match (Intersection)
+    // 6. Device Type Match: There must be an intersection.
     const deviceTypeMatch = doArraysIntersect(requirement.device_type, tech.device_types);
 
-    // Rule 7: Output Type Match (Intersection)
+    // 7. Output Type Match: There must be an intersection.
     const outputTypeMatch = doArraysIntersect(requirement.output_type, tech.output_types);
 
     if (
