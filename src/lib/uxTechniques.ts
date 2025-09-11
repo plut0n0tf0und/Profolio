@@ -60,7 +60,8 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
 
     const earlyStages = ["Discover", "Define", "Design"];
     const isEarlyStage = earlyStages.includes(tech.stage);
-    const outputTypeMatch = isEarlyStage || doArraysIntersect(requirement.output_type, tech.output_types);
+    // Lenient output_type matching for early stages (Discover, Define, Design), strict for Develop/Deliver
+    const outputTypeMatch = isEarlyStage ? true : doArraysIntersect(requirement.output_type, tech.output_types);
 
     // New filtering logic for goals and constraints
     const goalMatch = doesArrayContain(requirement.primary_goal, tech.goals);
@@ -68,7 +69,7 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
     // If a tech has a constraint, it is INCOMPATIBLE with that constraint.
     // e.g. A high-budget technique is incompatible with a 'Limited Budget' constraint.
     // So, we check if there's any intersection. If there is, it's a mismatch.
-    const constraintMismatch = doArraysIntersect(requirement.constraints, tech.constraints);
+    const constraintMismatch = requirement.constraints ? requirement.constraints.some(c => tech.constraints.includes(c)) : false;
 
 
     if (projectTypeMatch && outcomeMatch && deviceTypeMatch && outputTypeMatch && userBaseMatch && goalMatch && !constraintMismatch) {
