@@ -25,7 +25,7 @@ const allTechniques: TechniqueDetail[] = techniqueDetails as TechniqueDetail[];
  */
 const doArraysIntersect = (reqArray: readonly string[] | undefined | null, techArray: readonly string[]): boolean => {
     if (!reqArray || reqArray.length === 0 || !techArray || techArray.length === 0) {
-      return false; // If either array is empty or undefined, there's no intersection.
+      return false; // No intersection if either array is empty or undefined.
     }
     return reqArray.some(item => techArray.includes(item));
 };
@@ -49,6 +49,7 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
   const userContext = requirement.existing_users ? "existing" : "new";
 
   allTechniques.forEach(tech => {
+    
     // 1. Project Type Match: Must match if a project type is selected.
     const projectTypeMatch = requirement.project_type
       ? tech.project_types.some(p => p.toLowerCase() === requirement.project_type!.toLowerCase())
@@ -62,20 +63,10 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
       ? tech.goals.includes(requirement.primary_goal)
       : false;
 
-    // 4. Constraint Match: The technique is only compatible if it does NOT have constraints that conflict with the project's reality.
-    // For our current model, this means a technique is EXCLUDED if its own constraints list contains something the project DOES NOT have.
-    // However, the current `data/uxTechniqueDetails.json` uses constraints to indicate what a technique IS suitable for.
-    // E.g., "Tight Deadline" means it's good for that. So we should check if the tech's constraints are a SUBSET of the project's constraints.
-    // This logic is complex. The simplest, most effective filter is: If the user has constraints, only show techniques that can handle them.
-    const constraintMatch = (() => {
-        // If the user has no constraints, all techniques are fine from a constraint perspective.
-        if (!requirement.constraints || requirement.constraints.length === 0) {
-            return true;
-        }
-        // If the user HAS constraints, the technique must be able to handle at least one of them.
-        // A technique with an empty `constraints` array is assumed to be flexible and not specifically for constrained projects.
-        return doArraysIntersect(requirement.constraints, tech.constraints);
-    })();
+    // 4. Constraint Match: The technique must satisfy ALL of the project's constraints.
+    const constraintMatch = requirement.constraints && requirement.constraints.length > 0
+      ? requirement.constraints.every(c => tech.constraints.includes(c))
+      : true;
 
     // 5. Outcome Match: There must be an intersection.
     const outcomeMatch = doArraysIntersect(requirement.outcome, tech.outcomes);
