@@ -59,7 +59,7 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
     const userBaseMatch = tech.user_base.includes(userContext);
 
     // 3. Goal Match: Must match if a primary goal is selected.
-    const goalMatch = requirement.primary_goal
+    const goalMatch = (typeof requirement.primary_goal === 'string' && requirement.primary_goal)
       ? tech.goals.includes(requirement.primary_goal)
       : false;
 
