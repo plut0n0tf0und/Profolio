@@ -95,7 +95,6 @@ export default function ResultPage() {
   const { toast } = useToast();
   const requirementId = params.id as string;
   const [requirement, setRequirement] = useState<Requirement | null>(null);
-  const [savedResultId, setSavedResultId] = useState<string | null>(null);
   const [stageTechniques, setStageTechniques] = useState<StageTechniques>({});
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -103,7 +102,7 @@ export default function ResultPage() {
   useEffect(() => {
     if (!requirementId) return;
 
-    const getRequirementAndSave = async () => {
+    const getRequirementData = async () => {
       setIsLoading(true);
       const { data, error } = await fetchRequirementById(requirementId);
 
@@ -121,44 +120,42 @@ export default function ResultPage() {
       setRequirement(data);
       const filteredTechniques = getFilteredTechniques(data);
       setStageTechniques(filteredTechniques);
-
-      // --- FIX: Automatically save this to `saved_results` table ---
-      const { data: savedResultData, error: saveError } = await saveOrUpdateResult(data);
-      if (saveError || !savedResultData) {
-         console.error("Error auto-saving result:", saveError);
-         toast({
-            title: 'Save Failed',
-            description: 'Could not create the project. Please go back and try again.',
-            variant: 'destructive',
-          });
-      } else {
-        setSavedResultId(savedResultData.id);
-        console.debug("Project auto-saved with ID:", savedResultData.id);
-      }
-      // -------------------------------------------------------------
-
       setIsLoading(false);
     };
 
-    getRequirementAndSave();
+    getRequirementData();
   }, [requirementId, router, toast]);
   
-  const handleProceedToDashboard = () => {
-    if (!savedResultId) {
+  const handleProceedToDashboard = async () => {
+    if (!requirement) {
         toast({
-            title: 'Project Not Ready',
-            description: 'The project is still being created. Please wait a moment.',
+            title: 'Project Data Not Loaded',
+            description: 'Cannot save project. Please try again.',
             variant: 'destructive',
         });
         return;
     }
+    
     setIsSaving(true);
-    toast({
+    
+    const { data: savedResultData, error: saveError } = await saveOrUpdateResult(requirement);
+
+    if (saveError || !savedResultData?.id) {
+       console.error("Error saving result:", saveError);
+       toast({
+          title: 'Save Failed',
+          description: 'Could not create the project. Please go back and try again.',
+          variant: 'destructive',
+        });
+       setIsSaving(false);
+    } else {
+       toast({
         title: 'Project Created!',
         description: 'Your new project is now available on your dashboard.',
-    });
-    router.push(`/dashboard/${savedResultId}`);
-    router.refresh();
+      });
+      router.push(`/dashboard/${savedResultData.id}`);
+      router.refresh();
+    }
   };
 
 
@@ -201,7 +198,7 @@ export default function ResultPage() {
         </h1>
 
         <div className="flex items-center justify-end gap-2" style={{ minWidth: '80px' }}>
-          <Button variant="default" size="sm" onClick={handleProceedToDashboard} disabled={isLoading || isSaving || !savedResultId}>
+          <Button variant="default" size="sm" onClick={handleProceedToDashboard} disabled={isLoading || isSaving}>
             {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
             Save as Project
           </Button>
@@ -259,10 +256,10 @@ export default function ResultPage() {
             </Card>
           )}
 
-          {isLoading || !savedResultId ? (
+          {isLoading ? (
             <RequirementDetailSkeleton />
           ) : (
-            <FiveDProcess techniques={stageTechniques} projectId={savedResultId} />
+            <FiveDProcess techniques={stageTechniques} projectId={requirementId} />
           )}
         </div>
       </main>
