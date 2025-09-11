@@ -211,24 +211,6 @@ export default function ResultPage() {
 
       <main className="container mx-auto max-w-4xl p-4 md:p-8">
         <div className="space-y-8">
-          {/* =========== TEMPORARY DEBUG BLOCK START =========== */}
-          <Card className="border-yellow-500 bg-yellow-500/10">
-            <CardHeader>
-              <CardTitle className="text-yellow-500">Debug Information</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <h4 className="font-bold">Requirement Object (Input):</h4>
-              <pre className="mt-2 rounded-md bg-background/50 p-2 text-xs">
-                {JSON.stringify(requirement, null, 2)}
-              </pre>
-              <h4 className="mt-4 font-bold">Stage Techniques (Output):</h4>
-              <pre className="mt-2 rounded-md bg-background/50 p-2 text-xs">
-                {JSON.stringify(stageTechniques, null, 2)}
-              </pre>
-            </CardContent>
-          </Card>
-          {/* =========== TEMPORARY DEBUG BLOCK END =========== */}
-
           {isLoading ? <RequirementDetailSkeleton /> : requirement && (
             <Card>
               <CardHeader>
