@@ -89,8 +89,8 @@ const sectionSchemas = [
   baseFormSchema.pick({ device_type: true }),
   baseFormSchema.pick({ project_type: true }),
   baseFormSchema.pick({ existing_users: true }),
-  baseFormSchema.pick({ primary_goal: false }),
-  baseFormSchema.pick({ constraints: false }),
+  baseFormSchema.pick({ primary_goal: true }),
+  baseFormSchema.pick({ constraints: true }),
 ];
 
 const outputTypes = [
@@ -380,3 +380,5 @@ export default function RequirementsPage() {
     </Suspense>
   )
 }
+
+    
