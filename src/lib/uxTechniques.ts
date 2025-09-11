@@ -33,41 +33,43 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
 
   if (!requirement) return recommendations;
 
-  const doArraysIntersect = (arr1: string[] | null | undefined, arr2: string[] | null | undefined): boolean => {
-    if (!arr1 || arr1.length === 0) return true; // If no requirement, don't filter on this criteria
-    if (!arr2 || arr2.length === 0) return false; // If technique has no values, it can't match a requirement
-    return arr1.some(item1 => arr2.includes(item1));
+  const doArraysIntersect = (reqArray: string[] | null | undefined, techArray: string[] | null | undefined): boolean => {
+    // If the user didn't specify any requirements for this category, we don't filter by it.
+    if (!reqArray || reqArray.length === 0) return true;
+    // If the technique doesn't apply to any items in this category, it can't be a match.
+    if (!techArray || techArray.length === 0) return false;
+    // Return true only if there is at least one common item between the two arrays.
+    return reqArray.some(item => techArray.includes(item));
   };
   
-  const doesArrayContain = (value: string | null | undefined, arr: string[] | null | undefined): boolean => {
-      if (!value) return true; // If no requirement, don't filter
-      if (!arr || arr.length === 0) return false; // If technique has no values, it can't match
-      return arr.includes(value);
-  }
-
   allTechniques.forEach(tech => {
-    // 1. Project Type Match
+    // 1. Project Type Match: Check if the technique is suitable for a "New" or "Existing" project.
     const projectTypeMatch = requirement.project_type
       ? tech.project_types.some(pType => pType.toLowerCase() === requirement.project_type!.toLowerCase())
       : true;
 
-    // 2. User Base Match
+    // 2. User Base Match: Check if the technique is suitable for projects with or without existing users.
     const userContext = requirement.existing_users ? "existing" : "new";
     const userBaseMatch = tech.user_base.includes(userContext);
 
-    // 3. Goal Match
-    const goalMatch = doesArrayContain(requirement.primary_goal, tech.goals);
+    // 3. Goal Match: Check if the technique aligns with the project's primary goal.
+    const goalMatch = requirement.primary_goal 
+        ? tech.goals.includes(requirement.primary_goal) 
+        : true;
 
-    // 4. Constraint Match (a technique is a mismatch if it has a constraint the project also has)
-    const constraintMismatch = doArraysIntersect(requirement.constraints, tech.constraints);
+    // 4. Constraint Mismatch: A technique is EXCLUDED if it's not good for a constraint the project has.
+    // For example, if project has 'Tight Deadline', we exclude techniques that are NOT listed under 'Tight Deadline'.
+    const constraintMismatch = requirement.constraints?.some(constraint => 
+        !tech.constraints.includes(constraint) && tech.constraints.length > 0
+    ) ?? false;
 
-    // 5. Outcome Match
+    // 5. Outcome Match: Check for intersection between desired outcomes and technique outcomes.
     const outcomeMatch = doArraysIntersect(requirement.outcome, tech.outcomes);
-
-    // 6. Device Type Match
+    
+    // 6. Device Type Match: Check for intersection.
     const deviceTypeMatch = doArraysIntersect(requirement.device_type, tech.device_types);
 
-    // 7. Output Type Match
+    // 7. Output Type Match: Check for intersection.
     const outputTypeMatch = doArraysIntersect(requirement.output_type, tech.output_types);
 
     if (
