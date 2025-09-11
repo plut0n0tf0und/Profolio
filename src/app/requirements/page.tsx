@@ -123,9 +123,7 @@ function RequirementsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [expandedSections, setExpandedSections] = useState<Record<number, boolean>>(() =>
-    sections.reduce((acc, section) => ({ ...acc, [section.index]: true }), {})
-  );
+  const [expandedSections, setExpandedSections] = useState<Record<number, boolean>>({ 0: true });
   const [completedSections, setCompletedSections] = useState<Record<number, boolean>>({});
   const [savingSectionIndex, setSavingSectionIndex] = useState<number | null>(null);
 
