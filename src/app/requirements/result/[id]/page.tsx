@@ -248,7 +248,7 @@ export default function ResultPage() {
                   <div>
                     <h4 className="font-semibold mb-2">Existing Users</h4>
                     <div className="flex flex-wrap gap-2">
-                      {requirement.existing_users !== null && <Badge variant="secondary">{requirement.existing_users ? 'Yes' : 'No'}</Badge>}
+                      {requirement.existing_users !== null && typeof requirement.existing_users !== 'undefined' && <Badge variant="secondary">{requirement.existing_users ? 'Yes' : 'No'}</Badge>}
                     </div>
                   </div>
                </div>
