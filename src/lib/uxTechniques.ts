@@ -10,7 +10,9 @@ interface TechniqueDetail {
   output_types: string[];
   device_types: string[];
   project_types: ("New" | "Old")[];
-  user_base: ("new" | "existing")[]; // Added user_base property
+  user_base: ("new" | "existing")[];
+  goals: string[];
+  constraints: string[];
 }
 
 const allTechniques: TechniqueDetail[] = techniqueDetails as TechniqueDetail[];
@@ -32,18 +34,24 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
 
   if (!requirement) return recommendations;
 
-  const doArraysIntersect = (reqArray: string[] | undefined, techArray: string[]) => {
+  const doArraysIntersect = (reqArray: string[] | null | undefined, techArray: string[]) => {
     if (!reqArray || reqArray.length === 0) return true;
     if (!techArray || techArray.length === 0) return true;
     return reqArray.some(item => techArray.includes(item));
   };
+  
+  const doesArrayContain = (reqValue: string | null | undefined, techArray: string[]) => {
+      if (!reqValue) return true; // If no requirement, don't filter
+      if (!techArray || techArray.length === 0) return true; // If tech has no opinion, it's always a match
+      return techArray.includes(reqValue);
+  }
 
   allTechniques.forEach(tech => {
     const projectTypeMatch = requirement.project_type
       ? tech.project_types.some(pType => pType.toLowerCase() === requirement.project_type!.toLowerCase())
       : true;
 
-    // New logic for matching based on existing users
+    // Logic for matching based on existing users
     const userContext = requirement.existing_users ? "existing" : "new";
     const userBaseMatch = tech.user_base ? tech.user_base.includes(userContext) : true;
 
@@ -54,7 +62,16 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
     const isEarlyStage = earlyStages.includes(tech.stage);
     const outputTypeMatch = isEarlyStage || doArraysIntersect(requirement.output_type, tech.output_types);
 
-    if (projectTypeMatch && outcomeMatch && deviceTypeMatch && outputTypeMatch && userBaseMatch) {
+    // New filtering logic for goals and constraints
+    const goalMatch = doesArrayContain(requirement.primary_goal, tech.goals);
+    
+    // If a tech has a constraint, it is INCOMPATIBLE with that constraint.
+    // e.g. A high-budget technique is incompatible with a 'Limited Budget' constraint.
+    // So, we check if there's any intersection. If there is, it's a mismatch.
+    const constraintMismatch = doArraysIntersect(requirement.constraints, tech.constraints);
+
+
+    if (projectTypeMatch && outcomeMatch && deviceTypeMatch && outputTypeMatch && userBaseMatch && goalMatch && !constraintMismatch) {
       if (recommendations[tech.stage] && !recommendations[tech.stage].find(t => t.name === tech.name)) {
         recommendations[tech.stage].push({ name: tech.name, slug: tech.slug });
       }
@@ -71,5 +88,3 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
 
   return recommendations;
 }
-
-    

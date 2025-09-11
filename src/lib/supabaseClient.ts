@@ -68,6 +68,8 @@ const RequirementSchema = z.object({
   device_type: z.array(z.string()).optional(),
   project_type: z.string().optional(),
   existing_users: z.boolean().nullable(),
+  primary_goal: z.string().optional().nullable(),
+  constraints: z.array(z.string()).optional().nullable(),
 });
 export type Requirement = z.infer<typeof RequirementSchema>;
 
@@ -86,6 +88,8 @@ const SavedResultSchema = z.object({
   stage_techniques: z.any().nullable(), // jsonb
   created_at: z.string().optional(), // timestamp
   existing_users: z.boolean().nullable(),
+  primary_goal: z.string().optional().nullable(),
+  constraints: z.array(z.string()).optional().nullable(),
 });
 export type SavedResult = z.infer<typeof SavedResultSchema>;
 
@@ -255,6 +259,8 @@ export async function saveOrUpdateResult(
         device_type: requirement.device_type,
         stage_techniques: null, // This can be updated later
         existing_users: requirement.existing_users,
+        primary_goal: requirement.primary_goal,
+        constraints: requirement.constraints,
     };
 
     const { data: existingResult, error: selectError } = await supabase
@@ -493,5 +499,3 @@ export async function fetchRemixedTechniquesByProjectId(projectId: string): Prom
     if (error) console.error("Error fetching remixed techniques by project ID:", error);
     return { data, error };
 }
-
-    

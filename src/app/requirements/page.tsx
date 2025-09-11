@@ -59,6 +59,8 @@ const baseFormSchema = z.object({
   device_type: z.array(z.string()),
   project_type: z.enum(['new', 'old']),
   existing_users: z.boolean(),
+  primary_goal: z.string().min(1, 'You must select a primary goal.'),
+  constraints: z.array(z.string()).optional(),
 });
 
 // Now create the final schema for the form by applying refinements.
@@ -87,6 +89,8 @@ const sectionSchemas = [
   baseFormSchema.pick({ device_type: true }),
   baseFormSchema.pick({ project_type: true }),
   baseFormSchema.pick({ existing_users: true }),
+  baseFormSchema.pick({ primary_goal: true }),
+  baseFormSchema.pick({ constraints: true }),
 ];
 
 const outputTypes = [
@@ -99,6 +103,8 @@ const outputTypes = [
 ];
 const outcomes = ['Qualitative', 'Quantitative', 'Insight'];
 const deviceTypes = ['Mobile', 'Desktop', 'Electronics', 'Kiosk'];
+const primaryGoals = ["Innovation & Growth", "Optimization & Conversion", "Retention & Engagement"];
+const projectConstraints = ["Limited Budget", "Tight Deadline"];
 
 const sections = [
     { index: 0, title: 'Basic Project Details' },
@@ -107,6 +113,8 @@ const sections = [
     { index: 3, title: 'Device Type' },
     { index: 4, title: 'Project Type' },
     { index: 5, title: 'Existing Users' },
+    { index: 6, title: "Project's Primary Goal" },
+    { index: 7, title: "Project Constraints" },
 ];
 
 function RequirementsPageContent() {
@@ -132,6 +140,8 @@ function RequirementsPageContent() {
       output_type: [],
       outcome: [],
       device_type: [],
+      primary_goal: '',
+      constraints: [],
     },
   });
 
@@ -152,7 +162,9 @@ function RequirementsPageContent() {
             outcome: data.outcome || [],
             device_type: data.device_type || [],
             project_type: data.project_type as 'new' | 'old' | undefined,
-            existing_users: data.existing_users,
+            existing_users: data.existing_users ?? false,
+            primary_goal: data.primary_goal || '',
+            constraints: data.constraints || [],
           });
         }
         setIsLoading(false);
@@ -277,6 +289,16 @@ function RequirementsPageContent() {
                     <FormItem><FormLabel>Does this project already have users?</FormLabel><FormControl><RadioGroup onValueChange={(value) => field.onChange(value === 'true')} value={String(field.value)} className="flex gap-8 pt-2"><FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="true" /></FormControl><FormLabel className="font-normal text-sm">Yes</FormLabel></FormItem><FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="false" /></FormControl><FormLabel className="font-normal text-sm">No</FormLabel></FormItem></RadioGroup></FormControl><FormMessage /></FormItem>
                 )}/>
             );
+        case 6:
+            return (
+                <FormField control={form.control} name="primary_goal" render={({ field }) => (
+                    <FormItem><FormLabel>What is your project's primary goal?</FormLabel><FormControl><RadioGroup onValueChange={field.onChange} value={field.value} className="space-y-2 pt-2">{primaryGoals.map((item) => (<FormItem key={item} className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value={item} /></FormControl><FormLabel className="font-normal text-sm">{item}</FormLabel></FormItem>))}</RadioGroup></FormControl><FormMessage /></FormItem>
+                )}/>
+            );
+        case 7:
+            return (
+                 <FormField control={form.control} name="constraints" render={({ field }) => (<FormItem><div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">{projectConstraints.map((item) => (<FormItem key={item} className="flex flex-row items-start space-x-3 space-y-0"><FormControl><Checkbox checked={field.value?.includes(item)} onCheckedChange={(checked) => {return checked ? field.onChange([...(field.value || []), item]) : field.onChange(field.value?.filter((value) => value !== item));}} /></FormControl><FormLabel className="font-normal text-sm">{item}</FormLabel></FormItem>))}</div><FormMessage /></FormItem>)} />
+            );
         default: return null;
     }
   };
@@ -353,5 +375,3 @@ export default function RequirementsPage() {
     </Suspense>
   )
 }
-
-    
