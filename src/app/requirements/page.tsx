@@ -140,6 +140,8 @@ function RequirementsPageContent() {
       output_type: [],
       outcome: [],
       device_type: [],
+      project_type: 'new',
+      existing_users: false,
       primary_goal: '',
       constraints: [],
     },
@@ -375,3 +377,5 @@ export default function RequirementsPage() {
     </Suspense>
   )
 }
+
+    
