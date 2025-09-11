@@ -22,7 +22,31 @@
     "project_types": ["New", "Old"],
     "user_base": ["new", "existing"],
     "goals": ["Innovation & Growth"],
-    "constraints": ["Tight Deadline"]
+    "constraints": []
+  },
+  {
+    "name": "Diary Studies",
+    "slug": "diary-studies",
+    "stage": "Discover",
+    "outcomes": ["Qualitative", "Insight"],
+    "output_types": ["Journey Map", "Persona Profile", "Usability Report"],
+    "device_types": ["Mobile", "Desktop", "Electronics"],
+    "project_types": ["New", "Old"],
+    "user_base": ["existing"],
+    "goals": ["Retention & Engagement"],
+    "constraints": ["Limited Budget"]
+  },
+  {
+    "name": "Field Studies / Ethnographic Research",
+    "slug": "field-studies-ethnographic-research",
+    "stage": "Discover",
+    "outcomes": ["Qualitative", "Insight"],
+    "output_types": ["Persona Profile", "Journey Map", "Service Blueprint"],
+    "device_types": ["Mobile", "Desktop", "Electronics", "Kiosk"],
+    "project_types": ["New", "Old"],
+    "user_base": ["new", "existing"],
+    "goals": ["Innovation & Growth"],
+    "constraints": []
   },
   {
     "name": "Surveys & Questionnaires",
@@ -61,6 +85,30 @@
     "constraints": ["Limited Budget", "Tight Deadline"]
   },
   {
+    "name": "Card Sorting",
+    "slug": "card-sorting",
+    "stage": "Discover",
+    "outcomes": ["Qualitative", "Insight"],
+    "output_types": ["Information Architecture", "Content Strategy"],
+    "device_types": ["Mobile", "Desktop"],
+    "project_types": ["New", "Old"],
+    "user_base": ["new", "existing"],
+    "goals": ["Optimization & Conversion"],
+    "constraints": ["Limited Budget"]
+  },
+  {
+    "name": "Tree Testing",
+    "slug": "tree-testing",
+    "stage": "Discover",
+    "outcomes": ["Quantitative"],
+    "output_types": ["Information Architecture", "Usability Report"],
+    "device_types": ["Mobile", "Desktop"],
+    "project_types": ["New", "Old"],
+    "user_base": ["new", "existing"],
+    "goals": ["Optimization & Conversion"],
+    "constraints": ["Limited Budget"]
+  },
+  {
     "name": "Persona Creation & Validation",
     "slug": "persona-creation-validation",
     "stage": "Define",
@@ -71,6 +119,18 @@
     "user_base": ["new", "existing"],
     "goals": ["Innovation & Growth"],
     "constraints": []
+  },
+  {
+    "name": "Empathy Mapping",
+    "slug": "empathy-mapping",
+    "stage": "Define",
+    "outcomes": ["Qualitative", "Insight"],
+    "output_types": ["Persona Profile", "Journey Map"],
+    "device_types": ["Mobile", "Desktop", "Electronics", "Kiosk"],
+    "project_types": ["New", "Old"],
+    "user_base": ["new", "existing"],
+    "goals": ["Retention & Engagement"],
+    "constraints": ["Limited Budget"]
   },
   {
     "name": "Customer Journey Mapping",
@@ -112,7 +172,7 @@
     "name": "Wireframing",
     "slug": "wireframing",
     "stage": "Design",
-    "outcomes": [],
+    "outcomes": ["Insight"],
     "output_types": ["Mobile App", "Web App", "Desktop Software", "Smartwatch Interface", "TV or Console Experience", "Wireframe", "Interactive Prototype"],
     "device_types": ["Mobile", "Desktop"],
     "project_types": ["New"],
@@ -124,7 +184,7 @@
     "name": "Low-fidelity Prototyping",
     "slug": "low-fidelity-prototyping",
     "stage": "Design",
-    "outcomes": [],
+    "outcomes": ["Qualitative"],
     "output_types": ["Mobile App", "Web App", "Desktop Software", "Smartwatch Interface", "TV or Console Experience", "Interactive Prototype"],
     "device_types": ["Mobile", "Desktop"],
     "project_types": ["New"],
@@ -136,7 +196,7 @@
     "name": "Information Architecture (Sitemaps, Task Flows)",
     "slug": "information-architecture-sitemaps-task-flows",
     "stage": "Design",
-    "outcomes": [],
+    "outcomes": ["Insight"],
     "output_types": ["Mobile App", "Web App", "Desktop Software", "Content Strategy", "Information Architecture", "Wireframe"],
     "device_types": ["Mobile", "Desktop", "Kiosk"],
     "project_types": ["New", "Old"],
@@ -148,7 +208,7 @@
     "name": "High-fidelity Prototyping",
     "slug": "high-fidelity-prototyping",
     "stage": "Develop",
-    "outcomes": [],
+    "outcomes": ["Qualitative"],
     "output_types": ["Mobile App", "Web App", "Desktop Software", "Smartwatch Interface", "TV or Console Experience", "AR/VR Application", "Interactive Prototype", "UI Design", "Visual Design"],
     "device_types": ["Mobile", "Desktop"],
     "project_types": ["New", "Old"],
@@ -172,7 +232,7 @@
     "name": "Motion Design / Microinteractions",
     "slug": "motion-design-microinteractions",
     "stage": "Develop",
-    "outcomes": [],
+    "outcomes": ["Qualitative"],
     "output_types": ["Mobile App", "Web App", "Desktop Software", "Smartwatch Interface", "TV or Console Experience", "AR/VR Application", "Motion Design", "Animation", "Interactive Prototype"],
     "device_types": ["Mobile", "Desktop"],
     "project_types": ["New", "Old"],
