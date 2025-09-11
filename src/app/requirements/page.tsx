@@ -57,10 +57,8 @@ const baseFormSchema = z.object({
   output_type: z.array(z.string()),
   outcome: z.array(z.string()),
   device_type: z.array(z.string()),
-  project_type: z.enum(['new', 'old'], {
-    required_error: 'You need to select a project type.',
-  }),
-  existing_users: z.string().optional(),
+  project_type: z.enum(['new', 'old']),
+  existing_users: z.boolean(),
 });
 
 // Now create the final schema for the form by applying refinements.
@@ -76,16 +74,7 @@ const formSchema = baseFormSchema
   .refine((data) => data.device_type.length > 0, {
     message: 'You have to select at least one device type.',
     path: ['device_type'],
-  })
-  .refine(data => {
-    if (data.project_type === 'new') {
-      return true;
-    }
-    return typeof data.existing_users === 'string' && (data.existing_users === 'true' || data.existing_users === 'false');
-}, {
-    message: "Please specify if there are existing users for this project.",
-    path: ["existing_users"],
-});
+  });
 
 
 type FormSchemaType = z.infer<typeof formSchema>;
@@ -96,7 +85,8 @@ const sectionSchemas = [
   baseFormSchema.pick({ output_type: true }),
   baseFormSchema.pick({ outcome: true }),
   baseFormSchema.pick({ device_type: true }),
-  baseFormSchema.pick({ project_type: true, existing_users: true }),
+  baseFormSchema.pick({ project_type: true }),
+  baseFormSchema.pick({ existing_users: true }),
 ];
 
 const outputTypes = [
@@ -115,7 +105,8 @@ const sections = [
     { index: 1, title: 'Output Type' },
     { index: 2, title: 'Desired Outcome' },
     { index: 3, title: 'Device Type' },
-    { index: 4, title: 'Project Context' },
+    { index: 4, title: 'Project Type' },
+    { index: 5, title: 'Existing Users' },
 ];
 
 function RequirementsPageContent() {
@@ -144,8 +135,6 @@ function RequirementsPageContent() {
     },
   });
 
-  const watchedProjectType = form.watch('project_type');
-
   useEffect(() => {
     const id = searchParams.get('id');
     setIsLoading(true);
@@ -163,8 +152,8 @@ function RequirementsPageContent() {
             outcome: data.outcome || [],
             device_type: data.device_type || [],
             project_type: data.project_type as 'new' | 'old' | undefined,
-            existing_users: data.existing_users === null || typeof data.existing_users === 'undefined' ? undefined : String(data.existing_users),
-          } as any);
+            existing_users: data.existing_users,
+          });
         }
         setIsLoading(false);
       };
@@ -192,10 +181,7 @@ function RequirementsPageContent() {
     if (dataToSave.date && dataToSave.date instanceof Date) {
       dataToSave.date = dataToSave.date.toISOString();
     }
-    if (dataToSave.existing_users !== undefined) {
-        dataToSave.existing_users = dataToSave.existing_users === 'true';
-    }
-
+    
     try {
       let savedData;
       if (requirementId) {
@@ -281,19 +267,15 @@ function RequirementsPageContent() {
             );
         case 4:
             return (
-              <div className="space-y-6">
                 <FormField control={form.control} name="project_type" render={({ field }) => (
-                    <FormItem><FormLabel>Project Type</FormLabel><FormControl><RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-8 pt-2"><FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="new" /></FormControl><FormLabel className="font-normal text-sm">New Project</FormLabel></FormItem><FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="old" /></FormControl><FormLabel className="font-normal text-sm">Existing Project</FormLabel></FormItem></RadioGroup></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>Is this a new or existing project?</FormLabel><FormControl><RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-8 pt-2"><FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="new" /></FormControl><FormLabel className="font-normal text-sm">New Project</FormLabel></FormItem><FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="old" /></FormControl><FormLabel className="font-normal text-sm">Existing Project</FormLabel></FormItem></RadioGroup></FormControl><FormMessage /></FormItem>
                 )}/>
-                
-                {watchedProjectType === 'old' && (
-                  <div className="ml-4 pl-4 border-l-2 border-border transition-all animate-in fade-in duration-300">
-                    <FormField control={form.control} name="existing_users" render={({ field }) => (
-                        <FormItem><FormLabel>Does this project already have users?</FormLabel><FormControl><RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-8 pt-2"><FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="true" /></FormControl><FormLabel className="font-normal text-sm">Yes</FormLabel></FormItem><FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="false" /></FormControl><FormLabel className="font-normal text-sm">No</FormLabel></FormItem></RadioGroup></FormControl><FormMessage /></FormItem>
-                    )}/>
-                  </div>
-                )}
-              </div>
+            );
+        case 5:
+            return (
+                <FormField control={form.control} name="existing_users" render={({ field }) => (
+                    <FormItem><FormLabel>Does this project already have users?</FormLabel><FormControl><RadioGroup onValueChange={(value) => field.onChange(value === 'true')} value={String(field.value)} className="flex gap-8 pt-2"><FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="true" /></FormControl><FormLabel className="font-normal text-sm">Yes</FormLabel></FormItem><FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="false" /></FormControl><FormLabel className="font-normal text-sm">No</FormLabel></FormItem></RadioGroup></FormControl><FormMessage /></FormItem>
+                )}/>
             );
         default: return null;
     }
@@ -371,3 +353,5 @@ export default function RequirementsPage() {
     </Suspense>
   )
 }
+
+    

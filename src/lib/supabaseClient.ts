@@ -67,7 +67,7 @@ const RequirementSchema = z.object({
   outcome: z.array(z.string()).optional(),
   device_type: z.array(z.string()).optional(),
   project_type: z.string().optional(),
-  existing_users: z.boolean().nullable(), // added field
+  existing_users: z.boolean().nullable(),
 });
 export type Requirement = z.infer<typeof RequirementSchema>;
 
@@ -85,7 +85,7 @@ const SavedResultSchema = z.object({
   device_type: z.array(z.string()).nullable(),
   stage_techniques: z.any().nullable(), // jsonb
   created_at: z.string().optional(), // timestamp
-  existing_users: z.boolean().nullable(), // added field
+  existing_users: z.boolean().nullable(),
 });
 export type SavedResult = z.infer<typeof SavedResultSchema>;
 
@@ -493,3 +493,5 @@ export async function fetchRemixedTechniquesByProjectId(projectId: string): Prom
     if (error) console.error("Error fetching remixed techniques by project ID:", error);
     return { data, error };
 }
+
+    
