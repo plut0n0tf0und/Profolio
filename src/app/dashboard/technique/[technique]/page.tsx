@@ -873,17 +873,6 @@ export default function TechniqueDetailPage() {
                   {isSharing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Share2 className="mr-2 h-4 w-4" />}
                   Share
               </Button>
-              <Button variant="default" size="sm" onClick={() => {
-                  const url = new URL(window.location.href);
-                  url.searchParams.set('edit', 'true');
-                  if (remixedTechniqueId) {
-                      url.searchParams.set('remixId', remixedTechniqueId);
-                  }
-                  router.push(url.toString());
-                  setIsEditMode(true);
-              }}>
-                <Wand2 className="mr-2 h-4 w-4" /> Remix
-              </Button>
             </div>
           ) : (
              <Button 
