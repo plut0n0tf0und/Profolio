@@ -52,6 +52,15 @@ BEGIN
   DELETE FROM auth.users WHERE id = auth.uid();
 END;
 $$ LANGUAGE plpgsql;
+
+-- 6. [IMPORTANT MIGRATION] Alter primary_goal columns to accept multiple values (text array)
+-- Run this in your Supabase SQL Editor
+-- ALTER TABLE public.requirements
+-- ALTER COLUMN primary_goal TYPE text[] USING array[primary_goal];
+--
+-- ALTER TABLE public.saved_results
+-- ALTER COLUMN primary_goal TYPE text[] USING array[primary_goal];
+
 */
 
 // Zod schema for validation, matches the 'requirements' table structure.
@@ -68,7 +77,7 @@ const RequirementSchema = z.object({
   device_type: z.array(z.string()).optional(),
   project_type: z.string().optional(),
   existing_users: z.boolean().nullable(),
-  primary_goal: z.string().optional().nullable(),
+  primary_goal: z.array(z.string()).optional().nullable(),
   constraints: z.array(z.string()).optional().nullable(),
 });
 export type Requirement = z.infer<typeof RequirementSchema>;
@@ -88,7 +97,7 @@ const SavedResultSchema = z.object({
   stage_techniques: z.any().nullable(), // jsonb
   created_at: z.string().optional(), // timestamp
   existing_users: z.boolean().nullable(),
-  primary_goal: z.string().optional().nullable(),
+  primary_goal: z.array(z.string()).optional().nullable(),
   constraints: z.array(z.string()).optional().nullable(),
 });
 export type SavedResult = z.infer<typeof SavedResultSchema>;

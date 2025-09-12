@@ -60,7 +60,7 @@ const baseFormSchema = z.object({
   device_type: z.array(z.string()),
   project_type: z.enum(['new', 'old']),
   existing_users: z.boolean(),
-  primary_goal: z.string().min(1, 'You must select a primary goal.'),
+  primary_goal: z.array(z.string()),
   constraints: z.array(z.string()).optional(),
 });
 
@@ -74,6 +74,10 @@ const formSchema = baseFormSchema
     message: 'You have to select at least one outcome.',
     path: ['outcome'],
   })
+    .refine((data) => data.primary_goal.length > 0, {
+    message: 'You have to select at least one primary goal.',
+    path: ['primary_goal'],
+    })
   .refine((data) => data.device_type.length > 0, {
     message: 'You have to select at least one device type.',
     path: ['device_type'],
@@ -143,7 +147,7 @@ function RequirementsPageContent() {
       device_type: [],
       project_type: 'new',
       existing_users: false,
-      primary_goal: '',
+      primary_goal: [],
       constraints: [],
     },
   });
@@ -169,7 +173,7 @@ function RequirementsPageContent() {
             device_type: data.device_type || [],
             project_type: data.project_type as 'new' | 'old' | undefined,
             existing_users: data.existing_users ?? false,
-            primary_goal: data.primary_goal || '',
+            primary_goal: data.primary_goal || [],
             constraints: data.constraints || [],
           });
         }
@@ -298,8 +302,35 @@ function RequirementsPageContent() {
         case 6:
             return (
                 <FormField control={form.control} name="primary_goal" render={({ field }) => (
-                    <FormItem><FormLabel>What is your project's primary goal?</FormLabel><FormControl><RadioGroup onValueChange={field.onChange} value={field.value} className="space-y-2 pt-2">{primaryGoals.map((item) => (<FormItem key={item} className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value={item} /></FormControl><FormLabel className="font-normal text-sm">{item}</FormLabel></FormItem>))}</RadioGroup></FormControl><FormMessage /></FormItem>
-                )}/>
+                    <FormItem>
+                        <FormLabel>What are your project's primary goals? (Select all that apply)</FormLabel>
+                        <div className="space-y-2 pt-2">
+                            {primaryGoals.map((item) => (
+                                <FormField
+                                    key={item}
+                                    control={form.control}
+                                    name="primary_goal"
+                                    render={({ field }) => (
+                                        <FormItem key={item} className="flex flex-row items-start space-x-3 space-y-0">
+                                            <FormControl>
+                                                <Checkbox
+                                                    checked={field.value?.includes(item)}
+                                                    onCheckedChange={(checked) => {
+                                                        return checked
+                                                            ? field.onChange([...(field.value || []), item])
+                                                            : field.onChange(field.value?.filter((value) => value !== item));
+                                                    }}
+                                                />
+                                            </FormControl>
+                                            <FormLabel className="font-normal text-sm">{item}</FormLabel>
+                                        </FormItem>
+                                    )}
+                                />
+                            ))}
+                        </div>
+                        <FormMessage />
+                    </FormItem>
+                )} />
             );
         case 7:
             return (
@@ -384,5 +415,3 @@ export default function RequirementsPage() {
     </Suspense>
   )
 }
-
-    
