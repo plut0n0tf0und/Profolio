@@ -48,8 +48,7 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
     let isMatch = true;
 
     // 1. Project Type Match
-    const lowercasedTechProjectTypes = tech.project_types.map(p => p.toLowerCase());
-    if (requirement.project_type && !lowercasedTechProjectTypes.includes(requirement.project_type.toLowerCase())) {
+    if (requirement.project_type && !tech.project_types.map(p => p.toLowerCase()).includes(requirement.project_type.toLowerCase())) {
         isMatch = false;
     }
 
@@ -63,18 +62,18 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
 
     // 3. Goal Match
     if (isMatch && requirement.primary_goal) {
-        const lowercasedTechGoals = tech.goals.map(g => g.toLowerCase());
-        if (!lowercasedTechGoals.includes(requirement.primary_goal.toLowerCase())) {
+        if (!tech.goals.map(g => g.toLowerCase()).includes(requirement.primary_goal.toLowerCase())) {
             isMatch = false;
         }
     }
     
-    // 4. Constraints Match
+    // 4. Constraints Match: The technique must support ALL constraints the user has specified.
+    // If a user specifies a constraint, a technique with an empty constraint list cannot satisfy it.
     if (isMatch && requirement.constraints && requirement.constraints.length > 0) {
         const lowercasedTechConstraints = tech.constraints.map(c => c.toLowerCase());
-        const userConstraints = requirement.constraints.map(c => c.toLowerCase());
-        // The technique must support ALL constraints the user has specified.
-        if (!userConstraints.every(c => lowercasedTechConstraints.includes(c))) {
+        const lowercasedUserConstraints = requirement.constraints.map(c => c.toLowerCase());
+        
+        if (!lowercasedUserConstraints.every(userConstraint => lowercasedTechConstraints.includes(userConstraint))) {
             isMatch = false;
         }
     }
