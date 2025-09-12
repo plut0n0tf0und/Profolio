@@ -108,7 +108,11 @@ const outputTypes = [
 ];
 const outcomes = ['Qualitative', 'Quantitative', 'Insight'];
 const deviceTypes = ['Mobile', 'Desktop', 'Electronics', 'Kiosk'];
-const primaryGoals = ["Innovation & Growth", "Optimization & Conversion", "Retention & Engagement"];
+const primaryGoals = [
+    { id: "Innovation & Growth", label: "Innovation & Growth", description: "e.g., creating new features, entering new markets" },
+    { id: "Optimization & Conversion", label: "Optimization & Conversion", description: "e.g., improving funnels, increasing sign-ups" },
+    { id: "Retention & Engagement", label: "Retention & Engagement", description: "e.g., keeping users active, reducing churn" },
+];
 const projectConstraints = ["Limited Budget", "Tight Deadline"];
 
 const sections = [
@@ -301,28 +305,36 @@ function RequirementsPageContent() {
             );
         case 6:
             return (
-                <FormField control={form.control} name="primary_goal" render={({ field }) => (
+                <FormField control={form.control} name="primary_goal" render={() => (
                     <FormItem>
-                        <FormLabel>What are your project's primary goals? (Select all that apply)</FormLabel>
-                        <div className="space-y-2 pt-2">
+                        <div className="mb-4">
+                            <FormLabel className="text-base">What are your project's primary goals?</FormLabel>
+                            <p className="text-sm text-muted-foreground">Select all that apply.</p>
+                        </div>
+                        <div className="space-y-3">
                             {primaryGoals.map((item) => (
                                 <FormField
-                                    key={item}
+                                    key={item.id}
                                     control={form.control}
                                     name="primary_goal"
                                     render={({ field }) => (
-                                        <FormItem key={item} className="flex flex-row items-start space-x-3 space-y-0">
+                                        <FormItem key={item.id} className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
                                             <FormControl>
                                                 <Checkbox
-                                                    checked={field.value?.includes(item)}
+                                                    checked={field.value?.includes(item.id)}
                                                     onCheckedChange={(checked) => {
                                                         return checked
-                                                            ? field.onChange([...(field.value || []), item])
-                                                            : field.onChange(field.value?.filter((value) => value !== item));
+                                                            ? field.onChange([...(field.value || []), item.id])
+                                                            : field.onChange(field.value?.filter((value) => value !== item.id));
                                                     }}
                                                 />
                                             </FormControl>
-                                            <FormLabel className="font-normal text-sm">{item}</FormLabel>
+                                            <div className="space-y-1 leading-none">
+                                                <FormLabel className="font-normal">{item.label}</FormLabel>
+                                                <p className="text-xs text-muted-foreground">
+                                                    {item.description}
+                                                </p>
+                                            </div>
                                         </FormItem>
                                     )}
                                 />
@@ -376,7 +388,7 @@ function RequirementsPageContent() {
                           )}
                           <div className='flex items-center gap-2'>
                             <CardTitle className="text-xl">{section.title}</CardTitle>
-                            {section.index === 7 && <Badge variant="outline">Optional</Badge>}
+                            {section.index === 7 && <Badge variant="secondary" className="border-0 bg-secondary text-secondary-foreground">Optional</Badge>}
                           </div>
                         </div>
                         <ChevronDown className={cn("h-5 w-5 transition-transform", expandedSections[section.index] && "rotate-180")} />
