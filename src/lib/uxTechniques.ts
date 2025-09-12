@@ -47,49 +47,52 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
   const scoredTechniques = allTechniques.map(tech => {
     let score = 0;
 
-    // HARD FILTERS: If these don't match, the technique is disqualified (score of -1).
-    // 1. Project Type must match.
-    const lowercasedProjectType = requirement.project_type?.toLowerCase();
-    if (lowercasedProjectType && !tech.project_types.map(p => p.toLowerCase()).includes(lowercasedProjectType)) {
-        return { ...tech, score: -1 };
+    // NORMALIZE project_type
+    let projectType = requirement.project_type?.toLowerCase();
+    if (projectType === "old") projectType = "existing"; // map old → existing
+
+    // HARD FILTER: Project Type
+    if (projectType && !tech.project_types.map(p => p.toLowerCase()).includes(projectType)) {
+      return { ...tech, score: -1 };
     }
 
-    // 2. User Base must match.
-    const userContext = requirement.existing_users ? "existing" : "new";
+    // NORMALIZE user_base
+    let userContext: string;
+    if (requirement.existing_users === false) {
+      userContext = "new"; // treat "no users" as new
+    } else if (requirement.existing_users === true) {
+      userContext = "existing";
+    } else {
+      userContext = "new"; // default
+    }
+
+    // HARD FILTER: User Base
     if (!tech.user_base.map(ub => ub.toLowerCase()).includes(userContext)) {
-        return { ...tech, score: -1 };
+      return { ...tech, score: -1 };
     }
 
-    // SOFT FILTERS: Award points for matches.
-    // 1. Primary Goal
+    // SOFT FILTERS
     if (requirement.primary_goal && tech.goals.map(g => g.toLowerCase()).includes(requirement.primary_goal.toLowerCase())) {
-        score++;
+      score++;
     }
-    // 2. Outcome
     if (doArraysIntersect(requirement.outcome, tech.outcomes)) {
-        score++;
+      score++;
     }
-    // 3. Device Type
     if (doArraysIntersect(requirement.device_type, tech.device_types)) {
-        score++;
+      score++;
     }
-    // 4. Output Type
     if (doArraysIntersect(requirement.output_type, tech.output_types)) {
-        score++;
+      score++;
     }
-    
-    // 5. Constraints
+
+    // Constraints scoring
     const userConstraints = requirement.constraints?.map(c => c.toLowerCase()) || [];
     const techConstraints = tech.constraints.map(c => c.toLowerCase());
     if (userConstraints.length > 0) {
-      if (userConstraints.every(uc => techConstraints.includes(uc))) {
+      if (userConstraints.some(uc => techConstraints.includes(uc))) {
         score++;
-      } else {
-        // This is a penalty, but not a hard disqualification unless it's a critical mismatch.
-        // For now, we just don't award a point.
       }
     } else {
-      // If user has no constraints, it's a neutral match.
       score++;
     }
 
@@ -98,10 +101,6 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
 
   const validTechniques = scoredTechniques.filter(tech => tech.score >= 0);
   const maxScore = Math.max(...validTechniques.map(t => t.score), 0);
-  
-  // We'll consider any technique that has a score of at least 50% of the max score.
-  // This avoids showing totally irrelevant results, while still being flexible.
-  // The threshold can be adjusted.
   const scoreThreshold = Math.ceil(maxScore * 0.5);
 
   const finalTechniques = validTechniques.filter(tech => tech.score >= scoreThreshold);
