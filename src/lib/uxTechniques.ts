@@ -6,6 +6,8 @@ interface TechniqueDetail {
   name: string;
   slug: string;
   stage: string;
+  speed: 'fast' | 'medium' | 'slow';
+  focus: 'generative' | 'evaluative';
   outcomes: string[];
   output_types: string[];
   device_types: string[];
@@ -44,73 +46,68 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
     return recommendations;
   }
   
-  const scoredTechniques = allTechniques.map(tech => {
-    let score = 0;
-
-    // NORMALIZE project_type
+  const isLean = requirement.constraints?.some(c => ['tight deadline', 'limited budget'].includes(c.toLowerCase()));
+  
+  // PASS 1: Hard Filters
+  let candidates = allTechniques.filter(tech => {
+    // Project Type Filter
     let projectType = requirement.project_type?.toLowerCase();
-    if (projectType === "old") projectType = "existing"; // map old → existing
-
-    // HARD FILTER: Project Type
-    if (projectType && !tech.project_types.map(p => p.toLowerCase()).includes(projectType)) {
-      return { ...tech, score: -1 };
+    if (projectType === "old") projectType = "existing";
+    if (!tech.project_types.map(p => p.toLowerCase()).includes(projectType || 'new')) {
+      return false;
     }
 
-    // NORMALIZE user_base
-    let userContext: string;
-    if (requirement.existing_users === false) {
-      userContext = "new"; // treat "no users" as new
-    } else if (requirement.existing_users === true) {
-      userContext = "existing";
-    } else {
-      userContext = "new"; // default
-    }
-
-    // HARD FILTER: User Base
+    // User Base Filter
+    let userContext = requirement.existing_users === false ? "new" : "existing";
     if (!tech.user_base.map(ub => ub.toLowerCase()).includes(userContext)) {
-      return { ...tech, score: -1 };
+      return false;
     }
 
-    // SOFT FILTERS
+    return true;
+  });
+
+  // PASS 2: Scoring
+  let scoredTechniques = candidates.map(tech => {
+    let score = 0;
+    
+    // Goal match is important
     if (requirement.primary_goal && tech.goals.map(g => g.toLowerCase()).includes(requirement.primary_goal.toLowerCase())) {
-      score++;
+      score += 3;
     }
-    if (doArraysIntersect(requirement.outcome, tech.outcomes)) {
-      score++;
-    }
-    if (doArraysIntersect(requirement.device_type, tech.device_types)) {
-      score++;
-    }
-    if (doArraysIntersect(requirement.output_type, tech.output_types)) {
-      score++;
+    
+    // Strategic Persona Scoring (Lean/Agile)
+    if (isLean) {
+      if (tech.speed === 'fast') score += 5; // Big bonus for fast techniques
+      if (tech.speed === 'slow') score -= 3; // Penalty for slow techniques
+    } else {
+      // If not lean, give a slight preference to more thorough methods
+      if (tech.speed === 'slow') score += 1;
     }
 
-    // Constraints scoring
-    const userConstraints = requirement.constraints?.map(c => c.toLowerCase()) || [];
-    const techConstraints = tech.constraints.map(c => c.toLowerCase());
-    if (userConstraints.length > 0) {
-      if (userConstraints.some(uc => techConstraints.includes(uc))) {
-        score++;
-      }
-    } else {
-      score++;
-    }
+    // General attribute matching
+    if (doArraysIntersect(requirement.outcome, tech.outcomes)) score++;
+    if (doArraysIntersect(requirement.device_type, tech.device_types)) score++;
+    if (doArraysIntersect(requirement.output_type, tech.output_types)) score++;
 
     return { ...tech, score };
   });
 
-  const validTechniques = scoredTechniques.filter(tech => tech.score >= 0);
-  const maxScore = Math.max(...validTechniques.map(t => t.score), 0);
-  const scoreThreshold = Math.ceil(maxScore * 0.5);
+  // PASS 3: Rank and Select
+  const stages = Object.keys(recommendations);
+  
+  stages.forEach(stage => {
+    const techniquesForStage = scoredTechniques
+      .filter(tech => tech.stage.toLowerCase() === stage.toLowerCase())
+      .sort((a, b) => b.score - a.score); // Sort by score, descending
 
-  const finalTechniques = validTechniques.filter(tech => tech.score >= scoreThreshold);
+    // If lean, take top 1-2. Otherwise, take top 2-3.
+    const limit = isLean ? 2 : 3;
 
-  finalTechniques.forEach(tech => {
-    const stage = tech.stage.charAt(0).toUpperCase() + tech.stage.slice(1).toLowerCase();
-    if (recommendations[stage]) {
-      recommendations[stage].push({ name: tech.name, slug: tech.slug });
-    }
+    recommendations[stage] = techniquesForStage
+      .slice(0, limit)
+      .map(tech => ({ name: tech.name, slug: tech.slug }));
   });
+
 
   return recommendations;
 }
