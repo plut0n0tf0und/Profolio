@@ -45,53 +45,41 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
   }
 
   allTechniques.forEach(tech => {
-    let isMatch = true;
-
-    // Hard Filter 1: Project Type must match.
-    if (requirement.project_type) {
-      if (!tech.project_types.map(p => p.toLowerCase()).includes(requirement.project_type.toLowerCase())) {
-        isMatch = false;
-      }
+    // HARD FILTERS: These must pass or the technique is disqualified.
+    // 1. Project Type must match.
+    if (requirement.project_type && !tech.project_types.map(p => p.toLowerCase()).includes(requirement.project_type.toLowerCase())) {
+        return; // Disqualify
     }
 
-    // Hard Filter 2: User Base must match.
+    // 2. User Base must match.
     const userContext = requirement.existing_users ? "existing" : "new";
     if (!tech.user_base.map(ub => ub.toLowerCase()).includes(userContext)) {
-      isMatch = false;
+        return; // Disqualify
     }
-    
-    // Hard Filter 3: Constraints must be satisfied.
-    // If the user has constraints, the technique must be able to meet all of them.
+
+    // 3. Constraints must be satisfied.
+    // If the user has constraints, the technique must be able to meet ALL of them.
     if (requirement.constraints && requirement.constraints.length > 0) {
-      const lowercasedTechConstraints = tech.constraints.map(c => c.toLowerCase());
-      const lowercasedUserConstraints = requirement.constraints.map(c => c.toLowerCase());
-      
-      const canMeetConstraints = lowercasedUserConstraints.every(userConstraint => 
-          lowercasedTechConstraints.includes(userConstraint)
-      );
+        const techConstraintsLower = tech.constraints.map(c => c.toLowerCase());
+        const userConstraintsLower = requirement.constraints.map(c => c.toLowerCase());
+        
+        const canMeetConstraints = userConstraintsLower.every(userConstraint =>
+            techConstraintsLower.includes(userConstraint)
+        );
 
-      if (!canMeetConstraints) {
-          isMatch = false;
-      }
-    }
-    
-    // Soft Filters: Check for at least one intersection in these categories.
-    // If ANY of these don't match, we disqualify. This is the correct AND logic.
-    if (isMatch && !doArraysIntersect(requirement.primary_goal ? [requirement.primary_goal] : [], tech.goals)) {
-        isMatch = false;
-    }
-    if (isMatch && !doArraysIntersect(requirement.outcome, tech.outcomes)) {
-        isMatch = false;
-    }
-    if (isMatch && !doArraysIntersect(requirement.device_type, tech.device_types)) {
-        isMatch = false;
-    }
-    if (isMatch && !doArraysIntersect(requirement.output_type, tech.output_types)) {
-        isMatch = false;
+        if (!canMeetConstraints) {
+            return; // Disqualify
+        }
     }
 
-    // Final Decision
-    if (isMatch) {
+    // SOFT FILTERS: At least one item must intersect for each category.
+    const goalMatch = doArraysIntersect(requirement.primary_goal ? [requirement.primary_goal] : [], tech.goals);
+    const outcomeMatch = doArraysIntersect(requirement.outcome, tech.outcomes);
+    const deviceTypeMatch = doArraysIntersect(requirement.device_type, tech.device_types);
+    const outputTypeMatch = doArraysIntersect(requirement.output_type, tech.output_types);
+
+    // The technique is a match if all "soft" criteria pass.
+    if (goalMatch && outcomeMatch && deviceTypeMatch && outputTypeMatch) {
       const stage = tech.stage.charAt(0).toUpperCase() + tech.stage.slice(1).toLowerCase();
       if (recommendations[stage]) {
         recommendations[stage].push({ name: tech.name, slug: tech.slug });
