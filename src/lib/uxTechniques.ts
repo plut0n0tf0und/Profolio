@@ -19,27 +19,30 @@ const allTechniques: TechniqueDetail[] = techniqueDetails as TechniqueDetail[];
 
 /**
  * Checks for a non-empty intersection between two string arrays, ignoring case.
- * @param reqArray - First array (e.g., from user requirements).
- * @param techArray - Second array (e.g., from technique data).
- * @returns True if they share at least one common element, false otherwise.
  */
 const doArraysIntersect = (reqArray: readonly string[] | undefined | null, techArray: readonly string[]): boolean => {
-    if (!reqArray || reqArray.length === 0) {
-      // If the user has no requirements for this category, it's not a deal-breaker.
-      // The logic in the main function handles if an intersection is truly required.
-      // This helper just checks for intersection if both arrays are valid.
-      return true;
-    }
-    const lowercasedReqArray = new Set(reqArray.map(item => item.toLowerCase()));
-    return techArray.some(item => lowercasedReqArray.has(item.toLowerCase()));
+  if (!reqArray || reqArray.length === 0) {
+    return true; // If user didn't specify, it's not a disqualifier
+  }
+  if (!techArray || techArray.length === 0) {
+    return false; // If user specified but tech has none, it's a mismatch
+  }
+  const lowercasedReqSet = new Set(reqArray.map(item => item.toLowerCase()));
+  const hasIntersection = techArray.some(item => lowercasedReqSet.has(item.toLowerCase()));
+  
+  console.log(`  - Comparing req [${[...lowercasedReqSet]}] with tech [${techArray.map(t => t.toLowerCase())}]. Result: ${hasIntersection}`);
+  
+  return hasIntersection;
 };
 
 /**
  * Retrieves a filtered list of UX techniques based on project requirements.
- * @param requirement - The user's selections for the project.
- * @returns An object where keys are 5D stages and values are arrays of recommended technique objects.
  */
 export function getFilteredTechniques(requirement: Requirement): Record<string, { name: string; slug: string }[]> {
+  console.clear(); // Clear console for fresh debug output
+  console.log("--- DEBUG START: getFilteredTechniques ---");
+  console.log("Requirement (Input):", JSON.stringify(requirement, null, 2));
+
   const recommendations: Record<string, { name: string; slug: string }[]> = {
     Discover: [],
     Define: [],
@@ -49,60 +52,81 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
   };
 
   if (!requirement) {
+    console.error("Requirement object is null or undefined. Aborting.");
     return recommendations;
   }
-  
-  const userContext = requirement.existing_users ? "existing" : "new";
 
   allTechniques.forEach(tech => {
+    console.log(`\n--- Checking Technique: ${tech.name} ---`);
     let isMatch = true;
 
-    // 1. Project Type Match (case-insensitive)
-    if (requirement.project_type) {
-        if (!tech.project_types.some(p => p.toLowerCase() === requirement.project_type!.toLowerCase())) {
-            isMatch = false;
-        }
+    // 1. Project Type Match
+    const projectTypeMatch = requirement.project_type
+      ? tech.project_types.some(p => p.toLowerCase() === requirement.project_type!.toLowerCase())
+      : true; // If not specified, don't filter by it
+    console.log(`[1. Project Type] User: "${requirement.project_type}", Tech: [${tech.project_types.join(', ')}]. Match: ${projectTypeMatch}`);
+    if (!projectTypeMatch) {
+        isMatch = false;
     }
 
     // 2. User Base Match
-    if (isMatch && !tech.user_base.includes(userContext)) {
+    const userContext = requirement.existing_users ? "existing" : "new";
+    const userBaseMatch = tech.user_base.includes(userContext);
+    console.log(`[2. User Base] User requires: "${userContext}", Tech supports: [${tech.user_base.join(', ')}]. Match: ${userBaseMatch}`);
+    if (isMatch && !userBaseMatch) {
       isMatch = false;
     }
 
-    // 3. Primary Goal Match (case-insensitive)
-    if (isMatch && requirement.primary_goal) {
-      if (!tech.goals.some(g => g.toLowerCase() === requirement.primary_goal!.toLowerCase())) {
+    // 3. Goal Match
+    const goalMatch = requirement.primary_goal
+      ? tech.goals.some(g => g.toLowerCase() === requirement.primary_goal!.toLowerCase())
+      : true; // If no goal is set, don't filter by it
+    console.log(`[3. Primary Goal] User: "${requirement.primary_goal}", Tech: [${tech.goals.join(', ')}]. Match: ${goalMatch}`);
+    if (isMatch && !goalMatch) {
+      isMatch = false;
+    }
+
+    // 4. Constraints Match
+    const lowercasedTechConstraints = tech.constraints.map(c => c.toLowerCase());
+    const constraintMatch = requirement.constraints && requirement.constraints.length > 0
+      ? requirement.constraints.every(c => lowercasedTechConstraints.includes(c.toLowerCase()))
+      : true;
+    console.log(`[4. Constraints] User: [${requirement.constraints?.join(', ')}], Tech: [${tech.constraints.join(', ')}]. Match: ${constraintMatch}`);
+    if (isMatch && !constraintMatch) {
+      isMatch = false;
+    }
+
+    // 5. Outcome Match
+    console.log(`[5. Outcome] Checking...`);
+    const outcomeMatch = doArraysIntersect(requirement.outcome, tech.outcomes);
+    if (isMatch && !outcomeMatch) {
         isMatch = false;
-      }
-    }
-    
-    // 4. Constraints Match (case-insensitive): Technique must have all constraints user specified.
-    if (isMatch && requirement.constraints && requirement.constraints.length > 0) {
-        const lowercasedTechConstraints = new Set(tech.constraints.map(c => c.toLowerCase()));
-        if (!requirement.constraints.every(c => lowercasedTechConstraints.has(c.toLowerCase()))) {
-            isMatch = false;
-        }
-    }
-    
-    // 5. Array intersection checks (all case-insensitive)
-    if (isMatch && requirement.outcome && requirement.outcome.length > 0 && !doArraysIntersect(requirement.outcome, tech.outcomes)) {
-      isMatch = false;
-    }
-    if (isMatch && requirement.device_type && requirement.device_type.length > 0 && !doArraysIntersect(requirement.device_type, tech.device_types)) {
-      isMatch = false;
-    }
-    if (isMatch && requirement.output_type && requirement.output_type.length > 0 && !doArraysIntersect(requirement.output_type, tech.output_types)) {
-      isMatch = false;
     }
 
-    // If the technique survived all checks, add it to the recommendations.
+    // 6. Device Type Match
+    console.log(`[6. Device Type] Checking...`);
+    const deviceTypeMatch = doArraysIntersect(requirement.device_type, tech.device_types);
+    if (isMatch && !deviceTypeMatch) {
+        isMatch = false;
+    }
+
+    // 7. Output Type Match
+    console.log(`[7. Output Type] Checking...`);
+    const outputTypeMatch = doArraysIntersect(requirement.output_type, tech.output_types);
+    if (isMatch && !outputTypeMatch) {
+        isMatch = false;
+    }
+
+    // Final Decision
+    console.log(`FINAL DECISION for ${tech.name}: ${isMatch ? 'INCLUDE' : 'DISCARD'}`);
     if (isMatch) {
       const stage = tech.stage.charAt(0).toUpperCase() + tech.stage.slice(1).toLowerCase();
-      if (recommendations[stage] && !recommendations[stage].some(t => t.name === tech.name)) {
+      if (recommendations[stage]) {
         recommendations[stage].push({ name: tech.name, slug: tech.slug });
       }
     }
   });
 
+  console.log("\n--- DEBUG END: Final Recommendations ---", JSON.stringify(recommendations, null, 2));
   return recommendations;
 }
