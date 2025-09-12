@@ -23,8 +23,8 @@ const allTechniques: TechniqueDetail[] = techniqueDetails as TechniqueDetail[];
  * Checks for a non-empty intersection between two string arrays, ignoring case.
  */
 const doArraysIntersect = (reqArray: readonly string[] | undefined | null, techArray: readonly string[]): boolean => {
-  if (!reqArray || reqArray.length === 0) return true; // No requirement, no filter.
-  if (!techArray || techArray.length === 0) return false; // Requirement, but tech has no offerings.
+  if (!reqArray || reqArray.length === 0) return false;
+  if (!techArray || techArray.length === 0) return false;
 
   const lowercasedReqSet = new Set(reqArray.map(item => item.toLowerCase()));
   return techArray.some(item => lowercasedReqSet.has(item.toLowerCase()));
@@ -46,19 +46,18 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
     return recommendations;
   }
   
-  const isLean = requirement.constraints?.some(c => ['tight deadline', 'limited budget'].includes(c.toLowerCase()));
+  const isLean = requirement.constraints?.some(c => ['tight deadline', 'limited budget', 'tight budget'].includes(c.toLowerCase()));
   
   // PASS 1: Hard Filters
   let candidates = allTechniques.filter(tech => {
     // Project Type Filter
-    let projectType = requirement.project_type?.toLowerCase();
-    if (projectType === "old") projectType = "existing";
+    const projectType = requirement.project_type?.toLowerCase() === 'old' ? 'existing' : requirement.project_type?.toLowerCase();
     if (!tech.project_types.map(p => p.toLowerCase()).includes(projectType || 'new')) {
       return false;
     }
 
     // User Base Filter
-    let userContext = requirement.existing_users === false ? "new" : "existing";
+    const userContext = requirement.existing_users === false ? 'new' : 'existing';
     if (!tech.user_base.map(ub => ub.toLowerCase()).includes(userContext)) {
       return false;
     }
@@ -70,24 +69,26 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
   let scoredTechniques = candidates.map(tech => {
     let score = 0;
     
-    // Goal match is important
-    if (requirement.primary_goal && tech.goals.map(g => g.toLowerCase()).includes(requirement.primary_goal.toLowerCase())) {
-      score += 3;
+    // Most important: does it produce the desired output? (Huge bonus)
+    if (doArraysIntersect(requirement.output_type, tech.output_types)) {
+      score += 10;
     }
     
-    // Strategic Persona Scoring (Lean/Agile)
-    if (isLean) {
-      if (tech.speed === 'fast') score += 5; // Big bonus for fast techniques
-      if (tech.speed === 'slow') score -= 3; // Penalty for slow techniques
-    } else {
-      // If not lean, give a slight preference to more thorough methods
-      if (tech.speed === 'slow') score += 1;
+    // Second most important: does it align with the primary goal? (Strong bonus)
+    if (requirement.primary_goal && tech.goals.map(g => g.toLowerCase()).includes(requirement.primary_goal.toLowerCase())) {
+      score += 5;
     }
 
-    // General attribute matching
+    // Strategic Persona Scoring for "Lean/Agile" projects
+    if (isLean) {
+      if (tech.speed === 'fast') score += 5; // Big bonus for fast techniques
+      if (tech.speed === 'medium') score += 2;
+      if (tech.speed === 'slow') score -= 10; // Heavy penalty for slow techniques
+    }
+
+    // General attribute matching (minor bonus)
     if (doArraysIntersect(requirement.outcome, tech.outcomes)) score++;
     if (doArraysIntersect(requirement.device_type, tech.device_types)) score++;
-    if (doArraysIntersect(requirement.output_type, tech.output_types)) score++;
 
     return { ...tech, score };
   });
@@ -100,10 +101,12 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
       .filter(tech => tech.stage.toLowerCase() === stage.toLowerCase())
       .sort((a, b) => b.score - a.score); // Sort by score, descending
 
-    // If lean, take top 1-2. Otherwise, take top 2-3.
+    // If lean, be very selective. Otherwise, be a bit more generous.
     const limit = isLean ? 2 : 3;
+    const minScore = isLean ? 5 : 1; // Don't recommend techniques with a very low score, especially in lean mode
 
     recommendations[stage] = techniquesForStage
+      .filter(tech => tech.score >= minScore) // Filter out low-scoring techniques
       .slice(0, limit)
       .map(tech => ({ name: tech.name, slug: tech.slug }));
   });
