@@ -25,12 +25,13 @@ const allTechniques: TechniqueDetail[] = techniqueDetails as TechniqueDetail[];
  */
 const doArraysIntersect = (reqArray: readonly string[] | undefined | null, techArray: readonly string[]): boolean => {
     if (!reqArray || reqArray.length === 0) {
-      return false;
+      // If the user has no requirements for this category, it's not a deal-breaker.
+      // The logic in the main function handles if an intersection is truly required.
+      // This helper just checks for intersection if both arrays are valid.
+      return true;
     }
     const lowercasedReqArray = new Set(reqArray.map(item => item.toLowerCase()));
-    const lowercasedTechArray = techArray.map(item => item.toLowerCase());
-
-    return lowercasedTechArray.some(item => lowercasedReqArray.has(item));
+    return techArray.some(item => lowercasedReqArray.has(item.toLowerCase()));
 };
 
 /**
@@ -57,8 +58,10 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
     let isMatch = true;
 
     // 1. Project Type Match (case-insensitive)
-    if (requirement.project_type && !tech.project_types.some(p => p.toLowerCase() === requirement.project_type!.toLowerCase())) {
-      isMatch = false;
+    if (requirement.project_type) {
+        if (!tech.project_types.some(p => p.toLowerCase() === requirement.project_type!.toLowerCase())) {
+            isMatch = false;
+        }
     }
 
     // 2. User Base Match
@@ -73,22 +76,22 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
       }
     }
     
-    // 4. Constraints Match (case-insensitive)
+    // 4. Constraints Match (case-insensitive): Technique must have all constraints user specified.
     if (isMatch && requirement.constraints && requirement.constraints.length > 0) {
-        const lowercasedTechConstraints = tech.constraints.map(c => c.toLowerCase());
-        if (!requirement.constraints.every(c => lowercasedTechConstraints.includes(c.toLowerCase()))) {
+        const lowercasedTechConstraints = new Set(tech.constraints.map(c => c.toLowerCase()));
+        if (!requirement.constraints.every(c => lowercasedTechConstraints.has(c.toLowerCase()))) {
             isMatch = false;
         }
     }
     
     // 5. Array intersection checks (all case-insensitive)
-    if (isMatch && !doArraysIntersect(requirement.outcome, tech.outcomes)) {
+    if (isMatch && requirement.outcome && requirement.outcome.length > 0 && !doArraysIntersect(requirement.outcome, tech.outcomes)) {
       isMatch = false;
     }
-    if (isMatch && !doArraysIntersect(requirement.device_type, tech.device_types)) {
+    if (isMatch && requirement.device_type && requirement.device_type.length > 0 && !doArraysIntersect(requirement.device_type, tech.device_types)) {
       isMatch = false;
     }
-    if (isMatch && !doArraysIntersect(requirement.output_type, tech.output_types)) {
+    if (isMatch && requirement.output_type && requirement.output_type.length > 0 && !doArraysIntersect(requirement.output_type, tech.output_types)) {
       isMatch = false;
     }
 
