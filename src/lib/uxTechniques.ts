@@ -57,8 +57,13 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
     }
 
     // User Base Filter
-    const userContext = requirement.existing_users === false ? 'new' : 'existing';
+    const userContext = requirement.existing_users === false ? 'no users' : 'existing';
     if (!tech.user_base.map(ub => ub.toLowerCase()).includes(userContext)) {
+      return false;
+    }
+
+    // If lean, apply a hard filter for speed. Only fast techniques are allowed.
+    if (isLean && tech.speed !== 'fast') {
       return false;
     }
 
@@ -79,11 +84,9 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
       score += 5;
     }
 
-    // Strategic Persona Scoring for "Lean/Agile" projects
-    if (isLean) {
-      if (tech.speed === 'fast') score += 5; // Big bonus for fast techniques
-      if (tech.speed === 'medium') score += 2;
-      if (tech.speed === 'slow') score -= 10; // Heavy penalty for slow techniques
+    // Lean projects prefer evaluative techniques over generative ones.
+    if (isLean && tech.focus === 'evaluative') {
+      score += 3;
     }
 
     // General attribute matching (minor bonus)
@@ -103,7 +106,7 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
 
     // If lean, be very selective. Otherwise, be a bit more generous.
     const limit = isLean ? 2 : 3;
-    const minScore = isLean ? 5 : 1; // Don't recommend techniques with a very low score, especially in lean mode
+    const minScore = isLean ? 5 : 1;
 
     recommendations[stage] = techniquesForStage
       .filter(tech => tech.score >= minScore) // Filter out low-scoring techniques
