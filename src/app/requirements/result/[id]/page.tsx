@@ -43,7 +43,7 @@ const FiveDProcess = ({ techniques, projectId }: { techniques: StageTechniques, 
       <CardContent>
         <Accordion 
           type="multiple" 
-          defaultValue={Object.keys(techniques).filter(stage => techniques[stage].length > 0)} 
+          defaultValue={Object.keys(techniques)} 
           className="w-full"
         >
           {Object.entries(techniques).map(([stage, stageTechs]) => (

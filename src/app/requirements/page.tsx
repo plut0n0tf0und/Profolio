@@ -47,6 +47,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
 
 // Define the base schema without any refinements.
 const baseFormSchema = z.object({
@@ -342,7 +343,10 @@ function RequirementsPageContent() {
                                 {section.index + 1}
                             </div>
                           )}
-                          <CardTitle className="text-xl">{section.title}</CardTitle>
+                          <div className='flex items-center gap-2'>
+                            <CardTitle className="text-xl">{section.title}</CardTitle>
+                            {section.index === 7 && <Badge variant="outline">Optional</Badge>}
+                          </div>
                         </div>
                         <ChevronDown className={cn("h-5 w-5 transition-transform", expandedSections[section.index] && "rotate-180")} />
                       </CollapsibleTrigger>
