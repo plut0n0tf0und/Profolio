@@ -388,7 +388,7 @@ function RequirementsPageContent() {
                           )}
                           <div className='flex items-center gap-2'>
                             <CardTitle className="text-xl">{section.title}</CardTitle>
-                            {section.index === 7 && <Badge variant="secondary" className="border-0 bg-secondary text-secondary-foreground">Optional</Badge>}
+                            {section.index === 7 && <span className="text-sm font-normal text-muted-foreground">Optional</span>}
                           </div>
                         </div>
                         <ChevronDown className={cn("h-5 w-5 transition-transform", expandedSections[section.index] && "rotate-180")} />
