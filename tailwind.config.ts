@@ -20,6 +20,7 @@ export default {
         card: {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
+          nested: 'hsl(var(--card-nested))',
         },
         popover: {
           DEFAULT: 'hsl(var(--popover))',

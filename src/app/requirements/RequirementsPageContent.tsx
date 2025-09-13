@@ -20,8 +20,9 @@ import { Calendar } from '@/components/ui/calendar';
 import { VerticalStepper, Step } from '@/components/ui/stepper';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { CalendarIcon, Smartphone, Laptop, Plug, Monitor, Target, Save, Eye, Loader2, BookOpen, Briefcase, FileText } from 'lucide-react';
+import { CalendarIcon, Smartphone, Laptop, Plug, Monitor, Target, Save, Eye, Loader2, BookOpen, Briefcase, FileText, Blocks, Palette, Presentation as PresentationIcon, Info } from 'lucide-react';
 import { Label } from '@/components/ui/label';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 // Zod schema for validation
 const requirementSchema = z.object({
@@ -60,42 +61,53 @@ const outcomeTypes = [
 ];
 
 const outputTypes = {
-  "Digital Products": [
-    { id: 'mobile app', label: 'Mobile App' },
-    { id: 'web app', label: 'Web App' },
-    { id: 'desktop software', label: 'Desktop Software' },
-    { id: 'smartwatch interface', label: 'Smartwatch Interface' },
-    { id: 'tv or console experience', label: 'TV or Console Experience' },
-    { id: 'ar/vr application', label: 'AR/VR Application' },
-  ],
-  "Research & Strategy": [
-    { id: 'service blueprint', label: 'Service Blueprint' },
-    { id: 'journey map', label: 'Journey Map' },
-    { id: 'persona profile', label: 'Persona Profile' },
-    { id: 'usability report', label: 'Usability Report' },
-    { id: 'storyboards', label: 'Storyboards' },
-    { id: 'content strategy', label: 'Content Strategy' },
-    { id: 'kpi dashboard/analytics report', label: 'KPI Dashboard / Analytics Report' },
-  ],
-  "Design Systems & Assets": [
-    { id: 'design system', label: 'Design System' },
-    { id: 'ui design', label: 'UI Design' },
-    { id: 'wireframe', label: 'Wireframe' },
-    { id: 'information architecture', label: 'Information Architecture' },
-    { id: 'visual design', label: 'Visual Design' },
-    { id: 'motion design', label: 'Motion Design' },
-    { id: 'animation', label: 'Animation' },
-    { id: 'interactive prototype', label: 'Interactive Prototype' },
-  ],
-  "Communication & Media": [
-    { id: 'accessibility audit', label: 'Accessibility Audit' },
-    { id: 'chatbot/voice interface', label: 'Chatbot / Voice Interface' },
-    { id: 'voice interaction', label: 'Voice Interaction' },
-    { id: 'presentation', label: 'Presentation' },
-    { id: 'video', label: 'Video' },
-  ],
+  "Digital Products": {
+    icon: Smartphone,
+    items: [
+        { id: 'mobile app', label: 'Mobile App' },
+        { id: 'web app', label: 'Web App' },
+        { id: 'desktop software', label: 'Desktop Software' },
+        { id: 'smartwatch interface', label: 'Smartwatch Interface' },
+        { id: 'tv or console experience', label: 'TV or Console Experience' },
+        { id: 'ar/vr application', label: 'AR/VR Application', description: 'Applications for augmented or virtual reality headsets.' },
+    ]
+  },
+  "Research & Strategy": {
+    icon: BookOpen,
+    items: [
+        { id: 'service blueprint', label: 'Service Blueprint', description: 'A diagram visualizing the relationships between different service components.' },
+        { id: 'journey map', label: 'Journey Map', description: 'A visualization of the user\'s experience through your service.' },
+        { id: 'persona profile', label: 'Persona Profile', description: 'Fictional characters representing your target user groups.' },
+        { id: 'usability report', label: 'Usability Report' },
+        { id: 'storyboards', label: 'Storyboards' },
+        { id: 'content strategy', label: 'Content Strategy' },
+        { id: 'kpi dashboard/analytics report', label: 'KPI Dashboard / Analytics Report' },
+    ]
+  },
+  "Design Systems & Assets": {
+    icon: Palette,
+    items: [
+        { id: 'design system', label: 'Design System', description: 'A collection of reusable components, guided by clear standards.' },
+        { id: 'ui design', label: 'UI Design' },
+        { id: 'wireframe', label: 'Wireframe' },
+        { id: 'information architecture', label: 'Information Architecture', description: 'The structural design of shared information environments.' },
+        { id: 'visual design', label: 'Visual Design' },
+        { id: 'motion design', label: 'Motion Design' },
+        { id: 'animation', label: 'Animation' },
+        { id: 'interactive prototype', label: 'Interactive Prototype' },
+    ]
+  },
+  "Communication & Media": {
+    icon: PresentationIcon,
+    items: [
+        { id: 'accessibility audit', label: 'Accessibility Audit', description: 'An audit of your product\'s conformance with accessibility standards (WCAG).' },
+        { id: 'chatbot/voice interface', label: 'Chatbot / Voice Interface' },
+        { id: 'voice interaction', label: 'Voice Interaction' },
+        { id: 'presentation', label: 'Presentation' },
+        { id: 'video', label: 'Video' },
+    ]
+  },
 };
-
 
 const constraintTypes = [
   { id: 'limited budget', label: 'Limited Budget' },
@@ -419,14 +431,19 @@ export default function RequirementsPageContent() {
                     </div>
                   </Step>
                   <Step title="Outputs" index={3} isActive={currentStep === 3} isCompleted={currentStep > 3}>
+                    <TooltipProvider>
                      <FormField
                         name="output_type"
                         render={() => (
                             <FormItem>
-                                {Object.entries(outputTypes).map(([group, items]) => (
-                                    <div key={group} className="space-y-4 mb-6">
-                                        <h4 className="font-semibold text-base text-muted-foreground">{group}</h4>
-                                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-3">
+                                <div className="space-y-6">
+                                {Object.entries(outputTypes).map(([group, {icon: GroupIcon, items}]) => (
+                                    <div key={group} className="rounded-lg border bg-card-nested/50 p-4">
+                                        <h4 className="font-semibold text-base text-muted-foreground mb-4 flex items-center gap-2">
+                                            <GroupIcon className="h-5 w-5" />
+                                            {group}
+                                        </h4>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
                                             {items.map((item) => (
                                                 <FormField
                                                     key={item.id}
@@ -444,7 +461,19 @@ export default function RequirementsPageContent() {
                                                                     }}
                                                                 />
                                                             </FormControl>
-                                                            <FormLabel className="font-normal">{item.label}</FormLabel>
+                                                            <div className="flex items-center gap-1.5">
+                                                                <FormLabel className="font-normal">{item.label}</FormLabel>
+                                                                {item.description && (
+                                                                    <Tooltip>
+                                                                        <TooltipTrigger asChild>
+                                                                            <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                                                                        </TooltipTrigger>
+                                                                        <TooltipContent>
+                                                                            <p className="max-w-xs">{item.description}</p>
+                                                                        </TooltipContent>
+                                                                    </Tooltip>
+                                                                )}
+                                                            </div>
                                                         </FormItem>
                                                     )}
                                                 />
@@ -452,10 +481,12 @@ export default function RequirementsPageContent() {
                                         </div>
                                     </div>
                                 ))}
-                                <FormMessage />
+                                </div>
+                                <FormMessage className="mt-4" />
                             </FormItem>
                         )}
                         />
+                    </TooltipProvider>
                   </Step>
                 </VerticalStepper>
               </CardContent>
@@ -486,5 +517,3 @@ export default function RequirementsPageContent() {
     </div>
   );
 }
-
-    
