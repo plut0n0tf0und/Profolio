@@ -144,10 +144,20 @@ export async function updateRequirement(
 ): Promise<{ data: Requirement | null; error: PostgrestError | null }> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { data: null, error: { message: 'User not authenticated', details: '', hint: '', code: '401', name: '' } };
-
+  
+  // Ensure all fields from the form are included in the update payload.
   const updatesToSave = {
-    ...updates,
-    project_type: updates.project_type === 'existing' ? 'old' : 'new'
+    project_name: updates.project_name,
+    date: updates.date,
+    problem_statement: updates.problem_statement,
+    role: updates.role,
+    project_type: updates.project_type,
+    existing_users: updates.existing_users,
+    device_type: updates.device_type,
+    constraints: updates.constraints,
+    primary_goal: updates.primary_goal,
+    outcome: updates.outcome,
+    output_type: updates.output_type,
   };
 
   const { data, error } = await supabase
