@@ -149,7 +149,7 @@ export default function RequirementsPageContent() {
             ...data,
             date: new Date(data.date as string),
             existing_users: data.existing_users === null ? undefined : String(data.existing_users),
-            primary_goal: data.primary_goal || '',
+            primary_goal: data.primary_goal?.[0] || '',
           } as any);
         } else {
             console.error('Failed to fetch requirement:', error);
@@ -179,6 +179,7 @@ export default function RequirementsPageContent() {
           date: new Date(formData.date).toISOString(),
           existing_users: formData.existing_users === 'true',
           project_type: formData.project_type,
+          primary_goal: formData.primary_goal ? [formData.primary_goal] : [],
       };
 
       let result;

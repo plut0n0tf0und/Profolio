@@ -1,4 +1,5 @@
 
+
 import { createBrowserClient } from '@supabase/ssr';
 import type { PostgrestError, User } from '@supabase/supabase-js';
 import * as z from 'zod';
@@ -77,7 +78,7 @@ const RequirementSchema = z.object({
   device_type: z.array(z.string()).optional(),
   project_type: z.string().optional(),
   existing_users: z.boolean().nullable(),
-  primary_goal: z.string().optional().nullable(),
+  primary_goal: z.array(z.string()).optional().nullable(),
   constraints: z.array(z.string()).optional().nullable(),
 });
 export type Requirement = z.infer<typeof RequirementSchema>;
@@ -97,7 +98,7 @@ const SavedResultSchema = z.object({
   stage_techniques: z.any().nullable(), // jsonb
   created_at: z.string().optional(), // timestamp
   existing_users: z.boolean().nullable(),
-  primary_goal: z.string().optional().nullable(),
+  primary_goal: z.array(z.string()).optional().nullable(),
   constraints: z.array(z.string()).optional().nullable(),
   project_type: z.string().optional(),
 });
@@ -177,15 +178,22 @@ export async function updateUserProfile(updates: { full_name?: string; role?: st
 }
 
 export async function insertRequirement(
-  requirement: Partial<Requirement>
+  requirement: Partial<Requirement> & { primary_goal?: string | string[] }
 ): Promise<{ data: Requirement | null; error: PostgrestError | null }> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { data: null, error: { message: 'User not authenticated', details: '', hint: '', code: '401', name: '' } };
+
+  // Ensure primary_goal is an array
+  const primaryGoalAsArray = Array.isArray(requirement.primary_goal)
+    ? requirement.primary_goal
+    : (requirement.primary_goal ? [requirement.primary_goal] : []);
+
 
   const requirementToInsert = {
     ...requirement,
     user_id: user.id,
     project_type: requirement.project_type,
+    primary_goal: primaryGoalAsArray,
   };
 
   const { data, error } = await supabase
@@ -200,14 +208,23 @@ export async function insertRequirement(
 
 export async function updateRequirement(
   id: string,
-  updates: Partial<Requirement>
+  updates: Partial<Requirement> & { primary_goal?: string | string[] }
 ): Promise<{ data: Requirement | null; error: PostgrestError | null }> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { data: null, error: { message: 'User not authenticated', details: '', hint: '', code: '401', name: '' } };
 
+   const primaryGoalAsArray = Array.isArray(updates.primary_goal)
+    ? updates.primary_goal
+    : (updates.primary_goal ? [updates.primary_goal] : []);
+
+  const updatesWithArrayGoal = {
+    ...updates,
+    primary_goal: primaryGoalAsArray,
+  };
+
   const { data, error } = await supabase
       .from('requirements')
-      .update(updates)
+      .update(updatesWithArrayGoal)
       .eq('id', id)
       .eq('user_id', user.id)
       .select()
