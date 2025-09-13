@@ -130,6 +130,7 @@ export default function RequirementsPageContent() {
       date: new Date(),
       problem_statement: '',
       role: '',
+      project_type: 'new',
       device_type: [],
       constraints: [],
       primary_goal: [],
@@ -352,49 +353,50 @@ export default function RequirementsPageContent() {
                   <Step title="Goals" index={2} isActive={currentStep === 2} isCompleted={currentStep > 2}>
                     <div className="space-y-6">
                        <FormField
-                        control={form.control}
-                        name="primary_goal"
-                        render={({ field }) => (
-                          <FormItem>
-                            <div className="mb-4">
-                              <FormLabel className="text-base">Project's Primary Goal</FormLabel>
-                            </div>
-                            <div className="space-y-4">
-                              {goalTypes.map((item) => {
-                                const isSelected = field.value?.includes(item.id);
-                                return (
-                                  <Card
-                                    key={item.id}
-                                    onClick={() => {
-                                      const currentValue = field.value || [];
-                                      const newValues = isSelected
-                                        ? currentValue.filter((id) => id !== item.id)
-                                        : [...currentValue, item.id];
-                                      field.onChange(newValues);
-                                    }}
-                                    className={cn(
-                                      'cursor-pointer transition-all border-2',
-                                      isSelected ? 'border-primary' : ''
-                                    )}
-                                  >
-                                    <CardContent className="flex items-center p-4 gap-4">
-                                      <Checkbox
-                                        checked={!!isSelected}
-                                        className="h-5 w-5 pointer-events-none"
-                                      />
-                                      <div className="flex flex-col">
-                                        <p className="font-semibold">{item.label}</p>
-                                        <p className="text-sm text-muted-foreground">{item.description}</p>
-                                      </div>
-                                    </CardContent>
-                                  </Card>
-                                );
-                              })}
-                            </div>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                          control={form.control}
+                          name="primary_goal"
+                          render={({ field }) => (
+                            <FormItem>
+                              <div className="mb-4">
+                                <FormLabel className="text-base">Project's Primary Goal</FormLabel>
+                              </div>
+                              <div className="space-y-4">
+                                {goalTypes.map((item) => {
+                                  const isSelected = field.value?.includes(item.id);
+                                  return (
+                                    <Card
+                                      key={item.id}
+                                      onClick={() => {
+                                        const currentValue = field.value || [];
+                                        const newValues = isSelected
+                                          ? currentValue.filter((id) => id !== item.id)
+                                          : [...currentValue, item.id];
+                                        field.onChange(newValues);
+                                      }}
+                                      className={cn(
+                                        'cursor-pointer transition-all border-2',
+                                        isSelected ? 'border-primary' : ''
+                                      )}
+                                    >
+                                      <CardContent className="flex items-center p-4 gap-4">
+                                        <Checkbox
+                                            checked={!!isSelected}
+                                            className="h-5 w-5 pointer-events-none"
+                                            tabIndex={-1}
+                                        />
+                                        <div className="flex flex-col">
+                                          <p className="font-semibold">{item.label}</p>
+                                          <p className="text-sm text-muted-foreground">{item.description}</p>
+                                        </div>
+                                      </CardContent>
+                                    </Card>
+                                  );
+                                })}
+                              </div>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                         <FormField
                             name="outcome"
                             render={() => (
