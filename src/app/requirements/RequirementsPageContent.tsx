@@ -49,9 +49,9 @@ const deviceTypes = [
 ];
 
 const goalTypes = [
-    { id: 'innovation & growth', label: 'Innovation & Growth', description: 'Create new features, explore new markets' },
-    { id: 'optimization & conversion', label: 'Optimization & Conversion', description: 'Boost sign-ups, improve funnels' },
-    { id: 'retention & engagement', label: 'Retention & Engagement', description: 'Keep users active, reduce churn' },
+    { id: 'innovation & growth', label: 'Innovation & Growth', description: 'Create new features, explore new markets', icon: <Target className="h-6 w-6 text-primary" /> },
+    { id: 'optimization & conversion', label: 'Optimization & Conversion', description: 'Boost sign-ups, improve funnels', icon: <Target className="h-6 w-6 text-primary" /> },
+    { id: 'retention & engagement', label: 'Retention & Engagement', description: 'Keep users active, reduce churn', icon: <Target className="h-6 w-6 text-primary" /> },
 ];
 
 const outcomeTypes = [
@@ -380,6 +380,7 @@ export default function RequirementsPageContent() {
                                                             )}
                                                         >
                                                             <CardContent className="flex items-center p-4 gap-4">
+                                                                {item.icon}
                                                                 <div className="flex items-center space-x-4">
                                                                     <Checkbox
                                                                         checked={field.value?.includes(item.id)}
@@ -531,7 +532,3 @@ export default function RequirementsPageContent() {
     </div>
   );
 }
-
-    
-
-    
