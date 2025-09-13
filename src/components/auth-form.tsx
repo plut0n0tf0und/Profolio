@@ -85,7 +85,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                 toast({ title: 'Invalid data', description: 'Please check your inputs.', variant: 'destructive'});
                 return;
             }
-            const { error } = await supabase.auth.signUp(result.data as z.infer<typeof signUpSchema>);
+            const { error } = await supabase.auth.signUp(result.data);
             if (error) {
                 toast({
                   title: 'Sign Up Failed',
@@ -106,7 +106,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                 toast({ title: 'Invalid data', description: 'Please check your inputs.', variant: 'destructive'});
                 return;
             }
-            const { error } = await supabase.auth.signInWithPassword(result.data as z.infer<typeof loginSchema>);
+            const { error } = await supabase.auth.signInWithPassword(result.data);
             if (error) {
                 toast({
                   title: 'Login Failed',
