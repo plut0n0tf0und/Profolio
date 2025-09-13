@@ -21,9 +21,10 @@ const allTechniques: TechniqueDetail[] = techniqueDetails as TechniqueDetail[];
 
 /**
  * Checks for a non-empty intersection between two string arrays, ignoring case.
+ * If the requirement array is empty, it returns true to allow other scoring to proceed.
  */
 const doArraysIntersect = (reqArray: readonly string[] | undefined | null, techArray: readonly string[]): boolean => {
-  if (!reqArray || reqArray.length === 0) return false;
+  if (!reqArray || reqArray.length === 0) return true; // <-- FIX: Changed to true. If user selects nothing, don't penalize techniques.
   if (!techArray || techArray.length === 0) return false;
 
   const lowercasedReqSet = new Set(reqArray.map(item => item.toLowerCase()));
@@ -47,13 +48,15 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
   }
   
   const isLean = requirement.constraints?.some(c => ['tight deadline', 'limited budget'].includes(c.toLowerCase()));
+  const hasSelectedOutputs = requirement.output_type && requirement.output_type.length > 0;
   
   // PASS 1: Scoring - score all techniques first, then filter.
   let scoredTechniques = allTechniques.map(tech => {
     let score = 0;
     
     // Most important: does it produce the desired output? (Huge bonus)
-    if (doArraysIntersect(requirement.output_type, tech.output_types)) {
+    // This bonus is only applied if the user has actually selected outputs.
+    if (hasSelectedOutputs && doArraysIntersect(requirement.output_type, tech.output_types)) {
       score += 10;
     }
     
@@ -115,7 +118,7 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
     let finalTechniques = techniquesForStage
       .filter(tech => {
         // If it's a direct match for a desired output type, its score is high enough.
-        if (doArraysIntersect(requirement.output_type, tech.output_types)) {
+        if (hasSelectedOutputs && doArraysIntersect(requirement.output_type, tech.output_types)) {
           return true;
         }
         // Otherwise, it must meet the base minimum score

@@ -121,14 +121,22 @@ export default function ResultPage() {
         return;
       }
       
+      // Set requirement data first, then trigger filtering in another effect
       setRequirement(data);
-      const filteredTechniques = getFilteredTechniques(data);
-      setStageTechniques(filteredTechniques);
       setIsLoading(false);
     };
 
     getRequirementData();
   }, [requirementId, router, toast]);
+
+  useEffect(() => {
+    // This effect runs when `requirement` state is updated.
+    // This solves the race condition where filtering was running with stale data.
+    if (requirement) {
+      const filteredTechniques = getFilteredTechniques(requirement);
+      setStageTechniques(filteredTechniques);
+    }
+  }, [requirement]);
   
   const handleProceedToDashboard = async () => {
     if (!requirement) {
