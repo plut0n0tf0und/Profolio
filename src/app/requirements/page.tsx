@@ -1,429 +1,470 @@
 
 'use client';
 
-import { useState, useEffect, Suspense, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useForm } from 'react-hook-form';
+import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { insertRequirement, fetchRequirementById, updateRequirement } from '@/lib/supabaseClient';
+import { useToast } from '@/hooks/use-toast';
+import { insertRequirement, updateRequirement, fetchRequirementById, type Requirement } from '@/lib/supabaseClient';
 import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from '@/components/ui/card';
-import { useToast } from '@/hooks/use-toast';
-import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
-import {
-  AlertDialog,
-  AlertDialogTrigger,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogFooter,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogCancel,
-  AlertDialogAction,
-} from "@/components/ui/alert-dialog"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-
-import { CalendarIcon, Loader2, ChevronLeft, ChevronDown, CheckCircle2 } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
+import { VerticalStepper, Step } from '@/components/ui/stepper';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Badge } from '@/components/ui/badge';
+import { CalendarIcon, Smartphone, Laptop, Plug, Monitor, Target, Save, Eye, Loader2 } from 'lucide-react';
+import { Label } from '@/components/ui/label';
 
-// Define the base schema without any refinements.
-const baseFormSchema = z.object({
+// Zod schema for validation
+const requirementSchema = z.object({
   project_name: z.string().min(1, 'Project name is required.'),
-  date: z.date(),
+  date: z.union([z.date(), z.string()]),
   problem_statement: z.string().min(1, 'Problem statement is required.'),
   role: z.string().min(1, 'Your role is required.'),
-  output_type: z.array(z.string()),
-  outcome: z.array(z.string()),
-  device_type: z.array(z.string()),
-  project_type: z.enum(['new', 'old']),
-  existing_users: z.boolean(),
-  primary_goal: z.array(z.string()),
+  project_type: z.string({ required_error: 'Please select a project type.' }),
+  existing_users: z.string({ required_error: 'Please specify if you have existing users.' }),
+  device_type: z.array(z.string()).min(1, 'Please select at least one device type.'),
   constraints: z.array(z.string()).optional(),
+  primary_goal: z.array(z.string()).min(1, 'Please select at least one primary goal.'),
+  outcome: z.array(z.string()).min(1, 'Please select at least one desired outcome.'),
+  output_type: z.array(z.string()).min(1, 'Please select at least one output type.'),
 });
 
-// Now create the final schema for the form by applying refinements.
-const formSchema = baseFormSchema
-  .refine((data) => data.output_type.length > 0, {
-    message: 'You have to select at least one output type.',
-    path: ['output_type'],
-  })
-  .refine((data) => data.outcome.length > 0, {
-    message: 'You have to select at least one outcome.',
-    path: ['outcome'],
-  })
-    .refine((data) => data.primary_goal.length > 0, {
-    message: 'You have to select at least one primary goal.',
-    path: ['primary_goal'],
-    })
-  .refine((data) => data.device_type.length > 0, {
-    message: 'You have to select at least one device type.',
-    path: ['device_type'],
-  });
+type FormData = z.infer<typeof requirementSchema>;
 
-
-type FormSchemaType = z.infer<typeof formSchema>;
-
-// Section schemas should pick from the unrefined base schema.
-const sectionSchemas = [
-  baseFormSchema.pick({ project_name: true, date: true, problem_statement: true, role: true }),
-  baseFormSchema.pick({ output_type: true }),
-  baseFormSchema.pick({ outcome: true }),
-  baseFormSchema.pick({ device_type: true }),
-  baseFormSchema.pick({ project_type: true }),
-  baseFormSchema.pick({ existing_users: true }),
-  baseFormSchema.pick({ primary_goal: true }),
-  baseFormSchema.pick({ constraints: true }),
+const deviceTypes = [
+  { id: 'mobile', label: 'Mobile', icon: Smartphone },
+  { id: 'desktop', label: 'Desktop', icon: Laptop },
+  { id: 'electronics', label: 'Electronics', icon: Plug },
+  { id: 'kiosk', label: 'Kiosk', icon: Monitor },
 ];
 
-const outputTypes = [
-    "Mobile App", "Web App", "Desktop Software", "Smartwatch Interface", "TV or Console Experience",
-    "AR/VR Application", "Service Blueprint", "Journey Map", "Persona Profile", "Usability Report",
-    "Design System", "Accessibility Audio", "KPI Dashboard/Analytics Report", "Storyboards",
-    "Content Strategy", "Chatbot/Voice Interface", "Presentation", "Video", "Interactive Prototype",
-    "UI Design", "Visual Design", "Motion Design", "Animation", "Voice Interaction", "Wireframe",
-    "Information Architecture"
-];
-const outcomes = ['Qualitative', 'Quantitative', 'Insight'];
-const deviceTypes = ['Mobile', 'Desktop', 'Electronics', 'Kiosk'];
-const primaryGoals = [
-    { id: "Innovation & Growth", label: "Innovation & Growth", description: "e.g., creating new features, entering new markets" },
-    { id: "Optimization & Conversion", label: "Optimization & Conversion", description: "e.g., improving funnels, increasing sign-ups" },
-    { id: "Retention & Engagement", label: "Retention & Engagement", description: "e.g., keeping users active, reducing churn" },
-];
-const projectConstraints = ["Limited Budget", "Tight Deadline"];
-
-const sections = [
-    { index: 0, title: 'Basic Project Details' },
-    { index: 1, title: 'Output Type' },
-    { index: 2, title: 'Desired Outcome' },
-    { index: 3, title: 'Device Type' },
-    { index: 4, title: 'Project Type' },
-    { index: 5, title: 'Existing Users' },
-    { index: 6, title: "Project's Primary Goal" },
-    { index: 7, title: "Project Constraints" },
+const goalTypes = [
+    { id: 'innovation & growth', label: 'Innovation & Growth', description: 'Create new features, explore new markets' },
+    { id: 'optimization & conversion', label: 'Optimization & Conversion', description: 'Boost sign-ups, improve funnels' },
+    { id: 'retention & engagement', label: 'Retention & Engagement', description: 'Keep users active, reduce churn' },
 ];
 
-function RequirementsPageContent() {
-  const { toast } = useToast();
+const outcomeTypes = [
+  { id: 'qualitative', label: 'Qualitative' },
+  { id: 'quantitative', label: 'Quantitative' },
+  { id: 'insight', label: 'Insight' },
+];
+
+const outputTypes = {
+  "Reports & Prototypes": [
+    { id: 'usability report', label: 'Usability Report' },
+    { id: 'interactive prototype', label: 'Interactive Prototype' },
+    { id: 'journey map', label: 'Journey Map' },
+    { id: 'persona profile', label: 'Persona Profile' },
+    { id: 'service blueprint', label: 'Service Blueprint' },
+    { id: 'kpi dashboard/analytics report', label: 'KPI Dashboard/Analytics Report' },
+    { id: 'storyboards', label: 'Storyboards' },
+    { id: 'presentation', label: 'Presentation' },
+    { id: 'accessibility audit', label: 'Accessibility Audit' },
+    { id: 'video', label: 'Video' },
+  ],
+  "Design Assets": [
+    { id: 'wireframe', label: 'Wireframe' },
+    { id: 'ui design', label: 'UI Design' },
+    { id: 'visual design', label: 'Visual Design' },
+    { id: 'information architecture', label: 'Information Architecture' },
+    { id: 'content strategy', label: 'Content Strategy' },
+  ],
+};
+
+
+const constraintTypes = [
+  { id: 'limited budget', label: 'Limited Budget' },
+  { id: 'tight deadline', label: 'Tight Deadline' },
+];
+
+export default function RequirementsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { toast } = useToast();
+  const [currentStep, setCurrentStep] = useState(0);
+  const [requirementId, setRequirementId] = useState<string | null>(searchParams.get('id'));
+  const [isSaving, setIsSaving] = useState(false);
 
-  const [expandedSections, setExpandedSections] = useState<Record<number, boolean>>({ 0: true });
-  const [completedSections, setCompletedSections] = useState<Record<number, boolean>>({});
-  const [savingSectionIndex, setSavingSectionIndex] = useState<number | null>(null);
-
-  const [requirementId, setRequirementId] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
-
-  const form = useForm<FormSchemaType>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<FormData>({
+    resolver: zodResolver(requirementSchema),
     defaultValues: {
       project_name: '',
       date: new Date(),
       problem_statement: '',
       role: '',
-      output_type: [],
-      outcome: [],
       device_type: [],
-      project_type: 'new',
-      existing_users: false,
-      primary_goal: [],
       constraints: [],
+      primary_goal: [],
+      outcome: [],
+      output_type: [],
     },
   });
 
   useEffect(() => {
-    const id = searchParams.get('id');
-    setIsLoading(true);
-    if (id) {
-      setRequirementId(id);
-      const loadRequirement = async () => {
-        const { data, error } = await fetchRequirementById(id);
-        if (error) {
-          toast({ title: 'Failed to load project', description: 'Could not fetch existing project details.', variant: 'destructive' });
-        } else if (data) {
+    const requirementIdFromParams = searchParams.get('id');
+    if (requirementIdFromParams) {
+      const fetchAndSetRequirement = async () => {
+        const { data, error } = await fetchRequirementById(requirementIdFromParams);
+        if (data) {
           form.reset({
             ...data,
-            project_name: data.project_name || '',
-            problem_statement: data.problem_statement || '',
-            role: data.role || '',
-            date: data.date ? new Date(data.date) : new Date(),
-            output_type: data.output_type || [],
-            outcome: data.outcome || [],
-            device_type: data.device_type || [],
-            project_type: data.project_type as 'new' | 'old' | undefined,
-            existing_users: data.existing_users ?? false,
+            date: new Date(data.date as string),
+            existing_users: data.existing_users === null ? undefined : String(data.existing_users),
             primary_goal: data.primary_goal || [],
-            constraints: data.constraints || [],
-          });
+          } as any);
+        } else {
+            console.error('Failed to fetch requirement:', error);
+            router.push('/requirements');
         }
-        setIsLoading(false);
       };
-      loadRequirement();
-    } else {
-      setIsLoading(false);
+      fetchAndSetRequirement();
     }
-  }, [searchParams, form, toast]);
+  }, [searchParams, form, router]);
 
-  const handleSaveAndNext = async (currentSectionIndex: number) => {
-    setSavingSectionIndex(currentSectionIndex);
-    
-    const currentSchema = sectionSchemas[currentSectionIndex];
-    const fieldsToValidate = Object.keys(currentSchema.shape) as (keyof FormSchemaType)[];
+  const steps = [
+    { name: 'Project Basics', fields: ['project_name', 'date', 'problem_statement', 'role', 'project_type', 'existing_users'] },
+    { name: 'Context', fields: ['device_type', 'constraints'] },
+    { name: 'Goals', fields: ['primary_goal', 'outcome'] },
+    { name: 'Outputs', fields: ['output_type'] },
+  ];
+
+  const handleSaveAndNext = async () => {
+    const fieldsToValidate = steps[currentStep].fields as (keyof FormData)[];
     const isValid = await form.trigger(fieldsToValidate);
 
-    if (!isValid) {
-      toast({ title: 'Validation Error', description: 'Please fill in all required fields for this section.', variant: 'destructive' });
-      setSavingSectionIndex(null);
-      return;
-    }
+    if (isValid) {
+      setIsSaving(true);
+      const formData = form.getValues();
+      const payload: Partial<Requirement> = {
+          ...formData,
+          date: new Date(formData.date).toISOString(),
+          existing_users: formData.existing_users === 'true',
+      };
 
-    const values = form.getValues();
-    const dataToSave: any = { ...values };
-    if (dataToSave.date && dataToSave.date instanceof Date) {
-      dataToSave.date = dataToSave.date.toISOString();
-    }
-    
-    try {
-      let savedData;
+      let result;
       if (requirementId) {
-        const { data, error } = await updateRequirement(requirementId, dataToSave);
-        if (error) throw error;
-        savedData = data;
+          result = await updateRequirement(requirementId, payload);
       } else {
-        const { data, error } = await insertRequirement(dataToSave as any);
-        if (error) throw error;
-        savedData = data;
-        if (savedData?.id) {
-          setRequirementId(savedData.id);
-          const newUrl = `${window.location.pathname}?id=${savedData.id}`;
-          window.history.replaceState({ ...window.history.state, as: newUrl, url: newUrl }, '', newUrl);
-        }
+          result = await insertRequirement(payload);
       }
 
-      setCompletedSections(prev => ({...prev, [currentSectionIndex]: true}));
-
-      if (currentSectionIndex < sections.length - 1) {
-        const nextSectionIndex = currentSectionIndex + 1;
-        setExpandedSections(prev => ({ ...prev, [currentSectionIndex]: false, [nextSectionIndex]: true }));
-        setTimeout(() => {
-            sectionRefs.current[nextSectionIndex]?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 100);
-      } else {
-        const finalId = requirementId || savedData?.id;
-        if (finalId) {
-            router.push(`/requirements/result/${finalId}`);
-        } else {
-            throw new Error("Could not find requirement ID to show results.");
-        }
+      if (result.error) {
+          toast({ title: 'Save Failed', description: 'Could not save your progress.', variant: 'destructive' });
+      } else if (result.data) {
+          if (!requirementId) {
+            setRequirementId(result.data.id);
+            // Update URL without navigation
+            window.history.replaceState(null, '', `?id=${result.data.id}`);
+          }
+          if (currentStep < steps.length - 1) {
+            setCurrentStep(currentStep + 1);
+          }
       }
-    } catch (error: any) {
-      console.error("Save error:", error);
-      toast({ title: 'Uh oh! Something went wrong.', description: error.message || 'There was a problem saving.', variant: 'destructive' });
-    } finally {
-      setSavingSectionIndex(null);
+      setIsSaving(false);
     }
   };
 
-  const PageSkeleton = () => (
-    <Card className="w-full">
-        <CardHeader><Skeleton className="h-9 w-3/5" /><Skeleton className="h-4 w-4/5 mt-2" /></CardHeader>
-        <CardContent className="space-y-4"><Skeleton className="h-12 w-full" /><Skeleton className="h-12 w-full" /></CardContent>
-    </Card>
-  );
-
-  if (isLoading) {
-    return (
-        <div className="flex min-h-screen flex-col bg-background text-foreground">
-            <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center border-b border-border bg-background px-4">
-                <Button variant="ghost" size="icon" className="shrink-0" disabled><ChevronLeft className="h-6 w-6" /></Button>
-                <h1 className="ml-2 text-xl ">Back</h1>
-            </header>
-            <main className="container mx-auto max-w-3xl flex-1 p-4 md:p-8"><PageSkeleton /></main>
-        </div>
-    );
-  }
-
-  const renderSectionContent = (sectionIndex: number) => {
-    switch(sectionIndex) {
-        case 0:
-            return (
-                <div className="space-y-4">
-                    <FormField control={form.control} name="project_name" render={({ field }) => (<FormItem><FormLabel>Project Name</FormLabel><FormControl><Input placeholder="e.g., AuthNexus Redesign" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                    <FormField control={form.control} name="date" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel>Date</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={'outline'} className={cn('w-full pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}>{field.value ? format(new Date(field.value), 'PPP') : <span>Pick a date</span>}<CalendarIcon className="ml-auto h-4 w-4 opacity-50" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar mode="single" selected={field.value instanceof Date ? field.value : new Date(field.value)} onSelect={field.onChange} disabled={(date) => date > new Date() || date < new Date('1900-01-01')} initialFocus /></PopoverContent></Popover><FormMessage /></FormItem>)} />
-                    <FormField control={form.control} name="problem_statement" render={({ field }) => (<FormItem><FormLabel>Problem Statement</FormLabel><FormControl><Textarea placeholder="Describe the core problem your project aims to solve." {...field} /></FormControl><FormMessage /></FormItem>)} />
-                    <FormField control={form.control} name="role" render={({ field }) => (<FormItem><FormLabel>Your Role</FormLabel><FormControl><Input placeholder="e.g., UX Designer, Product Manager" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                </div>
-            );
-        case 1:
-            return (
-                <FormField control={form.control} name="output_type" render={({ field }) => (<FormItem><div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">{outputTypes.map((item) => (<FormItem key={item} className="flex flex-row items-start space-x-3 space-y-0"><FormControl><Checkbox checked={field.value?.includes(item)} onCheckedChange={(checked) => {return checked ? field.onChange([...(field.value || []), item]) : field.onChange(field.value?.filter((value) => value !== item));}} /></FormControl><FormLabel className="font-normal text-sm">{item}</FormLabel></FormItem>))}</div><FormMessage /></FormItem>)} />
-            );
-        case 2:
-            return (
-                <FormField control={form.control} name="outcome" render={({ field }) => (<FormItem><div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">{outcomes.map((item) => (<FormItem key={item} className="flex flex-row items-start space-x-3 space-y-0"><FormControl><Checkbox checked={field.value?.includes(item)} onCheckedChange={(checked) => {return checked ? field.onChange([...(field.value || []), item]) : field.onChange(field.value?.filter((value) => value !== item));}} /></FormControl><FormLabel className="font-normal text-sm">{item}</FormLabel></FormItem>))}</div><FormMessage /></FormItem>)} />
-            );
-        case 3:
-            return (
-                 <FormField control={form.control} name="device_type" render={({ field }) => (<FormItem><div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">{deviceTypes.map((item) => (<FormItem key={item} className="flex flex-row items-start space-x-3 space-y-0"><FormControl><Checkbox checked={field.value?.includes(item)} onCheckedChange={(checked) => {return checked ? field.onChange([...(field.value || []), item]) : field.onChange(field.value?.filter((value) => value !== item));}} /></FormControl><FormLabel className="font-normal text-sm">{item}</FormLabel></FormItem>))}</div><FormMessage /></FormItem>)} />
-            );
-        case 4:
-            return (
-                <FormField control={form.control} name="project_type" render={({ field }) => (
-                    <FormItem><FormLabel>Is this a new or existing project?</FormLabel><FormControl><RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-8 pt-2"><FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="new" /></FormControl><FormLabel className="font-normal text-sm">New Project</FormLabel></FormItem><FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="old" /></FormControl><FormLabel className="font-normal text-sm">Existing Project</FormLabel></FormItem></RadioGroup></FormControl><FormMessage /></FormItem>
-                )}/>
-            );
-        case 5:
-            return (
-                <FormField control={form.control} name="existing_users" render={({ field }) => (
-                    <FormItem><FormLabel>Does this project already have users?</FormLabel><FormControl><RadioGroup onValueChange={(value) => field.onChange(value === 'true')} value={String(field.value)} className="flex gap-8 pt-2"><FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="true" /></FormControl><FormLabel className="font-normal text-sm">Yes</FormLabel></FormItem><FormItem className="flex items-center space-x-3 space-y-0"><FormControl><RadioGroupItem value="false" /></FormControl><FormLabel className="font-normal text-sm">No</FormLabel></FormItem></RadioGroup></FormControl><FormMessage /></FormItem>
-                )}/>
-            );
-        case 6:
-            return (
-                <FormField control={form.control} name="primary_goal" render={() => (
-                    <FormItem>
-                        <div className="mb-4">
-                            <FormLabel className="text-base">What are your project's primary goals?</FormLabel>
-                            <p className="text-sm text-muted-foreground">Select all that apply.</p>
-                        </div>
-                        <div className="space-y-3">
-                            {primaryGoals.map((item) => (
-                                <FormField
-                                    key={item.id}
-                                    control={form.control}
-                                    name="primary_goal"
-                                    render={({ field }) => (
-                                        <FormItem key={item.id} className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                                            <FormControl>
-                                                <Checkbox
-                                                    checked={field.value?.includes(item.id)}
-                                                    onCheckedChange={(checked) => {
-                                                        return checked
-                                                            ? field.onChange([...(field.value || []), item.id])
-                                                            : field.onChange(field.value?.filter((value) => value !== item.id));
-                                                    }}
-                                                />
-                                            </FormControl>
-                                            <div className="space-y-1 leading-none">
-                                                <FormLabel className="font-normal">{item.label}</FormLabel>
-                                                <p className="text-xs text-muted-foreground">
-                                                    {item.description}
-                                                </p>
-                                            </div>
-                                        </FormItem>
-                                    )}
-                                />
-                            ))}
-                        </div>
-                        <FormMessage />
-                    </FormItem>
-                )} />
-            );
-        case 7:
-            return (
-                 <FormField control={form.control} name="constraints" render={({ field }) => (<FormItem><div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">{projectConstraints.map((item) => (<FormItem key={item} className="flex flex-row items-start space-x-3 space-y-0"><FormControl><Checkbox checked={field.value?.includes(item)} onCheckedChange={(checked) => {return checked ? field.onChange([...(field.value || []), item]) : field.onChange(field.value?.filter((value) => value !== item));}} /></FormControl><FormLabel className="font-normal text-sm">{item}</FormLabel></FormItem>))}</div><FormMessage /></FormItem>)} />
-            );
-        default: return null;
+  const handleShowRecommendations = async () => {
+    const isValid = await form.trigger();
+    if (isValid && requirementId) {
+      router.push(`/requirements/result/${requirementId}`);
+    } else {
+      toast({ title: 'Incomplete Form', description: 'Please complete all steps before viewing recommendations.' });
     }
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
-      <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center border-b border-border bg-background px-4">
-        <AlertDialog>
-          <AlertDialogTrigger asChild><Button variant="ghost" className='p-2'><ChevronLeft className="h-6 w-6" /><span className='ml-2'>Back</span></Button></AlertDialogTrigger>
-          <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>Are you sure you want to leave?</AlertDialogTitle><AlertDialogDescription>Any unsaved changes will be lost.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => router.push('/dashboard')}>Continue</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
-        </AlertDialog>
-      </header>
-      <main className="container mx-auto max-w-3xl flex-1 p-4 md:p-8">
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle className="text-3xl">Define Your Project</CardTitle>
-          <CardDescription>Fill out the details below to get tailored UX recommendations. Save your progress at each step.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={(e) => e.preventDefault()} className="space-y-4">
-              {sections.map((section) => (
-                <Collapsible
-                  key={section.index}
-                  open={expandedSections[section.index]}
-                  onOpenChange={(isOpen) => setExpandedSections(prev => ({...prev, [section.index]: isOpen}))}
-                >
-                  <Card ref={el => { sectionRefs.current[section.index] = el; }}>
-                    <CardHeader>
-                      <CollapsibleTrigger className="flex w-full items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          {completedSections[section.index] ? (
-                            <CheckCircle2 className="h-6 w-6 text-green-500" />
-                          ) : (
-                            <div className={cn("flex h-6 w-6 items-center justify-center rounded-full border-2", expandedSections[section.index] ? "border-primary" : "border-border")}>
-                                {section.index + 1}
-                            </div>
-                          )}
-                          <div className='flex items-center gap-2'>
-                            <CardTitle className="text-xl">{section.title}</CardTitle>
-                            {section.index === 7 && <span className="text-sm font-normal text-muted-foreground">Optional</span>}
-                          </div>
-                        </div>
-                        <ChevronDown className={cn("h-5 w-5 transition-transform", expandedSections[section.index] && "rotate-180")} />
-                      </CollapsibleTrigger>
-                    </CardHeader>
-                    <CollapsibleContent>
-                      <CardContent>
-                        {renderSectionContent(section.index)}
-                        <Button onClick={() => handleSaveAndNext(section.index)} disabled={savingSectionIndex === section.index} className="w-full mt-6">
-                            {savingSectionIndex === section.index ? (
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            ) : section.index === sections.length - 1 ? (
-                                'Show Recommendations'
-                            ) : (
-                                'Save & Next'
+    <div className="min-h-screen bg-background text-foreground">
+      <div className="container mx-auto max-w-4xl p-4 md:p-8">
+        <FormProvider {...form}>
+          <form onSubmit={(e) => e.preventDefault()} className="space-y-8">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-3xl">Define Your Project</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <VerticalStepper>
+                  <Step title="Project Basics" index={0} isActive={currentStep === 0} isCompleted={currentStep > 0}>
+                    <div className="space-y-6">
+                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <FormField name="project_name" render={({ field }) => ( <FormItem> <FormLabel>Project Name</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem> )} />
+                            <FormField name="date" render={({ field }) => (
+                                <FormItem>
+                                <FormLabel>Date</FormLabel>
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                    <FormControl>
+                                        <Button variant="outline" className={cn('w-full pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}>
+                                        {field.value ? format(new Date(field.value), 'PPP') : <span>Pick a date</span>}
+                                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                        </Button>
+                                    </FormControl>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0" align="start">
+                                    <Calendar mode="single" selected={new Date(field.value)} onSelect={field.onChange} initialFocus />
+                                    </PopoverContent>
+                                </Popover>
+                                <FormMessage />
+                                </FormItem>
+                            )}/>
+                       </div>
+                       <FormField name="problem_statement" render={({ field }) => ( <FormItem> <FormLabel>Problem Statement</FormLabel> <FormControl><Textarea {...field} rows={3} /></FormControl> <FormMessage /> </FormItem> )} />
+                       <FormField name="role" render={({ field }) => ( <FormItem> <FormLabel>Your Role</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem> )} />
+                       <div className="flex flex-col md:flex-row md:items-center gap-6">
+                            <FormField name="project_type" render={({ field }) => ( <FormItem className="space-y-3"> <FormLabel>Project Type</FormLabel> <FormControl><RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4"> <FormItem className="flex items-center space-x-2"> <FormControl><RadioGroupItem value="new" id="new" /></FormControl> <Label htmlFor="new">New Project</Label> </FormItem> <FormItem className="flex items-center space-x-2"> <FormControl><RadioGroupItem value="existing" id="existing" /></FormControl> <Label htmlFor="existing">Existing Project</Label> </FormItem> </RadioGroup></FormControl> <FormMessage /> </FormItem> )} />
+                            <FormField name="existing_users" render={({ field }) => ( <FormItem className="space-y-3"> <FormLabel>Existing Users</FormLabel> <FormControl><RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4"> <FormItem className="flex items-center space-x-2"> <FormControl><RadioGroupItem value="true" id="users-yes" /></FormControl> <Label htmlFor="users-yes">Yes</Label> </FormItem> <FormItem className="flex items-center space-x-2"> <FormControl><RadioGroupItem value="false" id="users-no" /></FormControl> <Label htmlFor="users-no">No</Label> </FormItem> </RadioGroup></FormControl> <FormMessage /> </FormItem> )} />
+                       </div>
+                    </div>
+                  </Step>
+                  <Step title="Context" index={1} isActive={currentStep === 1} isCompleted={currentStep > 1}>
+                    <div className="space-y-6">
+                        <FormField
+                            name="device_type"
+                            render={() => (
+                                <FormItem>
+                                    <FormLabel className="text-base">Device Type</FormLabel>
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    {deviceTypes.map((item) => (
+                                        <FormField
+                                        key={item.id}
+                                        control={form.control}
+                                        name="device_type"
+                                        render={({ field }) => {
+                                            return (
+                                            <FormItem key={item.id}>
+                                                <FormControl>
+                                                <Card
+                                                    onClick={() => {
+                                                        const currentValue = field.value || [];
+                                                        const newValues = currentValue.includes(item.id)
+                                                            ? currentValue.filter((id) => id !== item.id)
+                                                            : [...currentValue, item.id];
+                                                        field.onChange(newValues);
+                                                    }}
+                                                    className={cn(
+                                                        "cursor-pointer transition-all border-2",
+                                                        field.value?.includes(item.id) ? "border-primary" : ""
+                                                    )}
+                                                >
+                                                    <CardContent className="flex flex-col items-center justify-center p-4 gap-2">
+                                                        <item.icon className="h-8 w-8" />
+                                                        <span className="font-medium">{item.label}</span>
+                                                    </CardContent>
+                                                </Card>
+                                                </FormControl>
+                                            </FormItem>
+                                            );
+                                        }}
+                                        />
+                                    ))}
+                                    </div>
+                                    <FormMessage />
+                                </FormItem>
                             )}
-                        </Button>
-                      </CardContent>
-                    </CollapsibleContent>
-                  </Card>
-                </Collapsible>
-              ))}
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
-      </main>
+                        />
+                        <FormField
+                            name="constraints"
+                            render={() => (
+                                <FormItem>
+                                    <div className="mb-4">
+                                        <FormLabel className="text-base">
+                                            Project Constraints 
+                                            <span className="ml-2 text-xs font-normal text-muted-foreground">Optional</span>
+                                        </FormLabel>
+                                    </div>
+                                    <div className="flex flex-wrap gap-4">
+                                        {constraintTypes.map((item) => (
+                                            <FormField
+                                                key={item.id}
+                                                control={form.control}
+                                                name="constraints"
+                                                render={({ field }) => (
+                                                    <FormItem key={item.id} className="flex flex-row items-start space-x-3 space-y-0">
+                                                        <FormControl>
+                                                            <Checkbox
+                                                                checked={field.value?.includes(item.id)}
+                                                                onCheckedChange={(checked) => {
+                                                                    return checked
+                                                                        ? field.onChange([...(field.value || []), item.id])
+                                                                        : field.onChange(field.value?.filter((value) => value !== item.id));
+                                                                }}
+                                                            />
+                                                        </FormControl>
+                                                        <FormLabel className="font-normal">{item.label}</FormLabel>
+                                                    </FormItem>
+                                                )}
+                                            />
+                                        ))}
+                                    </div>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
+                  </Step>
+                  <Step title="Goals" index={2} isActive={currentStep === 2} isCompleted={currentStep > 2}>
+                    <div className="space-y-6">
+                        <FormField
+                            name="primary_goal"
+                            render={() => (
+                                <FormItem>
+                                    <div className="mb-4">
+                                        <FormLabel className="text-base">Project's Primary Goal</FormLabel>
+                                    </div>
+                                    <div className="space-y-4">
+                                        {goalTypes.map((item) => (
+                                            <FormField
+                                                key={item.id}
+                                                control={form.control}
+                                                name="primary_goal"
+                                                render={({ field }) => (
+                                                <FormItem key={item.id}>
+                                                    <FormControl>
+                                                        <Card
+                                                            onClick={() => {
+                                                                const currentValue = field.value || [];
+                                                                const newValues = currentValue.includes(item.id)
+                                                                    ? currentValue.filter((id) => id !== item.id)
+                                                                    : [...currentValue, item.id];
+                                                                field.onChange(newValues);
+                                                            }}
+                                                            className={cn(
+                                                                "cursor-pointer transition-all border-2",
+                                                                field.value?.includes(item.id) ? "border-primary" : ""
+                                                            )}
+                                                        >
+                                                            <CardContent className="flex items-center p-4 gap-4">
+                                                                <Target className="h-6 w-6 text-primary flex-shrink-0" />
+                                                                <div>
+                                                                    <p className="font-semibold">{item.label}</p>
+                                                                    <p className="text-sm text-muted-foreground">{item.description}</p>
+                                                                </div>
+                                                            </CardContent>
+                                                        </Card>
+                                                    </FormControl>
+                                                </FormItem>
+                                                )}
+                                            />
+                                        ))}
+                                    </div>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            name="outcome"
+                            render={() => (
+                                <FormItem>
+                                    <div className="mb-4">
+                                        <FormLabel className="text-base">Desired Outcome</FormLabel>
+                                    </div>
+                                    <div className="flex flex-wrap gap-4">
+                                        {outcomeTypes.map((item) => (
+                                            <FormField
+                                                key={item.id}
+                                                control={form.control}
+                                                name="outcome"
+                                                render={({ field }) => (
+                                                    <FormItem key={item.id} className="flex flex-row items-start space-x-3 space-y-0">
+                                                        <FormControl>
+                                                            <Checkbox
+                                                                checked={field.value?.includes(item.id)}
+                                                                onCheckedChange={(checked) => {
+                                                                    return checked
+                                                                        ? field.onChange([...(field.value || []), item.id])
+                                                                        : field.onChange(field.value?.filter((value) => value !== item.id));
+                                                                }}
+                                                            />
+                                                        </FormControl>
+                                                        <FormLabel className="font-normal">{item.label}</FormLabel>
+                                                    </FormItem>
+                                                )}
+                                            />
+                                        ))}
+                                    </div>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
+                  </Step>
+                  <Step title="Outputs" index={3} isActive={currentStep === 3} isCompleted={currentStep > 3}>
+                     <FormField
+                        name="output_type"
+                        render={() => (
+                            <FormItem>
+                                {Object.entries(outputTypes).map(([group, items]) => (
+                                    <div key={group} className="space-y-4">
+                                        <h4 className="font-semibold text-base text-muted-foreground">{group}</h4>
+                                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-3">
+                                            {items.map((item) => (
+                                                <FormField
+                                                    key={item.id}
+                                                    control={form.control}
+                                                    name="output_type"
+                                                    render={({ field }) => (
+                                                        <FormItem key={item.id} className="flex flex-row items-center space-x-3 space-y-0">
+                                                            <FormControl>
+                                                                <Checkbox
+                                                                    checked={field.value?.includes(item.id)}
+                                                                    onCheckedChange={(checked) => {
+                                                                        return checked
+                                                                            ? field.onChange([...(field.value || []), item.id])
+                                                                            : field.onChange(field.value?.filter((value) => value !== item.id));
+                                                                    }}
+                                                                />
+                                                            </FormControl>
+                                                            <FormLabel className="font-normal">{item.label}</FormLabel>
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                                <FormMessage />
+                            </FormItem>
+                        )}
+                        />
+                  </Step>
+                </VerticalStepper>
+              </CardContent>
+            </Card>
+
+            <div className="flex justify-end gap-4">
+              {currentStep > 0 && (
+                <Button variant="outline" onClick={() => setCurrentStep(currentStep - 1)}>
+                  Back
+                </Button>
+              )}
+
+              {currentStep < steps.length - 1 ? (
+                 <Button onClick={handleSaveAndNext} disabled={isSaving}>
+                    {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                    Save & Next
+                 </Button>
+              ) : (
+                <Button onClick={handleShowRecommendations} disabled={isSaving}>
+                    <Eye className="mr-2 h-4 w-4" />
+                    Show Recommendations
+                </Button>
+              )}
+            </div>
+          </form>
+        </FormProvider>
+      </div>
     </div>
   );
 }
 
-export default function RequirementsPage() {
-  return (
-    <Suspense>
-      <RequirementsPageContent />
-    </Suspense>
-  )
-}
+    
