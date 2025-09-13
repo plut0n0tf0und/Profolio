@@ -22,7 +22,7 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { CalendarIcon, Smartphone, Laptop, Plug, Monitor, Save, Eye, Loader2, BookOpen, Briefcase, FileText, Blocks, Palette, Presentation as PresentationIcon, Info, Accessibility, Workflow, Coins } from 'lucide-react';
 import { Label } from '@/components/ui/label';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 // Zod schema for validation
 const requirementSchema = z.object({
@@ -62,7 +62,7 @@ const outcomeTypes = [
 
 const outputTypes = {
   "Digital Products": {
-    icon: Smartphone,
+    icon: <Smartphone className="h-5 w-5 text-muted-foreground" />,
     items: [
         { id: 'mobile app', label: 'Mobile App' },
         { id: 'web app', label: 'Web App' },
@@ -73,7 +73,7 @@ const outputTypes = {
     ]
   },
   "Research & Strategy": {
-    icon: BookOpen,
+    icon: <BookOpen className="h-5 w-5 text-muted-foreground" />,
     items: [
         { id: 'service blueprint', label: 'Service Blueprint', description: 'A diagram visualizing the relationships between different service components.' },
         { id: 'journey map', label: 'Journey Map', description: 'A visualization of the user\'s experience through your service.' },
@@ -85,7 +85,7 @@ const outputTypes = {
     ]
   },
   "Design Systems & Assets": {
-    icon: Palette,
+    icon: <Palette className="h-5 w-5 text-muted-foreground" />,
     items: [
         { id: 'design system', label: 'Design System', description: 'A collection of reusable components, guided by clear standards.' },
         { id: 'ui design', label: 'UI Design' },
@@ -98,7 +98,7 @@ const outputTypes = {
     ]
   },
   "Communication & Media": {
-    icon: PresentationIcon,
+    icon: <PresentationIcon className="h-5 w-5 text-muted-foreground" />,
     items: [
         { id: 'accessibility audit', label: 'Accessibility Audit', description: 'An audit of your product\'s conformance with accessibility standards (WCAG).' },
         { id: 'chatbot/voice interface', label: 'Chatbot / Voice Interface' },
@@ -346,51 +346,41 @@ export default function RequirementsPageContent() {
                   <Step title="Goals" index={2} isActive={currentStep === 2} isCompleted={currentStep > 2}>
                     <div className="space-y-6">
                         <FormField
+                            control={form.control}
                             name="primary_goal"
-                            render={() => (
+                            render={({ field }) => (
                                 <FormItem>
                                     <div className="mb-4">
                                         <FormLabel className="text-base">Project's Primary Goal</FormLabel>
                                     </div>
                                     <div className="space-y-4">
                                         {goalTypes.map((item) => (
-                                            <FormField
+                                            <Card
                                                 key={item.id}
-                                                control={form.control}
-                                                name="primary_goal"
-                                                render={({ field }) => (
-                                                <FormItem key={item.id}>
-                                                    <FormControl>
-                                                        <Card
-                                                            onClick={() => {
-                                                                const currentValue = field.value || [];
-                                                                const newValues = currentValue.includes(item.id)
-                                                                    ? currentValue.filter((id) => id !== item.id)
-                                                                    : [...currentValue, item.id];
-                                                                field.onChange(newValues);
-                                                            }}
-                                                            className={cn(
-                                                                "cursor-pointer transition-all border-2",
-                                                                field.value?.includes(item.id) ? "border-primary" : ""
-                                                            )}
-                                                        >
-                                                            <CardContent className="flex items-center p-4 gap-4">
-                                                                <div className="flex items-center space-x-4">
-                                                                    <Checkbox
-                                                                        checked={field.value?.includes(item.id)}
-                                                                        className="h-5 w-5"
-                                                                    />
-                                                                    <div className="flex flex-col">
-                                                                        <p className="font-semibold">{item.label}</p>
-                                                                        <p className="text-sm text-muted-foreground">{item.description}</p>
-                                                                    </div>
-                                                                </div>
-                                                            </CardContent>
-                                                        </Card>
-                                                    </FormControl>
-                                                </FormItem>
+                                                onClick={() => {
+                                                    const currentValue = field.value || [];
+                                                    const newValues = currentValue.includes(item.id)
+                                                        ? currentValue.filter((id) => id !== item.id)
+                                                        : [...currentValue, item.id];
+                                                    field.onChange(newValues);
+                                                }}
+                                                className={cn(
+                                                    "cursor-pointer transition-all border-2",
+                                                    field.value?.includes(item.id) ? "border-primary" : ""
                                                 )}
-                                            />
+                                            >
+                                                <CardContent className="flex items-center p-4 gap-4">
+                                                    <Checkbox
+                                                        checked={field.value?.includes(item.id)}
+                                                        className="h-5 w-5"
+                                                        readOnly
+                                                    />
+                                                    <div className="flex flex-col">
+                                                        <p className="font-semibold">{item.label}</p>
+                                                        <p className="text-sm text-muted-foreground">{item.description}</p>
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
                                         ))}
                                     </div>
                                     <FormMessage />
@@ -441,51 +431,46 @@ export default function RequirementsPageContent() {
                     <TooltipProvider>
                      <FormField
                         name="output_type"
-                        render={() => (
+                        render={({ field }) => (
                             <FormItem>
                                 <div className="space-y-6">
                                 {Object.entries(outputTypes).map(([group, {icon: GroupIcon, items}]) => (
                                     <Card key={group} className="bg-card-nested/50">
                                         <CardHeader>
                                             <CardTitle className="font-semibold text-lg flex items-center gap-2">
-                                                <GroupIcon className="h-5 w-5 text-muted-foreground" />
+                                                {GroupIcon}
                                                 {group}
                                             </CardTitle>
                                         </CardHeader>
                                         <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
                                             {items.map((item) => (
-                                                <FormField
-                                                    key={item.id}
-                                                    control={form.control}
-                                                    name="output_type"
-                                                    render={({ field }) => (
-                                                        <FormItem className="flex flex-row items-center space-x-3 space-y-0">
-                                                            <FormControl>
-                                                                <Checkbox
-                                                                    checked={field.value?.includes(item.id)}
-                                                                    onCheckedChange={(checked) => {
-                                                                        return checked
-                                                                            ? field.onChange([...(field.value || []), item.id])
-                                                                            : field.onChange(field.value?.filter((value) => value !== item.id));
-                                                                    }}
-                                                                />
-                                                            </FormControl>
-                                                            <div className="flex items-center gap-1.5">
-                                                                <FormLabel className="font-normal">{item.label}</FormLabel>
-                                                                {item.description && (
-                                                                    <Tooltip>
-                                                                        <TooltipTrigger asChild>
-                                                                            <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
-                                                                        </TooltipTrigger>
-                                                                        <TooltipContent>
-                                                                            <p className="max-w-xs">{item.description}</p>
-                                                                        </TooltipContent>
-                                                                    </Tooltip>
-                                                                )}
-                                                            </div>
-                                                        </FormItem>
-                                                    )}
-                                                />
+                                                <FormItem key={item.id} className="flex flex-row items-center space-x-3 space-y-0">
+                                                    <FormControl>
+                                                        <Checkbox
+                                                            checked={field.value?.includes(item.id)}
+                                                            onCheckedChange={(checked) => {
+                                                                const currentValue = field.value || [];
+                                                                const newValues = checked
+                                                                    ? [...currentValue, item.id]
+                                                                    : currentValue.filter((value) => value !== item.id);
+                                                                field.onChange(newValues);
+                                                            }}
+                                                        />
+                                                    </FormControl>
+                                                    <div className="flex items-center gap-1.5">
+                                                        <FormLabel className="font-normal">{item.label}</FormLabel>
+                                                        {item.description && (
+                                                            <Tooltip>
+                                                                <TooltipTrigger asChild>
+                                                                    <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                                                                </TooltipTrigger>
+                                                                <TooltipContent>
+                                                                    <p className="max-w-xs">{item.description}</p>
+                                                                </TooltipContent>
+                                                            </Tooltip>
+                                                        )}
+                                                    </div>
+                                                </FormItem>
                                             ))}
                                         </CardContent>
                                     </Card>
