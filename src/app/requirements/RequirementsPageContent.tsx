@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -21,9 +20,8 @@ import { Calendar } from '@/components/ui/calendar';
 import { VerticalStepper, Step } from '@/components/ui/stepper';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { CalendarIcon, Smartphone, Laptop, Plug, Monitor, Save, Eye, Loader2, BookOpen, Briefcase, FileText, Blocks, Palette, Presentation as PresentationIcon, Info, Accessibility, Workflow, Coins, Target } from 'lucide-react';
+import { CalendarIcon, Smartphone, Laptop, Plug, Monitor, Save, Eye, Loader2, Coins, Workflow } from 'lucide-react';
 import { Label } from '@/components/ui/label';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 // Zod schema for validation
 const requirementSchema = z.object({
@@ -50,70 +48,41 @@ const deviceTypes = [
 ];
 
 const goalTypes = [
-    { id: 'innovation & growth', label: 'Innovation & Growth', description: 'Create new features, explore new markets'},
-    { id: 'optimization & conversion', label: 'Optimization & Conversion', description: 'Boost sign-ups, improve funnels' },
-    { id: 'retention & engagement', label: 'Retention & Engagement', description: 'Keep users active, reduce churn' },
+    { id: 'innovation & growth', label: 'Innovation & Growth'},
+    { id: 'optimization & conversion', label: 'Optimization & Conversion' },
+    { id: 'retention & engagement', label: 'Retention & Engagement' },
 ];
 
 const outcomeTypes = [
-  { id: 'qualitative', label: 'Qualitative', icon: <BookOpen className="h-4 w-4 text-muted-foreground" />},
-  { id: 'quantitative', label: 'Quantitative', icon: <Briefcase className="h-4 w-4 text-muted-foreground" /> },
-  { id: 'insight', label: 'Insight', icon: <FileText className="h-4 w-4 text-muted-foreground" /> },
+  { id: 'qualitative', label: 'Qualitative'},
+  { id: 'quantitative', label: 'Quantitative' },
+  { id: 'insight', label: 'Insight' },
 ];
 
-const outputTypes = {
-  "Digital Products": {
-    icon: <Smartphone className="h-5 w-5 text-muted-foreground" />,
-    items: [
-        { id: 'mobile-app', label: 'Mobile App' },
-        { id: 'web-app', label: 'Web App' },
-        { id: 'desktop-software', label: 'Desktop Software' },
-        { id: 'smartwatch-interface', label: 'Smartwatch Interface' },
-        { id: 'tv-or-console-experience', label: 'TV or Console Experience' },
-        { id: 'ar-vr-application', label: 'AR/VR Application', description: 'Applications for augmented or virtual reality headsets.' },
-    ]
-  },
-  "Research & Strategy": {
-    icon: <BookOpen className="h-5 w-5 text-muted-foreground" />,
-    items: [
-        { id: 'service-blueprint', label: 'Service Blueprint', description: 'A diagram visualizing the relationships between different service components.' },
-        { id: 'journey-map', label: 'Journey Map', description: 'A visualization of the user\'s experience through your service.' },
-        { id: 'persona-profile', label: 'Persona Profile', description: 'Fictional characters representing your target user groups.' },
-        { id: 'usability-report', label: 'Usability Report' },
-        { id: 'storyboards', label: 'Storyboards' },
-        { id: 'content-strategy', label: 'Content Strategy' },
-        { id: 'kpi-dashboard-analytics-report', label: 'KPI Dashboard / Analytics Report' },
-    ]
-  },
-  "Design Systems & Assets": {
-    icon: <Palette className="h-5 w-5 text-muted-foreground" />,
-    items: [
-        { id: 'design-system', label: 'Design System', description: 'A collection of reusable components, guided by clear standards.' },
-        { id: 'ui-design', label: 'UI Design' },
-        { id: 'wireframe', label: 'Wireframe' },
-        { id: 'information-architecture', label: 'Information Architecture', description: 'The structural design of shared information environments.' },
-        { id: 'visual-design', label: 'Visual Design' },
-        { id: 'motion-design', label: 'Motion Design' },
-        { id: 'animation', label: 'Animation' },
-        { id: 'interactive-prototype', label: 'Interactive Prototype' },
-    ]
-  },
-  "Communication & Media": {
-    icon: <PresentationIcon className="h-5 w-5 text-muted-foreground" />,
-    items: [
-        { id: 'accessibility-audit', label: 'Accessibility Audit', description: 'An audit of your product\'s conformance with accessibility standards (WCAG).' },
-        { id: 'chatbot-voice-interface', label: 'Chatbot / Voice Interface' },
-        { id: 'voice-interaction', label: 'Voice Interaction' },
-        { id: 'presentation', label: 'Presentation' },
-        { id: 'video', label: 'Video' },
-    ]
-  },
-};
-
+const outputTypes = [
+    { id: 'service-blueprint', label: 'Service Blueprint' },
+    { id: 'journey-map', label: 'Journey Map' },
+    { id: 'persona-profile', label: 'Persona Profile' },
+    { id: 'usability-report', label: 'Usability Report' },
+    { id: 'storyboards', label: 'Storyboards' },
+    { id: 'content-strategy', label: 'Content Strategy' },
+    { id: 'kpi-dashboard-analytics-report', label: 'KPI Dashboard / Analytics Report' },
+    { id: 'design-system', label: 'Design System' },
+    { id: 'ui-design', label: 'UI Design' },
+    { id: 'wireframe', label: 'Wireframe' },
+    { id: 'information-architecture', label: 'Information Architecture' },
+    { id: 'visual-design', label: 'Visual Design' },
+    { id: 'motion-design', label: 'Motion Design' },
+    { id: 'animation', label: 'Animation' },
+    { id: 'interactive-prototype', label: 'Interactive Prototype' },
+    { id: 'accessibility-audit', label: 'Accessibility Audit' },
+    { id: 'presentation', label: 'Presentation' },
+    { id: 'video', label: 'Video' },
+];
 
 const constraintTypes = [
-  { id: 'limited-budget', label: 'Limited Budget', icon: <Coins className="h-4 w-4 text-muted-foreground" /> },
-  { id: 'tight-deadline', label: 'Tight Deadline', icon: <Workflow className="h-4 w-4 text-muted-foreground" /> },
+  { id: 'limited budget', label: 'Limited Budget', icon: <Coins className="h-4 w-4 text-muted-foreground" /> },
+  { id: 'tight deadline', label: 'Tight Deadline', icon: <Workflow className="h-4 w-4 text-muted-foreground" /> },
 ];
 
 export default function RequirementsPageContent() {
@@ -152,7 +121,7 @@ export default function RequirementsPageContent() {
             date: new Date(data.date as string),
             existing_users: data.existing_users === null ? 'false' : String(data.existing_users),
             primary_goal: data.primary_goal || [],
-          } as any);
+          });
         } else {
             console.error('Failed to fetch requirement:', error);
             router.push('/requirements');
@@ -185,9 +154,9 @@ export default function RequirementsPageContent() {
 
       let result;
       if (requirementId) {
-          result = await updateRequirement(requirementId, payload);
+          result = await updateRequirement(requirementId, payload as Requirement);
       } else {
-          result = await insertRequirement(payload);
+          result = await insertRequirement(payload as Requirement);
       }
 
       if (result.error) {
@@ -195,7 +164,6 @@ export default function RequirementsPageContent() {
       } else if (result.data) {
           if (!requirementId) {
             setRequirementId(result.data.id);
-            // Update URL without navigation
             window.history.replaceState(null, '', `?id=${result.data.id}`);
           }
           if (currentStep < steps.length - 1) {
@@ -355,49 +323,33 @@ export default function RequirementsPageContent() {
                   <Step title="Goals" index={2} isActive={currentStep === 2} isCompleted={currentStep > 2}>
                     <div className="space-y-6">
                         <FormField
-                            control={form.control}
                             name="primary_goal"
                             render={() => (
                                 <FormItem>
                                     <div className="mb-4">
                                         <FormLabel className="text-base">Project's Primary Goal(s)</FormLabel>
                                     </div>
-                                    <div className="space-y-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     {goalTypes.map((item) => (
                                         <FormField
                                             key={item.id}
                                             control={form.control}
                                             name="primary_goal"
-                                            render={({ field }) => {
-                                                return (
+                                            render={({ field }) => (
                                                 <FormItem key={item.id} className="flex flex-row items-start space-x-3 space-y-0">
                                                     <FormControl>
-                                                        <Card
-                                                            onClick={() => {
-                                                                const currentValue = field.value || [];
-                                                                const newValues = currentValue.includes(item.id)
-                                                                    ? currentValue.filter((id) => id !== item.id)
-                                                                    : [...currentValue, item.id];
-                                                                field.onChange(newValues);
+                                                        <Checkbox
+                                                            checked={field.value?.includes(item.id)}
+                                                            onCheckedChange={(checked) => {
+                                                                return checked
+                                                                    ? field.onChange([...(field.value || []), item.id])
+                                                                    : field.onChange(field.value?.filter((value) => value !== item.id));
                                                             }}
-                                                            data-state={field.value?.includes(item.id) ? 'checked' : 'unchecked'}
-                                                            className={cn('w-full cursor-pointer transition-all border-2 data-[state=checked]:border-primary')}
-                                                        >
-                                                            <CardContent className="flex items-center p-4 gap-4">
-                                                                <Checkbox
-                                                                    checked={field.value?.includes(item.id)}
-                                                                    className="h-5 w-5 pointer-events-none"
-                                                                />
-                                                                <div className="flex flex-col">
-                                                                    <Label className="font-semibold cursor-pointer">{item.label}</Label>
-                                                                    <p className="text-sm text-muted-foreground">{item.description}</p>
-                                                                </div>
-                                                            </CardContent>
-                                                        </Card>
+                                                        />
                                                     </FormControl>
+                                                    <FormLabel className="font-normal">{item.label}</FormLabel>
                                                 </FormItem>
-                                                );
-                                            }}
+                                            )}
                                         />
                                     ))}
                                     </div>
@@ -430,10 +382,7 @@ export default function RequirementsPageContent() {
                                                                 }}
                                                             />
                                                         </FormControl>
-                                                        <FormLabel className="font-normal flex items-center gap-2">
-                                                            {item.icon}
-                                                            {item.label}
-                                                        </FormLabel>
+                                                        <FormLabel className="font-normal">{item.label}</FormLabel>
                                                     </FormItem>
                                                 )}
                                             />
@@ -446,60 +395,43 @@ export default function RequirementsPageContent() {
                     </div>
                   </Step>
                   <Step title="Outputs" index={3} isActive={currentStep === 3} isCompleted={currentStep > 3}>
-                    <TooltipProvider>
                      <FormField
                         name="output_type"
                         render={({ field }) => (
                             <FormItem>
-                                <div className="space-y-6">
-                                {Object.entries(outputTypes).map(([group, {icon: GroupIcon, items}]) => (
-                                    <Card key={group} className="bg-card-nested/50">
-                                        <CardHeader>
-                                            <CardTitle className="font-semibold text-lg flex items-center gap-2">
-                                                {GroupIcon}
-                                                {group}
-                                            </CardTitle>
-                                        </CardHeader>
-                                        <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
-                                            {items.map((item) => (
-                                                <FormItem key={item.id} className="flex flex-row items-center space-x-3 space-y-0">
+                                <div className="mb-4">
+                                    <FormLabel className="text-base">Desired Output Type(s)</FormLabel>
+                                </div>
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                {outputTypes.map((item) => (
+                                    <FormField
+                                        key={item.id}
+                                        control={form.control}
+                                        name="output_type"
+                                        render={({ field }) => {
+                                            return (
+                                                <FormItem key={item.id} className="flex flex-row items-start space-x-3 space-y-0">
                                                     <FormControl>
                                                         <Checkbox
                                                             checked={field.value?.includes(item.id)}
                                                             onCheckedChange={(checked) => {
-                                                                const itemId = item.id;
-                                                                const currentValue = field.value || [];
-                                                                const newValues = checked
-                                                                    ? [...currentValue, itemId]
-                                                                    : currentValue.filter((value: string) => value !== itemId);
-                                                                field.onChange(newValues);
+                                                                return checked
+                                                                    ? field.onChange([...(field.value || []), item.id])
+                                                                    : field.onChange(field.value?.filter((value) => value !== item.id));
                                                             }}
                                                         />
                                                     </FormControl>
-                                                    <div className="flex items-center gap-1.5">
-                                                        <FormLabel className="font-normal">{item.label}</FormLabel>
-                                                        {item.description && (
-                                                            <Tooltip>
-                                                                <TooltipTrigger asChild>
-                                                                    <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
-                                                                </TooltipTrigger>
-                                                                <TooltipContent>
-                                                                    <p className="max-w-xs">{item.description}</p>
-                                                                </TooltipContent>
-                                                            </Tooltip>
-                                                        )}
-                                                    </div>
+                                                    <FormLabel className="font-normal">{item.label}</FormLabel>
                                                 </FormItem>
-                                            ))}
-                                        </CardContent>
-                                    </Card>
+                                            );
+                                        }}
+                                    />
                                 ))}
                                 </div>
-                                <FormMessage className="mt-4" />
+                                <FormMessage />
                             </FormItem>
                         )}
                         />
-                    </TooltipProvider>
                   </Step>
                 </VerticalStepper>
               </CardContent>

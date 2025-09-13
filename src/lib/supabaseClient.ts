@@ -178,7 +178,7 @@ export async function updateUserProfile(updates: { full_name?: string; role?: st
 }
 
 export async function insertRequirement(
-  requirement: Partial<Requirement>
+  requirement: Requirement
 ): Promise<{ data: Requirement | null; error: PostgrestError | null }> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { data: null, error: { message: 'User not authenticated', details: '', hint: '', code: '401', name: '' } };
@@ -201,7 +201,7 @@ export async function insertRequirement(
 
 export async function updateRequirement(
   id: string,
-  updates: Partial<Requirement>
+  updates: Requirement
 ): Promise<{ data: Requirement | null; error: PostgrestError | null }> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { data: null, error: { message: 'User not authenticated', details: '', hint: '', code: '401', name: '' } };
@@ -311,7 +311,7 @@ export async function saveOrUpdateResult(
     }
   } catch (error: any) {
     console.error("Error in saveOrUpdateResult:", error);
-    return { data: null, error };
+    return { data, null };
   }
 }
 

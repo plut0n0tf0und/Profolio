@@ -8,25 +8,16 @@ export async function middleware(request: NextRequest) {
     },
   })
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-  if (!supabaseUrl || supabaseUrl === 'YOUR_SUPABASE_URL' || !supabaseKey || supabaseKey === 'YOUR_SUPABASE_ANON_KEY') {
-    // If Supabase credentials are not set, we cannot do anything.
-    // The request will be handled as if there's no middleware.
-    // The pages themselves will throw an error when they try to initialize Supabase.
-    return response;
-  }
-
   const supabase = createServerClient(
-    supabaseUrl,
-    supabaseKey,
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
         get(name: string) {
           return request.cookies.get(name)?.value
         },
         set(name: string, value: string, options: CookieOptions) {
+          // If the cookie is updated, update the request for a refreshed session
           request.cookies.set({
             name,
             value,
@@ -37,6 +28,7 @@ export async function middleware(request: NextRequest) {
               headers: request.headers,
             },
           })
+          // Also update the response so the client gets the refreshed cookie
           response.cookies.set({
             name,
             value,
@@ -44,6 +36,7 @@ export async function middleware(request: NextRequest) {
           })
         },
         remove(name: string, options: CookieOptions) {
+          // If the cookie is removed, update the request to remove it
           request.cookies.set({
             name,
             value: '',
@@ -54,6 +47,7 @@ export async function middleware(request: NextRequest) {
               headers: request.headers,
             },
           })
+          // Also update the response to remove the cookie
           response.cookies.set({
             name,
             value: '',
@@ -64,6 +58,7 @@ export async function middleware(request: NextRequest) {
     }
   )
 
+  // This will refresh the session if it's expired
   await supabase.auth.getSession()
 
   return response
