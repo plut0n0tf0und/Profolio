@@ -57,21 +57,17 @@ export function AuthForm({ mode }: AuthFormProps) {
   );
   const [showForgotPassword, setShowForgotPassword] = useState(false);
 
-  const form = useForm<LoginSchema | SignUpSchema>({
-    resolver: zodResolver(mode === 'login' ? loginSchema : signUpSchema),
+  const schema = mode === 'login' ? loginSchema : signUpSchema;
+
+  const form = useForm<z.infer<typeof schema>>({
+    resolver: zodResolver(schema),
     defaultValues: { email: '', password: '' },
   });
 
-  const onSubmit = (values: LoginSchema | SignUpSchema) => {
+  const onSubmit = (values: z.infer<typeof schema>) => {
     startTransition(async () => {
         if (mode === 'signup') {
-            const result = signUpSchema.safeParse(values);
-            if (!result.success) {
-                // This should theoretically not happen due to the resolver, but it's good practice
-                toast({ title: 'Invalid data', description: 'Please check your inputs.', variant: 'destructive' });
-                return;
-            }
-            const { error } = await supabase.auth.signUp(result.data);
+            const { error } = await supabase.auth.signUp(values as SignUpSchema);
             if (error) {
                 toast({
                   title: 'Sign Up Failed',
@@ -87,12 +83,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                 router.refresh();
             }
         } else { // login
-            const result = loginSchema.safeParse(values);
-             if (!result.success) {
-                toast({ title: 'Invalid data', description: 'Please check your inputs.', variant: 'destructive' });
-                return;
-            }
-            const { error } = await supabase.auth.signInWithPassword(result.data);
+            const { error } = await supabase.auth.signInWithPassword(values as LoginSchema);
             if (error) {
                 toast({
                   title: 'Login Failed',
