@@ -92,7 +92,7 @@ const outputTypes = {
         { id: 'wireframe', label: 'Wireframe' },
         { id: 'information architecture', label: 'Information Architecture', description: 'The structural design of shared information environments.' },
         { id: 'visual design', label: 'Visual Design' },
-        { id: 'motion design', label: 'Motion Design' },
+        { id_v2: 'motion design', label: 'Motion Design' },
         { id: 'animation', label: 'Animation' },
         { id: 'interactive prototype', label: 'Interactive Prototype' },
     ]
@@ -108,6 +108,7 @@ const outputTypes = {
     ]
   },
 };
+
 
 const constraintTypes = [
   { id: 'limited budget', label: 'Limited Budget', icon: <Coins className="h-4 w-4 text-muted-foreground" /> },
@@ -205,11 +206,16 @@ export default function RequirementsPageContent() {
   const handleShowRecommendations = async () => {
     const isValid = await form.trigger();
     if (isValid && requirementId) {
+      // Final save before navigating
+      await handleSaveAndNext();
       router.push(`/requirements/result/${requirementId}`);
-    } else {
+    } else if (!isValid) {
       toast({ title: 'Incomplete Form', description: 'Please complete all steps before viewing recommendations.' });
+    } else if (!requirementId) {
+      toast({ title: 'Save Required', description: 'Please save your progress on the first step.' });
     }
   };
+
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -345,47 +351,50 @@ export default function RequirementsPageContent() {
                   </Step>
                   <Step title="Goals" index={2} isActive={currentStep === 2} isCompleted={currentStep > 2}>
                     <div className="space-y-6">
-                       <FormField
-                          control={form.control}
-                          name="primary_goal"
-                          render={({ field }) => (
-                            <FormItem>
-                              <div className="mb-4">
-                                <FormLabel className="text-base">Project's Primary Goal</FormLabel>
-                              </div>
-                              <div className="space-y-4">
-                                {goalTypes.map((item) => (
-                                    <Card
-                                        key={item.id}
-                                        onClick={() => {
-                                        const currentValue = field.value || [];
-                                        const newValues = currentValue.includes(item.id)
-                                            ? currentValue.filter((id) => id !== item.id)
-                                            : [...currentValue, item.id];
-                                        field.onChange(newValues);
-                                        }}
-                                        className={cn(
-                                        "cursor-pointer transition-all border-2",
-                                        field.value?.includes(item.id) ? "border-primary" : ""
-                                        )}
-                                    >
-                                        <CardContent className="flex items-center p-4 gap-4">
-                                            <Checkbox
-                                                checked={field.value?.includes(item.id)}
-                                                className="h-5 w-5 pointer-events-none"
-                                                tabIndex={-1}
-                                            />
-                                            <div className="flex flex-col">
+                        <FormField
+                            control={form.control}
+                            name="primary_goal"
+                            render={({ field }) => (
+                                <FormItem>
+                                <div className="mb-4">
+                                    <FormLabel className="text-base">Project's Primary Goal</FormLabel>
+                                </div>
+                                <div className="space-y-4">
+                                    {goalTypes.map((item) => {
+                                        const isSelected = field.value?.includes(item.id);
+                                        return (
+                                            <Card
+                                            key={item.id}
+                                            onClick={() => {
+                                                const currentValue = field.value || [];
+                                                const newValues = isSelected
+                                                ? currentValue.filter((id) => id !== item.id)
+                                                : [...currentValue, item.id];
+                                                field.onChange(newValues);
+                                            }}
+                                            className={cn(
+                                                'cursor-pointer transition-all border-2',
+                                                isSelected ? 'border-primary' : ''
+                                            )}
+                                            >
+                                            <CardContent className="flex items-center p-4 gap-4">
+                                                <Checkbox
+                                                    checked={isSelected}
+                                                    className="h-5 w-5 pointer-events-none"
+                                                    tabIndex={-1}
+                                                />
+                                                <div className="flex flex-col">
                                                 <p className="font-semibold">{item.label}</p>
                                                 <p className="text-sm text-muted-foreground">{item.description}</p>
-                                            </div>
-                                        </CardContent>
-                                    </Card>
-                                ))}
-                              </div>
-                              <FormMessage />
-                            </FormItem>
-                          )}
+                                                </div>
+                                            </CardContent>
+                                            </Card>
+                                        );
+                                    })}
+                                </div>
+                                <FormMessage />
+                                </FormItem>
+                            )}
                         />
                         <FormField
                             name="outcome"
@@ -444,15 +453,16 @@ export default function RequirementsPageContent() {
                                         </CardHeader>
                                         <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
                                             {items.map((item) => (
-                                                <FormItem key={item.id} className="flex flex-row items-center space-x-3 space-y-0">
+                                                <FormItem key={item.id || item.id_v2} className="flex flex-row items-center space-x-3 space-y-0">
                                                     <FormControl>
                                                         <Checkbox
-                                                            checked={field.value?.includes(item.id)}
+                                                            checked={field.value?.includes(item.id || item.id_v2!)}
                                                             onCheckedChange={(checked) => {
+                                                                const itemId = item.id || item.id_v2!;
                                                                 const currentValue = field.value || [];
                                                                 const newValues = checked
-                                                                    ? [...currentValue, item.id]
-                                                                    : currentValue.filter((value: string) => value !== item.id);
+                                                                    ? [...currentValue, itemId]
+                                                                    : currentValue.filter((value: string) => value !== itemId);
                                                                 field.onChange(newValues);
                                                             }}
                                                         />
