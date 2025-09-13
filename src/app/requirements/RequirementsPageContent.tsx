@@ -59,26 +59,43 @@ const outcomeTypes = [
   { id: 'insight', label: 'Insight' },
 ];
 
-const outputTypes = [
-    { id: 'service-blueprint', label: 'Service Blueprint' },
-    { id: 'journey-map', label: 'Journey Map' },
-    { id: 'persona-profile', label: 'Persona Profile' },
-    { id: 'usability-report', label: 'Usability Report' },
+const outputTypes = {
+  "Digital Products": [
+    { id: 'mobile app', label: 'Mobile App' },
+    { id: 'web app', label: 'Web App' },
+    { id: 'desktop software', label: 'Desktop Software' },
+    { id: 'smartwatch interface', label: 'Smartwatch Interface' },
+    { id: 'tv or console experience', label: 'TV or Console Experience' },
+    { id: 'ar/vr application', label: 'AR/VR Application' },
+  ],
+  "Research & Strategy": [
+    { id: 'service blueprint', label: 'Service Blueprint' },
+    { id: 'journey map', label: 'Journey Map' },
+    { id: 'persona profile', label: 'Persona Profile' },
+    { id: 'usability report', label: 'Usability Report' },
     { id: 'storyboards', label: 'Storyboards' },
-    { id: 'content-strategy', label: 'Content Strategy' },
-    { id: 'kpi-dashboard-analytics-report', label: 'KPI Dashboard / Analytics Report' },
-    { id: 'design-system', label: 'Design System' },
-    { id: 'ui-design', label: 'UI Design' },
+    { id: 'content strategy', label: 'Content Strategy' },
+    { id: 'kpi dashboard/analytics report', label: 'KPI Dashboard / Analytics Report' },
+  ],
+  "Design Systems & Assets": [
+    { id: 'design system', label: 'Design System' },
+    { id: 'ui design', label: 'UI Design' },
     { id: 'wireframe', label: 'Wireframe' },
-    { id: 'information-architecture', label: 'Information Architecture' },
-    { id: 'visual-design', label: 'Visual Design' },
-    { id: 'motion-design', label: 'Motion Design' },
+    { id: 'information architecture', label: 'Information Architecture' },
+    { id: 'visual design', label: 'Visual Design' },
+    { id: 'motion design', label: 'Motion Design' },
     { id: 'animation', label: 'Animation' },
-    { id: 'interactive-prototype', label: 'Interactive Prototype' },
-    { id: 'accessibility-audit', label: 'Accessibility Audit' },
+    { id: 'interactive prototype', label: 'Interactive Prototype' },
+  ],
+  "Communication & Media": [
+    { id: 'accessibility audit', label: 'Accessibility Audit' },
+    { id: 'chatbot/voice interface', label: 'Chatbot / Voice Interface' },
+    { id: 'voice interaction', label: 'Voice Interaction' },
     { id: 'presentation', label: 'Presentation' },
     { id: 'video', label: 'Video' },
-];
+  ],
+};
+
 
 const constraintTypes = [
   { id: 'limited budget', label: 'Limited Budget', icon: <Coins className="h-4 w-4 text-muted-foreground" /> },
