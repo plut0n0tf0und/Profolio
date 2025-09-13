@@ -20,7 +20,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { VerticalStepper, Step } from '@/components/ui/stepper';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { CalendarIcon, Smartphone, Laptop, Plug, Monitor, Target, Save, Eye, Loader2, BookOpen, Briefcase, FileText, Blocks, Palette, Presentation as PresentationIcon, Info } from 'lucide-react';
+import { CalendarIcon, Smartphone, Laptop, Plug, Monitor, Target, Save, Eye, Loader2, BookOpen, Briefcase, FileText, Blocks, Palette, Presentation as PresentationIcon, Info, Accessibility } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -517,3 +517,5 @@ export default function RequirementsPageContent() {
     </div>
   );
 }
+
+    
