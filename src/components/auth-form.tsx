@@ -62,51 +62,50 @@ export function AuthForm({ mode }: AuthFormProps) {
     defaultValues: { email: '', password: '' },
   });
 
-  const onSubmit = (values: LoginData | SignUpData) => {
+  const handleSignUp = (values: SignUpData) => {
     startTransition(async () => {
-        if (mode === 'signup') {
-            const result = signUpSchema.safeParse(values);
-            if (!result.success) {
-                toast({ title: 'Invalid data', description: 'Please check your inputs.', variant: 'destructive'});
-                return;
-            }
-            // `result.data` is now correctly typed as SignUpData
-            const { error } = await supabase.auth.signUp(result.data);
-            if (error) {
-                toast({
-                  title: 'Sign Up Failed',
-                  description: error.message || 'An unexpected error occurred.',
-                  variant: 'destructive',
-                });
-            } else {
-                toast({
-                  title: 'Welcome!',
-                  description: 'You have successfully signed up. Redirecting...',
-                });
-                router.push('/dashboard');
-                router.refresh();
-            }
-        } else { // login
-            const result = loginSchema.safeParse(values);
-             if (!result.success) {
-                toast({ title: 'Invalid data', description: 'Please check your inputs.', variant: 'destructive'});
-                return;
-            }
-            // `result.data` is now correctly typed as LoginData
-            const { error } = await supabase.auth.signInWithPassword(result.data);
-            if (error) {
-                toast({
-                  title: 'Login Failed',
-                  description: error.message || 'Invalid email or password.',
-                  variant: 'destructive',
-                });
-              } else {
-                router.push('/dashboard');
-                router.refresh();
-              }
-        }
+      const { error } = await supabase.auth.signUp(values);
+      if (error) {
+        toast({
+          title: 'Sign Up Failed',
+          description: error.message || 'An unexpected error occurred.',
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'Welcome!',
+          description: 'You have successfully signed up. Redirecting...',
+        });
+        router.push('/dashboard');
+        router.refresh();
+      }
     });
   };
+
+  const handleLogin = (values: LoginData) => {
+    startTransition(async () => {
+      const { error } = await supabase.auth.signInWithPassword(values);
+      if (error) {
+        toast({
+          title: 'Login Failed',
+          description: error.message || 'Invalid email or password.',
+          variant: 'destructive',
+        });
+      } else {
+        router.push('/dashboard');
+        router.refresh();
+      }
+    });
+  };
+
+  const onSubmit = (values: LoginData | SignUpData) => {
+    if (mode === 'signup') {
+      handleSignUp(values as SignUpData);
+    } else {
+      handleLogin(values as LoginData);
+    }
+  };
+
 
   const handleSocialLogin = async (provider: 'google' | 'github') => {
     setSocialLoginPending(provider);
