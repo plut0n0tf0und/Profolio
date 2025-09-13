@@ -62,22 +62,22 @@ const outcomeTypes = [
 const outputTypes = {
   "Reports & Prototypes": [
     { id: 'usability report', label: 'Usability Report' },
-    { id: 'interactive prototype', label: 'Interactive Prototype' },
-    { id: 'journey map', label: 'Journey Map' },
     { id: 'persona profile', label: 'Persona Profile' },
-    { id: 'service blueprint', label: 'Service Blueprint' },
-    { id: 'kpi dashboard/analytics report', label: 'KPI Dashboard/Analytics Report' },
     { id: 'storyboards', label: 'Storyboards' },
-    { id: 'presentation', label: 'Presentation' },
-    { id: 'accessibility audit', label: 'Accessibility Audit' },
     { id: 'video', label: 'Video' },
+    { id: 'interactive prototype', label: 'Interactive Prototype' },
+    { id: 'service blueprint', label: 'Service Blueprint' },
+    { id: 'presentation', label: 'Presentation' },
+    { id: 'journey map', label: 'Journey Map' },
+    { id: 'kpi dashboard/analytics report', label: 'KPI Dashboard/Analytics Report' },
+    { id: 'accessibility audit', label: 'Accessibility Audit' },
   ],
   "Design Assets": [
     { id: 'wireframe', label: 'Wireframe' },
-    { id: 'ui design', label: 'UI Design' },
-    { id: 'visual design', label: 'Visual Design' },
     { id: 'information architecture', label: 'Information Architecture' },
+    { id: 'ui design', label: 'UI Design' },
     { id: 'content strategy', label: 'Content Strategy' },
+    { id: 'visual design', label: 'Visual Design' },
   ],
 };
 
