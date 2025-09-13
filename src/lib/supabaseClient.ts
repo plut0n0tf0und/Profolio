@@ -77,7 +77,7 @@ const RequirementSchema = z.object({
   device_type: z.array(z.string()).optional(),
   project_type: z.string().optional(),
   existing_users: z.boolean().nullable(),
-  primary_goal: z.array(z.string()).optional().nullable(),
+  primary_goal: z.string().optional().nullable(),
   constraints: z.array(z.string()).optional().nullable(),
 });
 export type Requirement = z.infer<typeof RequirementSchema>;
@@ -97,7 +97,7 @@ const SavedResultSchema = z.object({
   stage_techniques: z.any().nullable(), // jsonb
   created_at: z.string().optional(), // timestamp
   existing_users: z.boolean().nullable(),
-  primary_goal: z.array(z.string()).optional().nullable(),
+  primary_goal: z.string().optional().nullable(),
   constraints: z.array(z.string()).optional().nullable(),
   project_type: z.string().optional(),
 });
@@ -511,3 +511,5 @@ export async function fetchRemixedTechniquesByProjectId(projectId: string): Prom
     if (error) console.error("Error fetching remixed techniques by project ID:", error);
     return { data, error };
 }
+
+    

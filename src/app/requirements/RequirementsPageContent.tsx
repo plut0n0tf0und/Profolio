@@ -34,7 +34,7 @@ const requirementSchema = z.object({
   existing_users: z.string({ required_error: 'Please specify if you have existing users.' }),
   device_type: z.array(z.string()).min(1, 'Please select at least one device type.'),
   constraints: z.array(z.string()).optional(),
-  primary_goal: z.array(z.string()).min(1, 'Please select at least one primary goal.'),
+  primary_goal: z.string({ required_error: 'Please select a primary goal.' }),
   outcome: z.array(z.string()).min(1, 'Please select at least one desired outcome.'),
   output_type: z.array(z.string()).min(1, 'Please select at least one output type.'),
 });
@@ -133,7 +133,7 @@ export default function RequirementsPageContent() {
       project_type: 'new',
       device_type: [],
       constraints: [],
-      primary_goal: [],
+      primary_goal: '',
       outcome: [],
       output_type: [],
     },
@@ -149,7 +149,7 @@ export default function RequirementsPageContent() {
             ...data,
             date: new Date(data.date as string),
             existing_users: data.existing_users === null ? undefined : String(data.existing_users),
-            primary_goal: data.primary_goal || [],
+            primary_goal: data.primary_goal || '',
           } as any);
         } else {
             console.error('Failed to fetch requirement:', error);
@@ -352,7 +352,7 @@ export default function RequirementsPageContent() {
                   </Step>
                   <Step title="Goals" index={2} isActive={currentStep === 2} isCompleted={currentStep > 2}>
                     <div className="space-y-6">
-                       <FormField
+                      <FormField
                           control={form.control}
                           name="primary_goal"
                           render={({ field }) => (
@@ -360,39 +360,35 @@ export default function RequirementsPageContent() {
                               <div className="mb-4">
                                 <FormLabel className="text-base">Project's Primary Goal</FormLabel>
                               </div>
-                              <div className="space-y-4">
-                                {goalTypes.map((item) => {
-                                  const isSelected = field.value?.includes(item.id);
-                                  return (
-                                    <Card
-                                      key={item.id}
-                                      onClick={() => {
-                                        const currentValue = field.value || [];
-                                        const newValues = isSelected
-                                          ? currentValue.filter((id) => id !== item.id)
-                                          : [...currentValue, item.id];
-                                        field.onChange(newValues);
-                                      }}
-                                      className={cn(
-                                        'cursor-pointer transition-all border-2',
-                                        isSelected ? 'border-primary' : ''
-                                      )}
-                                    >
-                                      <CardContent className="flex items-center p-4 gap-4">
-                                        <Checkbox
-                                            checked={!!isSelected}
-                                            className="h-5 w-5 pointer-events-none"
-                                            tabIndex={-1}
-                                        />
-                                        <div className="flex flex-col">
-                                          <p className="font-semibold">{item.label}</p>
-                                          <p className="text-sm text-muted-foreground">{item.description}</p>
-                                        </div>
-                                      </CardContent>
-                                    </Card>
-                                  );
-                                })}
-                              </div>
+                              <FormControl>
+                                <RadioGroup
+                                  onValueChange={field.onChange}
+                                  value={field.value}
+                                  className="space-y-4"
+                                >
+                                {goalTypes.map((item) => (
+                                    <FormItem key={item.id}>
+                                      <FormControl>
+                                        <Card
+                                          data-state={field.value === item.id ? 'checked' : 'unchecked'}
+                                          className={cn(
+                                            'cursor-pointer transition-all border-2 data-[state=checked]:border-primary'
+                                          )}
+                                          onClick={() => field.onChange(item.id)}
+                                        >
+                                          <CardContent className="flex items-center p-4 gap-4">
+                                              <RadioGroupItem value={item.id} id={item.id} className="h-5 w-5 pointer-events-none" />
+                                              <div className="flex flex-col">
+                                                <Label htmlFor={item.id} className="font-semibold cursor-pointer">{item.label}</Label>
+                                                <p className="text-sm text-muted-foreground">{item.description}</p>
+                                              </div>
+                                          </CardContent>
+                                        </Card>
+                                      </FormControl>
+                                    </FormItem>
+                                  ))}
+                                </RadioGroup>
+                              </FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -522,5 +518,7 @@ export default function RequirementsPageContent() {
     </div>
   );
 }
+
+    
 
     
