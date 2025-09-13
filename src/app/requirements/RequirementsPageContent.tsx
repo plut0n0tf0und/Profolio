@@ -20,7 +20,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { VerticalStepper, Step } from '@/components/ui/stepper';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { CalendarIcon, Smartphone, Laptop, Plug, Monitor, Target, Save, Eye, Loader2, BookOpen, Briefcase, FileText, Blocks, Palette, Presentation as PresentationIcon, Info, Accessibility } from 'lucide-react';
+import { CalendarIcon, Smartphone, Laptop, Plug, Monitor, Target, Save, Eye, Loader2, BookOpen, Briefcase, FileText, Blocks, Palette, Presentation as PresentationIcon, Info, Accessibility, Workflow, Coins } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -110,8 +110,8 @@ const outputTypes = {
 };
 
 const constraintTypes = [
-  { id: 'limited budget', label: 'Limited Budget' },
-  { id: 'tight deadline', label: 'Tight Deadline' },
+  { id: 'limited budget', label: 'Limited Budget', icon: Coins },
+  { id: 'tight deadline', label: 'Tight Deadline', icon: Workflow },
 ];
 
 export default function RequirementsPageContent() {
@@ -261,39 +261,42 @@ export default function RequirementsPageContent() {
                                 <FormItem>
                                     <FormLabel className="text-base">Device Type</FormLabel>
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                    {deviceTypes.map((item) => (
-                                        <FormField
-                                        key={item.id}
-                                        control={form.control}
-                                        name="device_type"
-                                        render={({ field }) => {
-                                            return (
-                                            <FormItem key={item.id}>
-                                                <FormControl>
-                                                <Card
-                                                    onClick={() => {
-                                                        const currentValue = field.value || [];
-                                                        const newValues = currentValue.includes(item.id)
-                                                            ? currentValue.filter((id) => id !== item.id)
-                                                            : [...currentValue, item.id];
-                                                        field.onChange(newValues);
-                                                    }}
-                                                    className={cn(
-                                                        "cursor-pointer transition-all border-2",
-                                                        field.value?.includes(item.id) ? "border-primary" : ""
-                                                    )}
-                                                >
-                                                    <CardContent className="flex flex-col items-center justify-center p-4 gap-2">
-                                                        <item.icon className="h-8 w-8" />
-                                                        <span className="font-medium">{item.label}</span>
-                                                    </CardContent>
-                                                </Card>
-                                                </FormControl>
-                                            </FormItem>
-                                            );
-                                        }}
-                                        />
-                                    ))}
+                                    {deviceTypes.map((item) => {
+                                        const Icon = item.icon;
+                                        return (
+                                            <FormField
+                                            key={item.id}
+                                            control={form.control}
+                                            name="device_type"
+                                            render={({ field }) => {
+                                                return (
+                                                <FormItem key={item.id}>
+                                                    <FormControl>
+                                                    <Card
+                                                        onClick={() => {
+                                                            const currentValue = field.value || [];
+                                                            const newValues = currentValue.includes(item.id)
+                                                                ? currentValue.filter((id) => id !== item.id)
+                                                                : [...currentValue, item.id];
+                                                            field.onChange(newValues);
+                                                        }}
+                                                        className={cn(
+                                                            "cursor-pointer transition-all border-2",
+                                                            field.value?.includes(item.id) ? "border-primary" : ""
+                                                        )}
+                                                    >
+                                                        <CardContent className="flex flex-col items-center justify-center p-4 gap-2">
+                                                            <Icon className="h-8 w-8" />
+                                                            <span className="font-medium">{item.label}</span>
+                                                        </CardContent>
+                                                    </Card>
+                                                    </FormControl>
+                                                </FormItem>
+                                                );
+                                            }}
+                                            />
+                                        );
+                                    })}
                                     </div>
                                     <FormMessage />
                                 </FormItem>
@@ -310,28 +313,34 @@ export default function RequirementsPageContent() {
                                         </FormLabel>
                                     </div>
                                     <div className="flex flex-wrap gap-4">
-                                        {constraintTypes.map((item) => (
-                                            <FormField
-                                                key={item.id}
-                                                control={form.control}
-                                                name="constraints"
-                                                render={({ field }) => (
-                                                    <FormItem key={item.id} className="flex flex-row items-start space-x-3 space-y-0">
-                                                        <FormControl>
-                                                            <Checkbox
-                                                                checked={field.value?.includes(item.id)}
-                                                                onCheckedChange={(checked) => {
-                                                                    return checked
-                                                                        ? field.onChange([...(field.value || []), item.id])
-                                                                        : field.onChange(field.value?.filter((value) => value !== item.id));
-                                                                }}
-                                                            />
-                                                        </FormControl>
-                                                        <FormLabel className="font-normal">{item.label}</FormLabel>
-                                                    </FormItem>
-                                                )}
-                                            />
-                                        ))}
+                                        {constraintTypes.map((item) => {
+                                            const Icon = item.icon;
+                                            return (
+                                                <FormField
+                                                    key={item.id}
+                                                    control={form.control}
+                                                    name="constraints"
+                                                    render={({ field }) => (
+                                                        <FormItem key={item.id} className="flex flex-row items-start space-x-3 space-y-0">
+                                                            <FormControl>
+                                                                <Checkbox
+                                                                    checked={field.value?.includes(item.id)}
+                                                                    onCheckedChange={(checked) => {
+                                                                        return checked
+                                                                            ? field.onChange([...(field.value || []), item.id])
+                                                                            : field.onChange(field.value?.filter((value) => value !== item.id));
+                                                                    }}
+                                                                />
+                                                            </FormControl>
+                                                            <FormLabel className="font-normal flex items-center gap-2">
+                                                                <Icon className="h-4 w-4 text-muted-foreground" />
+                                                                {item.label}
+                                                            </FormLabel>
+                                                        </FormItem>
+                                                    )}
+                                                />
+                                            );
+                                        })}
                                     </div>
                                     <FormMessage />
                                 </FormItem>
@@ -401,7 +410,9 @@ export default function RequirementsPageContent() {
                                         <FormLabel className="text-base">Desired Outcome</FormLabel>
                                     </div>
                                     <div className="flex flex-wrap gap-4">
-                                        {outcomeTypes.map((item) => (
+                                        {outcomeTypes.map((item) => {
+                                            const Icon = item.icon;
+                                            return(
                                             <FormField
                                                 key={item.id}
                                                 control={form.control}
@@ -418,11 +429,14 @@ export default function RequirementsPageContent() {
                                                                 }}
                                                             />
                                                         </FormControl>
-                                                        <FormLabel className="font-normal">{item.label}</FormLabel>
+                                                        <FormLabel className="font-normal flex items-center gap-2">
+                                                            <Icon className="h-4 w-4 text-muted-foreground" />
+                                                            {item.label}
+                                                        </FormLabel>
                                                     </FormItem>
                                                 )}
                                             />
-                                        ))}
+                                        )})}
                                     </div>
                                     <FormMessage />
                                 </FormItem>
@@ -517,5 +531,7 @@ export default function RequirementsPageContent() {
     </div>
   );
 }
+
+    
 
     
