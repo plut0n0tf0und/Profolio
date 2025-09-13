@@ -60,7 +60,7 @@ const outcomeTypes = [
 ];
 
 const outputTypes = {
-  "Digital Products": [
+  "🖥️ Digital Products": [
     { id: "mobile app", label: "Mobile App" },
     { id: "web app", label: "Web App" },
     { id: "desktop software", label: "Desktop Software" },
@@ -68,7 +68,7 @@ const outputTypes = {
     { id: "tv or console experience", label: "TV or Console Experience" },
     { id: "ar/vr application", label: "AR/VR Application" },
   ],
-  "Research & Strategy": [
+  "📑 Research & Strategy": [
     { id: "service blueprint", label: "Service Blueprint" },
     { id: "journey map", label: "Journey Map" },
     { id: "persona profile", label: "Persona Profile" },
@@ -77,7 +77,7 @@ const outputTypes = {
     { id: "content strategy", label: "Content Strategy" },
     { id: "kpi dashboard / analytics report", label: "KPI Dashboard / Analytics Report" },
   ],
-  "Design Systems & Assets": [
+  "🎨 Design Systems & Assets": [
     { id: "design system", label: "Design System" },
     { id: "ui design", label: "UI Design" },
     { id: "wireframe", label: "Wireframe" },
@@ -87,8 +87,8 @@ const outputTypes = {
     { id: "animation", label: "Animation" },
     { id: "interactive prototype", label: "Interactive Prototype" },
   ],
-  "Communication & Media": [
-    { id: "accessibility audit", label: "Accessibility Audit" },
+  "🗣️ Communication & Media": [
+    { id: "accessibility audio", label: "Accessibility Audio" },
     { id: "chatbot / voice interface", label: "Chatbot / Voice Interface" },
     { id: "voice interaction", label: "Voice Interaction" },
     { id: "presentation", label: "Presentation" },
