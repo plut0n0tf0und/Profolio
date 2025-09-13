@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -64,45 +65,45 @@ const outputTypes = {
   "Digital Products": {
     icon: <Smartphone className="h-5 w-5 text-muted-foreground" />,
     items: [
-        { id: 'mobile app', label: 'Mobile App' },
-        { id: 'web app', label: 'Web App' },
-        { id: 'desktop software', label: 'Desktop Software' },
-        { id: 'smartwatch interface', label: 'Smartwatch Interface' },
-        { id: 'tv or console experience', label: 'TV or Console Experience' },
-        { id: 'ar/vr application', label: 'AR/VR Application', description: 'Applications for augmented or virtual reality headsets.' },
+        { id: 'mobile-app', label: 'Mobile App' },
+        { id: 'web-app', label: 'Web App' },
+        { id: 'desktop-software', label: 'Desktop Software' },
+        { id: 'smartwatch-interface', label: 'Smartwatch Interface' },
+        { id: 'tv-or-console-experience', label: 'TV or Console Experience' },
+        { id: 'ar-vr-application', label: 'AR/VR Application', description: 'Applications for augmented or virtual reality headsets.' },
     ]
   },
   "Research & Strategy": {
     icon: <BookOpen className="h-5 w-5 text-muted-foreground" />,
     items: [
-        { id: 'service blueprint', label: 'Service Blueprint', description: 'A diagram visualizing the relationships between different service components.' },
-        { id: 'journey map', label: 'Journey Map', description: 'A visualization of the user\'s experience through your service.' },
-        { id: 'persona profile', label: 'Persona Profile', description: 'Fictional characters representing your target user groups.' },
-        { id: 'usability report', label: 'Usability Report' },
+        { id: 'service-blueprint', label: 'Service Blueprint', description: 'A diagram visualizing the relationships between different service components.' },
+        { id: 'journey-map', label: 'Journey Map', description: 'A visualization of the user\'s experience through your service.' },
+        { id: 'persona-profile', label: 'Persona Profile', description: 'Fictional characters representing your target user groups.' },
+        { id: 'usability-report', label: 'Usability Report' },
         { id: 'storyboards', label: 'Storyboards' },
-        { id: 'content strategy', label: 'Content Strategy' },
-        { id: 'kpi dashboard/analytics report', label: 'KPI Dashboard / Analytics Report' },
+        { id: 'content-strategy', label: 'Content Strategy' },
+        { id: 'kpi-dashboard-analytics-report', label: 'KPI Dashboard / Analytics Report' },
     ]
   },
   "Design Systems & Assets": {
     icon: <Palette className="h-5 w-5 text-muted-foreground" />,
     items: [
-        { id: 'design system', label: 'Design System', description: 'A collection of reusable components, guided by clear standards.' },
-        { id: 'ui design', label: 'UI Design' },
+        { id: 'design-system', label: 'Design System', description: 'A collection of reusable components, guided by clear standards.' },
+        { id: 'ui-design', label: 'UI Design' },
         { id: 'wireframe', label: 'Wireframe' },
-        { id: 'information architecture', label: 'Information Architecture', description: 'The structural design of shared information environments.' },
-        { id: 'visual design', label: 'Visual Design' },
-        { id: 'motion design', label: 'Motion Design' },
+        { id: 'information-architecture', label: 'Information Architecture', description: 'The structural design of shared information environments.' },
+        { id: 'visual-design', label: 'Visual Design' },
+        { id: 'motion-design', label: 'Motion Design' },
         { id: 'animation', label: 'Animation' },
-        { id: 'interactive prototype', label: 'Interactive Prototype' },
+        { id: 'interactive-prototype', label: 'Interactive Prototype' },
     ]
   },
   "Communication & Media": {
     icon: <PresentationIcon className="h-5 w-5 text-muted-foreground" />,
     items: [
-        { id: 'accessibility audit', label: 'Accessibility Audit', description: 'An audit of your product\'s conformance with accessibility standards (WCAG).' },
-        { id: 'chatbot/voice interface', label: 'Chatbot / Voice Interface' },
-        { id: 'voice interaction', label: 'Voice Interaction' },
+        { id: 'accessibility-audit', label: 'Accessibility Audit', description: 'An audit of your product\'s conformance with accessibility standards (WCAG).' },
+        { id: 'chatbot-voice-interface', label: 'Chatbot / Voice Interface' },
+        { id: 'voice-interaction', label: 'Voice Interaction' },
         { id: 'presentation', label: 'Presentation' },
         { id: 'video', label: 'Video' },
     ]
@@ -111,8 +112,8 @@ const outputTypes = {
 
 
 const constraintTypes = [
-  { id: 'limited budget', label: 'Limited Budget', icon: <Coins className="h-4 w-4 text-muted-foreground" /> },
-  { id: 'tight deadline', label: 'Tight Deadline', icon: <Workflow className="h-4 w-4 text-muted-foreground" /> },
+  { id: 'limited-budget', label: 'Limited Budget', icon: <Coins className="h-4 w-4 text-muted-foreground" /> },
+  { id: 'tight-deadline', label: 'Tight Deadline', icon: <Workflow className="h-4 w-4 text-muted-foreground" /> },
 ];
 
 export default function RequirementsPageContent() {
@@ -131,6 +132,7 @@ export default function RequirementsPageContent() {
       problem_statement: '',
       role: '',
       project_type: 'new',
+      existing_users: 'false',
       device_type: [],
       constraints: [],
       primary_goal: '',
@@ -148,7 +150,7 @@ export default function RequirementsPageContent() {
           form.reset({
             ...data,
             date: new Date(data.date as string),
-            existing_users: data.existing_users === null ? undefined : String(data.existing_users),
+            existing_users: data.existing_users === null ? 'false' : String(data.existing_users),
             primary_goal: data.primary_goal?.[0] || '',
           } as any);
         } else {
@@ -178,7 +180,6 @@ export default function RequirementsPageContent() {
           ...formData,
           date: new Date(formData.date).toISOString(),
           existing_users: formData.existing_users === 'true',
-          project_type: formData.project_type,
           primary_goal: formData.primary_goal ? [formData.primary_goal] : [],
       };
 

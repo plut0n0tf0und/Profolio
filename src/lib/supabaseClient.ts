@@ -178,21 +178,18 @@ export async function updateUserProfile(updates: { full_name?: string; role?: st
 }
 
 export async function insertRequirement(
-  requirement: Partial<Requirement> & { primary_goal?: string | string[] }
+  requirement: Partial<Requirement>
 ): Promise<{ data: Requirement | null; error: PostgrestError | null }> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { data: null, error: { message: 'User not authenticated', details: '', hint: '', code: '401', name: '' } };
 
-  // Ensure primary_goal is an array
-  const primaryGoalAsArray = Array.isArray(requirement.primary_goal)
-    ? requirement.primary_goal
+  const primaryGoalAsArray = Array.isArray(requirement.primary_goal) 
+    ? requirement.primary_goal 
     : (requirement.primary_goal ? [requirement.primary_goal] : []);
-
 
   const requirementToInsert = {
     ...requirement,
     user_id: user.id,
-    project_type: requirement.project_type,
     primary_goal: primaryGoalAsArray,
   };
 
@@ -208,13 +205,13 @@ export async function insertRequirement(
 
 export async function updateRequirement(
   id: string,
-  updates: Partial<Requirement> & { primary_goal?: string | string[] }
+  updates: Partial<Requirement>
 ): Promise<{ data: Requirement | null; error: PostgrestError | null }> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { data: null, error: { message: 'User not authenticated', details: '', hint: '', code: '401', name: '' } };
 
-   const primaryGoalAsArray = Array.isArray(updates.primary_goal)
-    ? updates.primary_goal
+  const primaryGoalAsArray = Array.isArray(updates.primary_goal) 
+    ? updates.primary_goal 
     : (updates.primary_goal ? [updates.primary_goal] : []);
 
   const updatesWithArrayGoal = {
