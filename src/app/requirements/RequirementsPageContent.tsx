@@ -20,9 +20,9 @@ import { Calendar } from '@/components/ui/calendar';
 import { VerticalStepper, Step } from '@/components/ui/stepper';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { CalendarIcon, Smartphone, Laptop, Plug, Monitor, Save, Eye, Loader2, BookOpen, Briefcase, FileText, Blocks, Palette, Presentation as PresentationIcon, Info, Accessibility, Workflow, Coins } from 'lucide-react';
+import { CalendarIcon, Smartphone, Laptop, Plug, Monitor, Save, Eye, Loader2, BookOpen, Briefcase, FileText, Blocks, Palette, Presentation as PresentationIcon, Info, Accessibility, Workflow, Coins, Target } from 'lucide-react';
 import { Label } from '@/components/ui/label';
-import { Tooltip, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 // Zod schema for validation
 const requirementSchema = z.object({
@@ -49,7 +49,7 @@ const deviceTypes = [
 ];
 
 const goalTypes = [
-    { id: 'innovation & growth', label: 'Innovation & Growth', description: 'Create new features, explore new markets' },
+    { id: 'innovation & growth', label: 'Innovation & Growth', description: 'Create new features, explore new markets'},
     { id: 'optimization & conversion', label: 'Optimization & Conversion', description: 'Boost sign-ups, improve funnels' },
     { id: 'retention & engagement', label: 'Retention & Engagement', description: 'Keep users active, reduce churn' },
 ];
@@ -345,47 +345,47 @@ export default function RequirementsPageContent() {
                   </Step>
                   <Step title="Goals" index={2} isActive={currentStep === 2} isCompleted={currentStep > 2}>
                     <div className="space-y-6">
-                        <FormField
-                            control={form.control}
-                            name="primary_goal"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <div className="mb-4">
-                                        <FormLabel className="text-base">Project's Primary Goal</FormLabel>
-                                    </div>
-                                    <div className="space-y-4">
-                                        {goalTypes.map((item) => (
-                                            <Card
-                                                key={item.id}
-                                                onClick={() => {
-                                                    const currentValue = field.value || [];
-                                                    const newValues = currentValue.includes(item.id)
-                                                        ? currentValue.filter((id) => id !== item.id)
-                                                        : [...currentValue, item.id];
-                                                    field.onChange(newValues);
-                                                }}
-                                                className={cn(
-                                                    "cursor-pointer transition-all border-2",
-                                                    field.value?.includes(item.id) ? "border-primary" : ""
-                                                )}
-                                            >
-                                                <CardContent className="flex items-center p-4 gap-4">
-                                                    <Checkbox
-                                                        checked={field.value?.includes(item.id)}
-                                                        className="h-5 w-5"
-                                                        readOnly
-                                                    />
-                                                    <div className="flex flex-col">
-                                                        <p className="font-semibold">{item.label}</p>
-                                                        <p className="text-sm text-muted-foreground">{item.description}</p>
-                                                    </div>
-                                                </CardContent>
-                                            </Card>
-                                        ))}
-                                    </div>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
+                       <FormField
+                          control={form.control}
+                          name="primary_goal"
+                          render={({ field }) => (
+                            <FormItem>
+                              <div className="mb-4">
+                                <FormLabel className="text-base">Project's Primary Goal</FormLabel>
+                              </div>
+                              <div className="space-y-4">
+                                {goalTypes.map((item) => (
+                                  <Card
+                                    key={item.id}
+                                    onClick={() => {
+                                      const currentValue = field.value || [];
+                                      const newValues = currentValue.includes(item.id)
+                                        ? currentValue.filter((id) => id !== item.id)
+                                        : [...currentValue, item.id];
+                                      field.onChange(newValues);
+                                    }}
+                                    className={cn(
+                                      "cursor-pointer transition-all border-2",
+                                      field.value?.includes(item.id) ? "border-primary" : ""
+                                    )}
+                                  >
+                                    <CardContent className="flex items-center p-4 gap-4">
+                                      <Checkbox
+                                        checked={field.value?.includes(item.id)}
+                                        className="h-5 w-5 pointer-events-none"
+                                        tabIndex={-1}
+                                      />
+                                      <div className="flex flex-col">
+                                        <p className="font-semibold">{item.label}</p>
+                                        <p className="text-sm text-muted-foreground">{item.description}</p>
+                                      </div>
+                                    </CardContent>
+                                  </Card>
+                                ))}
+                              </div>
+                              <FormMessage />
+                            </FormItem>
+                          )}
                         />
                         <FormField
                             name="outcome"
@@ -452,7 +452,7 @@ export default function RequirementsPageContent() {
                                                                 const currentValue = field.value || [];
                                                                 const newValues = checked
                                                                     ? [...currentValue, item.id]
-                                                                    : currentValue.filter((value) => value !== item.id);
+                                                                    : currentValue.filter((value: string) => value !== item.id);
                                                                 field.onChange(newValues);
                                                             }}
                                                         />
