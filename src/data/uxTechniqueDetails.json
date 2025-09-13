@@ -9,10 +9,10 @@
     "outcomes": ["qualitative", "insight", "quantitative"],
     "output_types": ["usability report"],
     "device_types": ["mobile", "desktop", "electronics", "kiosk"],
-    "project_types": ["new", "existing", "old"],
+    "project_types": ["new", "existing"],
     "user_base": ["no users", "existing"],
     "goals": ["innovation & growth", "optimization & conversion"],
-    "constraints": ["limited budget", "tight budget"]
+    "constraints": ["limited budget", "tight deadline"]
   },
   {
     "name": "user interviews",
@@ -21,9 +21,9 @@
     "speed": "medium",
     "focus": "generative",
     "outcomes": ["qualitative", "insight"],
-    "output_types": ["usability report", "persona profile", "journey map", "content strategy", "presentation", "video"],
+    "output_types": ["usability report", "persona profile", "journey map", "video", "presentation"],
     "device_types": ["mobile", "desktop", "electronics", "kiosk"],
-    "project_types": ["new", "existing", "old"],
+    "project_types": ["new", "existing"],
     "user_base": ["new", "existing"],
     "goals": ["innovation & growth", "retention & engagement"],
     "constraints": ["limited budget"]
@@ -35,9 +35,9 @@
     "speed": "slow",
     "focus": "generative",
     "outcomes": ["qualitative", "insight"],
-    "output_types": ["usability report", "persona profile", "journey map", "storyboards", "presentation", "video"],
+    "output_types": ["usability report", "persona profile", "journey map", "storyboards", "video", "presentation"],
     "device_types": ["mobile", "desktop", "electronics", "kiosk"],
-    "project_types": ["new", "existing", "old"],
+    "project_types": ["new", "existing"],
     "user_base": ["new", "existing"],
     "goals": ["innovation & growth"],
     "constraints": ["limited budget"]
@@ -51,7 +51,7 @@
     "outcomes": ["qualitative", "insight"],
     "output_types": ["journey map", "persona profile", "usability report"],
     "device_types": ["mobile", "desktop", "electronics"],
-    "project_types": ["new", "existing", "old"],
+    "project_types": ["existing"],
     "user_base": ["existing"],
     "goals": ["retention & engagement"],
     "constraints": ["limited budget"]
@@ -65,7 +65,7 @@
     "outcomes": ["qualitative", "insight"],
     "output_types": ["persona profile", "journey map", "service blueprint"],
     "device_types": ["mobile", "desktop", "electronics", "kiosk"],
-    "project_types": ["new", "existing", "old"],
+    "project_types": ["new", "existing"],
     "user_base": ["new", "existing"],
     "goals": ["innovation & growth"],
     "constraints": []
@@ -79,10 +79,10 @@
     "outcomes": ["quantitative", "qualitative"],
     "output_types": ["usability report", "kpi dashboard/analytics report", "presentation"],
     "device_types": ["mobile", "desktop"],
-    "project_types": ["new", "existing", "old"],
+    "project_types": ["new", "existing"],
     "user_base": ["new", "existing", "no users"],
     "goals": ["optimization & conversion"],
-    "constraints": ["limited budget", "tight budget"]
+    "constraints": ["limited budget", "tight deadline"]
   },
   {
     "name": "web/app analytics review",
@@ -93,8 +93,8 @@
     "outcomes": ["quantitative"],
     "output_types": ["kpi dashboard/analytics report", "presentation", "usability report"],
     "device_types": ["mobile", "desktop"],
-    "project_types": ["new", "existing", "old"],
-    "user_base": ["new", "existing"],
+    "project_types": ["existing"],
+    "user_base": ["existing"],
     "goals": ["optimization & conversion"],
     "constraints": ["limited budget"]
   },
@@ -107,10 +107,10 @@
     "outcomes": ["quantitative", "insight"],
     "output_types": ["kpi dashboard/analytics report", "content strategy", "presentation", "usability report"],
     "device_types": ["mobile", "desktop"],
-    "project_types": ["new", "existing", "old"],
+    "project_types": ["new", "existing"],
     "user_base": ["new", "existing", "no users"],
     "goals": ["innovation & growth", "optimization & conversion"],
-    "constraints": ["limited budget", "tight budget"]
+    "constraints": ["limited budget", "tight deadline"]
   },
   {
     "name": "card sorting",
@@ -121,10 +121,10 @@
     "outcomes": ["qualitative", "insight"],
     "output_types": ["information architecture", "content strategy"],
     "device_types": ["mobile", "desktop"],
-    "project_types": ["new", "existing", "old"],
+    "project_types": ["new", "existing"],
     "user_base": ["new", "existing", "no users"],
     "goals": ["optimization & conversion"],
-    "constraints": ["limited budget", "tight budget"]
+    "constraints": ["limited budget", "tight deadline"]
   },
   {
     "name": "tree testing",
@@ -135,10 +135,10 @@
     "outcomes": ["quantitative"],
     "output_types": ["information architecture", "usability report"],
     "device_types": ["mobile", "desktop"],
-    "project_types": ["new", "existing", "old"],
+    "project_types": ["existing"],
     "user_base": ["new", "existing", "no users"],
     "goals": ["optimization & conversion"],
-    "constraints": ["limited budget", "tight budget"]
+    "constraints": ["limited budget", "tight deadline"]
   },
   {
     "name": "persona creation & validation",
@@ -149,7 +149,7 @@
     "outcomes": ["qualitative", "insight"],
     "output_types": ["persona profile", "presentation"],
     "device_types": ["mobile", "desktop", "electronics", "kiosk"],
-    "project_types": ["new", "existing", "old"],
+    "project_types": ["new", "existing"],
     "user_base": ["new", "existing", "no users"],
     "goals": ["innovation & growth"],
     "constraints": ["limited budget"]
@@ -163,10 +163,10 @@
     "outcomes": ["qualitative", "insight"],
     "output_types": ["persona profile", "journey map"],
     "device_types": ["mobile", "desktop", "electronics", "kiosk"],
-    "project_types": ["new", "existing", "old"],
+    "project_types": ["new", "existing"],
     "user_base": ["new", "existing", "no users"],
     "goals": ["retention & engagement"],
-    "constraints": ["limited budget", "tight budget"]
+    "constraints": ["limited budget", "tight deadline"]
   },
   {
     "name": "customer journey mapping",
@@ -177,7 +177,7 @@
     "outcomes": ["qualitative", "insight"],
     "output_types": ["journey map", "service blueprint", "presentation"],
     "device_types": ["mobile", "desktop", "electronics", "kiosk"],
-    "project_types": ["new", "existing", "old"],
+    "project_types": ["new", "existing"],
     "user_base": ["new", "existing", "no users"],
     "goals": ["retention & engagement"],
     "constraints": ["limited budget"]
@@ -191,10 +191,10 @@
     "outcomes": ["insight"],
     "output_types": ["journey map", "persona profile", "presentation"],
     "device_types": ["mobile", "desktop", "electronics", "kiosk"],
-    "project_types": ["new", "existing", "old"],
+    "project_types": ["new", "existing"],
     "user_base": ["new", "existing", "no users"],
     "goals": ["innovation & growth", "retention & engagement"],
-    "constraints": ["limited budget", "tight budget"]
+    "constraints": ["limited budget", "tight deadline"]
   },
   {
     "name": "prioritization matrices (moscow, kano, etc.)",
@@ -205,10 +205,10 @@
     "outcomes": ["quantitative"],
     "output_types": ["kpi dashboard/analytics report", "presentation"],
     "device_types": ["mobile", "desktop", "electronics", "kiosk"],
-    "project_types": ["new", "existing", "old"],
+    "project_types": ["new", "existing"],
     "user_base": ["new", "existing", "no users"],
     "goals": ["optimization & conversion"],
-    "constraints": ["limited budget", "tight budget"]
+    "constraints": ["limited budget", "tight deadline"]
   },
   {
     "name": "wireframing",
@@ -217,12 +217,12 @@
     "speed": "medium",
     "focus": "generative",
     "outcomes": ["insight"],
-    "output_types": ["mobile app", "web app", "desktop software", "smartwatch interface", "tv or console experience", "wireframe", "interactive prototype"],
+    "output_types": ["wireframe", "interactive prototype"],
     "device_types": ["mobile", "desktop"],
-    "project_types": ["new", "existing", "old"],
+    "project_types": ["new", "existing"],
     "user_base": ["new", "existing", "no users"],
     "goals": ["innovation & growth"],
-    "constraints": ["limited budget", "tight budget"]
+    "constraints": ["limited budget", "tight deadline"]
   },
   {
     "name": "low-fidelity prototyping",
@@ -231,12 +231,12 @@
     "speed": "fast",
     "focus": "generative",
     "outcomes": ["qualitative"],
-    "output_types": ["mobile app", "web app", "desktop software", "smartwatch interface", "tv or console experience", "interactive prototype", "usability report"],
+    "output_types": ["interactive prototype", "usability report"],
     "device_types": ["mobile", "desktop"],
-    "project_types": ["new", "existing", "old"],
+    "project_types": ["new", "existing"],
     "user_base": ["new", "existing", "no users"],
     "goals": ["innovation & growth"],
-    "constraints": ["limited budget", "tight budget"]
+    "constraints": ["limited budget", "tight deadline"]
   },
   {
     "name": "information architecture (sitemaps, task flows)",
@@ -245,12 +245,12 @@
     "speed": "medium",
     "focus": "generative",
     "outcomes": ["insight"],
-    "output_types": ["mobile app", "web app", "desktop software", "content strategy", "information architecture", "wireframe"],
+    "output_types": ["content strategy", "information architecture", "wireframe"],
     "device_types": ["mobile", "desktop", "kiosk"],
-    "project_types": ["new", "existing", "old"],
+    "project_types": ["new", "existing"],
     "user_base": ["new", "existing", "no users"],
     "goals": ["optimization & conversion", "retention & engagement"],
-    "constraints": ["limited budget", "tight budget"]
+    "constraints": ["limited budget", "tight deadline"]
   },
   {
     "name": "high-fidelity prototyping",
@@ -259,9 +259,9 @@
     "speed": "slow",
     "focus": "generative",
     "outcomes": ["qualitative"],
-    "output_types": ["mobile app", "web app", "desktop software", "smartwatch interface", "tv or console experience", "ar/vr application", "interactive prototype", "ui design", "visual design", "usability report"],
+    "output_types": ["interactive prototype", "ui design", "visual design", "usability report"],
     "device_types": ["mobile", "desktop"],
-    "project_types": ["new", "existing", "old"],
+    "project_types": ["new", "existing"],
     "user_base": ["new", "existing", "no users"],
     "goals": ["innovation & growth"],
     "constraints": ["limited budget"]
@@ -273,9 +273,9 @@
     "speed": "medium",
     "focus": "generative",
     "outcomes": ["qualitative"],
-    "output_types": ["mobile app", "web app", "desktop software", "smartwatch interface", "tv or console experience", "design system", "ui design", "visual design"],
+    "output_types": ["ui design", "visual design"],
     "device_types": ["mobile", "desktop"],
-    "project_types": ["new", "existing", "old"],
+    "project_types": ["new", "existing"],
     "user_base": ["new", "existing", "no users"],
     "goals": ["optimization & conversion", "retention & engagement"],
     "constraints": ["limited budget"]
@@ -287,9 +287,9 @@
     "speed": "medium",
     "focus": "generative",
     "outcomes": ["qualitative"],
-    "output_types": ["mobile app", "web app", "desktop software", "smartwatch interface", "tv or console experience", "ar/vr application", "motion design", "animation", "interactive prototype"],
+    "output_types": ["interactive prototype"],
     "device_types": ["mobile", "desktop"],
-    "project_types": ["new", "existing", "old"],
+    "project_types": ["new", "existing"],
     "user_base": ["new", "existing", "no users"],
     "goals": ["retention & engagement"],
     "constraints": ["limited budget"]
@@ -301,12 +301,12 @@
     "speed": "medium",
     "focus": "evaluative",
     "outcomes": ["qualitative", "quantitative"],
-    "output_types": ["usability report", "accessibility audio", "ui design", "interactive prototype"],
+    "output_types": ["usability report", "accessibility audit", "ui design", "interactive prototype"],
     "device_types": ["mobile", "desktop"],
-    "project_types": ["new", "existing", "old"],
+    "project_types": ["new", "existing"],
     "user_base": ["new", "existing", "no users"],
     "goals": ["optimization & conversion", "retention & engagement"],
-    "constraints": ["limited budget", "tight budget"]
+    "constraints": ["limited budget", "tight deadline"]
   },
   {
     "name": "a/b testing",
@@ -315,10 +315,10 @@
     "speed": "fast",
     "focus": "evaluative",
     "outcomes": ["quantitative"],
-    "output_types": ["kpi dashboard/analytics report", "ui design", "visual design", "motion design"],
+    "output_types": ["kpi dashboard/analytics report", "ui design", "visual design"],
     "device_types": ["mobile", "desktop"],
-    "project_types": ["new", "existing", "old"],
-    "user_base": ["new", "existing"],
+    "project_types": ["existing"],
+    "user_base": ["existing"],
     "goals": ["optimization & conversion"],
     "constraints": ["limited budget"]
   },
@@ -331,8 +331,8 @@
     "outcomes": ["qualitative", "insight"],
     "output_types": ["usability report", "video", "interactive prototype"],
     "device_types": ["mobile", "desktop", "kiosk"],
-    "project_types": ["new", "existing", "old"],
-    "user_base": ["new", "existing"],
+    "project_types": ["existing"],
+    "user_base": ["existing"],
     "goals": ["optimization & conversion"],
     "constraints": ["limited budget"]
   },
@@ -345,8 +345,8 @@
     "outcomes": ["quantitative"],
     "output_types": ["kpi dashboard/analytics report", "presentation", "usability report"],
     "device_types": ["mobile", "desktop"],
-    "project_types": ["new", "existing", "old"],
-    "user_base": ["new", "existing"],
+    "project_types": ["existing"],
+    "user_base": ["existing"],
     "goals": ["optimization & conversion", "retention & engagement"],
     "constraints": ["limited budget"]
   },
@@ -359,9 +359,11 @@
     "outcomes": ["quantitative"],
     "output_types": ["kpi dashboard/analytics report", "presentation"],
     "device_types": ["mobile", "desktop", "electronics", "kiosk"],
-    "project_types": ["new", "existing", "old"],
-    "user_base": ["new", "existing"],
+    "project_types": ["existing"],
+    "user_base": ["existing"],
     "goals": ["optimization & conversion", "retention & engagement"],
     "constraints": ["limited budget"]
   }
 ]
+
+    

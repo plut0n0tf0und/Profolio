@@ -145,24 +145,10 @@ export async function updateRequirement(
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { data: null, error: { message: 'User not authenticated', details: '', hint: '', code: '401', name: '' } };
   
-  // Ensure all fields from the form are included in the update payload.
-  const updatesToSave = {
-    project_name: updates.project_name,
-    date: updates.date,
-    problem_statement: updates.problem_statement,
-    role: updates.role,
-    project_type: updates.project_type,
-    existing_users: updates.existing_users,
-    device_type: updates.device_type,
-    constraints: updates.constraints,
-    primary_goal: updates.primary_goal,
-    outcome: updates.outcome,
-    output_type: updates.output_type,
-  };
-
+  // This was the bug. It was not including all fields. Now it does.
   const { data, error } = await supabase
       .from('requirements')
-      .update(updatesToSave)
+      .update(updates)
       .eq('id', id)
       .eq('user_id', user.id)
       .select()
@@ -465,3 +451,5 @@ export async function fetchRemixedTechniquesByProjectId(projectId: string): Prom
     if (error) console.error("Error fetching remixed techniques by project ID:", error);
     return { data, error };
 }
+
+    
