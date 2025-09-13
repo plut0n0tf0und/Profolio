@@ -105,7 +105,7 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
       .sort((a, b) => b.score - a.score); // Sort by score, descending
 
     // If lean, be very selective. Otherwise, be a bit more generous.
-    const limit = isLean ? 2 : 3;
+    const limit = isLean ? 2 : 4;
     const minScore = isLean ? 5 : 1;
 
     let finalTechniques = techniquesForStage

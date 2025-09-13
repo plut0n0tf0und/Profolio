@@ -35,7 +35,7 @@ const requirementSchema = z.object({
   existing_users: z.string({ required_error: 'Please specify if you have existing users.' }),
   device_type: z.array(z.string()).min(1, 'Please select at least one device type.'),
   constraints: z.array(z.string()).optional(),
-  primary_goal: z.string({ required_error: 'Please select a primary goal.' }),
+  primary_goal: z.array(z.string()).min(1, 'Please select at least one primary goal.'),
   outcome: z.array(z.string()).min(1, 'Please select at least one desired outcome.'),
   output_type: z.array(z.string()).min(1, 'Please select at least one output type.'),
 });
@@ -135,7 +135,7 @@ export default function RequirementsPageContent() {
       existing_users: 'false',
       device_type: [],
       constraints: [],
-      primary_goal: '',
+      primary_goal: [],
       outcome: [],
       output_type: [],
     },
@@ -151,7 +151,7 @@ export default function RequirementsPageContent() {
             ...data,
             date: new Date(data.date as string),
             existing_users: data.existing_users === null ? 'false' : String(data.existing_users),
-            primary_goal: data.primary_goal?.[0] || '',
+            primary_goal: data.primary_goal || [],
           } as any);
         } else {
             console.error('Failed to fetch requirement:', error);
@@ -180,7 +180,7 @@ export default function RequirementsPageContent() {
           ...formData,
           date: new Date(formData.date).toISOString(),
           existing_users: formData.existing_users === 'true',
-          primary_goal: formData.primary_goal ? [formData.primary_goal] : [],
+          primary_goal: formData.primary_goal,
       };
 
       let result;
@@ -360,37 +360,35 @@ export default function RequirementsPageContent() {
                           render={({ field }) => (
                             <FormItem>
                               <div className="mb-4">
-                                <FormLabel className="text-base">Project's Primary Goal</FormLabel>
+                                <FormLabel className="text-base">Project's Primary Goal(s)</FormLabel>
                               </div>
-                              <FormControl>
-                                <RadioGroup
-                                  onValueChange={field.onChange}
-                                  value={field.value}
-                                  className="space-y-4"
-                                >
+                              <div className="space-y-4">
                                 {goalTypes.map((item) => (
-                                    <FormItem key={item.id}>
-                                      <FormControl>
-                                        <Card
-                                          data-state={field.value === item.id ? 'checked' : 'unchecked'}
-                                          className={cn(
-                                            'cursor-pointer transition-all border-2 data-[state=checked]:border-primary'
-                                          )}
-                                          onClick={() => field.onChange(item.id)}
-                                        >
-                                          <CardContent className="flex items-center p-4 gap-4">
-                                              <RadioGroupItem value={item.id} id={item.id} className="h-5 w-5 pointer-events-none" />
-                                              <div className="flex flex-col">
-                                                <Label htmlFor={item.id} className="font-semibold cursor-pointer">{item.label}</Label>
+                                    <Card
+                                        key={item.id}
+                                        data-state={field.value?.includes(item.id) ? 'checked' : 'unchecked'}
+                                        className={cn('cursor-pointer transition-all border-2 data-[state=checked]:border-primary')}
+                                        onClick={() => {
+                                            const currentValue = field.value || [];
+                                            const newValues = currentValue.includes(item.id)
+                                                ? currentValue.filter((id) => id !== item.id)
+                                                : [...currentValue, item.id];
+                                            field.onChange(newValues);
+                                        }}
+                                    >
+                                        <CardContent className="flex items-center p-4 gap-4">
+                                            <Checkbox
+                                                checked={field.value?.includes(item.id)}
+                                                className="h-5 w-5 pointer-events-none"
+                                            />
+                                            <div className="flex flex-col">
+                                                <Label className="font-semibold cursor-pointer">{item.label}</Label>
                                                 <p className="text-sm text-muted-foreground">{item.description}</p>
-                                              </div>
-                                          </CardContent>
-                                        </Card>
-                                      </FormControl>
-                                    </FormItem>
-                                  ))}
-                                </RadioGroup>
-                              </FormControl>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                ))}
+                              </div>
                               <FormMessage />
                             </FormItem>
                           )}
@@ -520,7 +518,3 @@ export default function RequirementsPageContent() {
     </div>
   );
 }
-
-    
-
-    
