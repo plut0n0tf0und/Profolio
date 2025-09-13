@@ -99,6 +99,7 @@ const SavedResultSchema = z.object({
   existing_users: z.boolean().nullable(),
   primary_goal: z.array(z.string()).optional().nullable(),
   constraints: z.array(z.string()).optional().nullable(),
+  project_type: z.string().optional(),
 });
 export type SavedResult = z.infer<typeof SavedResultSchema>;
 
@@ -184,7 +185,7 @@ export async function insertRequirement(
   const requirementToInsert = {
     ...requirement,
     user_id: user.id,
-    project_type: requirement.project_type, // This should now match DB constraints
+    project_type: requirement.project_type,
   };
 
   const { data, error } = await supabase

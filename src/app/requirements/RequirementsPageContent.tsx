@@ -355,32 +355,32 @@ export default function RequirementsPageContent() {
                               </div>
                               <div className="space-y-4">
                                 {goalTypes.map((item) => (
-                                  <Card
-                                    key={item.id}
-                                    onClick={() => {
-                                      const currentValue = field.value || [];
-                                      const newValues = currentValue.includes(item.id)
-                                        ? currentValue.filter((id) => id !== item.id)
-                                        : [...currentValue, item.id];
-                                      field.onChange(newValues);
-                                    }}
-                                    className={cn(
-                                      "cursor-pointer transition-all border-2",
-                                      field.value?.includes(item.id) ? "border-primary" : ""
-                                    )}
-                                  >
-                                    <CardContent className="flex items-center p-4 gap-4">
-                                      <Checkbox
-                                        checked={field.value?.includes(item.id)}
-                                        className="h-5 w-5 pointer-events-none"
-                                        tabIndex={-1}
-                                      />
-                                      <div className="flex flex-col">
-                                        <p className="font-semibold">{item.label}</p>
-                                        <p className="text-sm text-muted-foreground">{item.description}</p>
-                                      </div>
-                                    </CardContent>
-                                  </Card>
+                                    <Card
+                                        key={item.id}
+                                        onClick={() => {
+                                        const currentValue = field.value || [];
+                                        const newValues = currentValue.includes(item.id)
+                                            ? currentValue.filter((id) => id !== item.id)
+                                            : [...currentValue, item.id];
+                                        field.onChange(newValues);
+                                        }}
+                                        className={cn(
+                                        "cursor-pointer transition-all border-2",
+                                        field.value?.includes(item.id) ? "border-primary" : ""
+                                        )}
+                                    >
+                                        <CardContent className="flex items-center p-4 gap-4">
+                                            <Checkbox
+                                                checked={field.value?.includes(item.id)}
+                                                className="h-5 w-5 pointer-events-none"
+                                                tabIndex={-1}
+                                            />
+                                            <div className="flex flex-col">
+                                                <p className="font-semibold">{item.label}</p>
+                                                <p className="text-sm text-muted-foreground">{item.description}</p>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
                                 ))}
                               </div>
                               <FormMessage />
