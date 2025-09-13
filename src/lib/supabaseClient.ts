@@ -5,65 +5,6 @@ import type { PostgrestError, User } from '@supabase/supabase-js';
 import * as z from 'zod';
 import { generateUUID } from './utils';
 
-/*
-================================================================================
-REQUIRED RLS POLICIES FOR SUPABASE
-Run these in the Supabase SQL Editor to fix data access issues.
-================================================================================
-*/
-/*
--- 1. Make sure uuid-ossp extension is enabled if not already.
--- CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA "extensions";
-
--- 2. RLS Policies for `requirements` table (Users can manage their own records)
-ALTER TABLE public.requirements ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "Users can manage their own requirements" ON public.requirements;
-CREATE POLICY "Users can manage their own requirements" ON public.requirements FOR ALL
-  TO authenticated
-  USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
-
--- 3. RLS Policies for `saved_results` table (Users can manage their own records)
-ALTER TABLE public.saved_results ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "Users can manage their own saved results" ON public.saved_results;
-CREATE POLICY "Users can manage their own saved results" ON public.saved_results FOR ALL
-  TO authenticated
-  USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
-
--- 4. RLS Policies for `remixed_techniques` table (Users can manage their own records)
--- This table has a Foreign Key: remixed_techniques.project_id -> saved_results.id
-ALTER TABLE public.remixed_techniques ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "Users can manage their own remixed techniques" ON public.remixed_techniques;
-CREATE POLICY "Users can manage their own remixed techniques" ON public.remixed_techniques FOR ALL
-  TO authenticated
-  USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
-
--- 5. Function to delete all of a user's data upon account deletion
-CREATE OR REPLACE FUNCTION delete_user_data()
-RETURNS void AS $$
-BEGIN
-  -- Delete from tables that reference auth.users, which will cascade
-  DELETE FROM requirements WHERE user_id = auth.uid();
-  DELETE FROM saved_results WHERE user_id = auth.uid();
-  DELETE FROM remixed_techniques WHERE user_id = auth.uid();
-  
-  -- Finally, delete the user from auth.users itself
-  DELETE FROM auth.users WHERE id = auth.uid();
-END;
-$$ LANGUAGE plpgsql;
-
--- 6. [IMPORTANT MIGRATION] Alter primary_goal columns to accept multiple values (text array)
--- Run this in your Supabase SQL Editor
--- ALTER TABLE public.requirements
--- ALTER COLUMN primary_goal TYPE text[] USING array[primary_goal];
---
--- ALTER TABLE public.saved_results
--- ALTER COLUMN primary_goal TYPE text[] USING array[primary_goal];
-
-*/
-
 // Zod schema for validation, matches the 'requirements' table structure.
 const RequirementSchema = z.object({
   id: z.string().uuid(),

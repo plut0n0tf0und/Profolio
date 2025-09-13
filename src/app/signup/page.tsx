@@ -8,7 +8,7 @@ import { Suspense } from 'react';
 import { Logo } from '@/components/logo';
 import { SignupErrorHandler } from '@/components/signup-error-handler';
 
-function SignupPageContent() {
+export default function SignupPage() {
   return (
     <main className="flex min-h-screen w-full flex-col items-center justify-center bg-black p-4">
        <Suspense>
@@ -44,12 +44,4 @@ function SignupPageContent() {
       </div>
     </main>
   );
-}
-
-export default function SignupPage() {
-    return (
-        <Suspense>
-            <SignupPageContent />
-        </Suspense>
-    )
 }

@@ -9,7 +9,7 @@ import * as z from 'zod';
 import { useToast } from '@/hooks/use-toast';
 import { insertRequirement, updateRequirement, fetchRequirementById, type Requirement } from '@/lib/supabaseClient';
 import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -118,9 +118,17 @@ export default function RequirementsPageContent() {
         if (data) {
           form.reset({
             ...data,
+            project_name: data.project_name || '',
+            problem_statement: data.problem_statement || '',
+            role: data.role || '',
+            project_type: data.project_type || 'new',
             date: new Date(data.date as string),
             existing_users: data.existing_users === null ? 'false' : String(data.existing_users),
             primary_goal: data.primary_goal || [],
+            device_type: data.device_type || [],
+            outcome: data.outcome || [],
+            output_type: data.output_type || [],
+            constraints: data.constraints || [],
           });
         } else {
             console.error('Failed to fetch requirement:', error);
@@ -149,7 +157,6 @@ export default function RequirementsPageContent() {
           ...formData,
           date: new Date(formData.date).toISOString(),
           existing_users: formData.existing_users === 'true',
-          primary_goal: formData.primary_goal,
       };
 
       let result;
@@ -196,6 +203,9 @@ export default function RequirementsPageContent() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-3xl">Define Your Project</CardTitle>
+                <CardDescription>
+                  Answer these questions to get AI-powered UX technique recommendations.
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <VerticalStepper>
@@ -320,78 +330,84 @@ export default function RequirementsPageContent() {
                         />
                     </div>
                   </Step>
-                  <Step title="Goals" index={2} isActive={currentStep === 2} isCompleted={currentStep > 2}>
-                    <div className="space-y-6">
-                        <FormField
-                            name="primary_goal"
-                            render={() => (
-                                <FormItem>
-                                    <div className="mb-4">
-                                        <FormLabel className="text-base">Project's Primary Goal(s)</FormLabel>
-                                    </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    {goalTypes.map((item) => (
-                                        <FormField
-                                            key={item.id}
-                                            control={form.control}
-                                            name="primary_goal"
-                                            render={({ field }) => (
-                                                <FormItem key={item.id} className="flex flex-row items-start space-x-3 space-y-0">
-                                                    <FormControl>
-                                                        <Checkbox
-                                                            checked={field.value?.includes(item.id)}
-                                                            onCheckedChange={(checked) => {
-                                                                return checked
-                                                                    ? field.onChange([...(field.value || []), item.id])
-                                                                    : field.onChange(field.value?.filter((value) => value !== item.id));
-                                                            }}
-                                                        />
-                                                    </FormControl>
-                                                    <FormLabel className="font-normal">{item.label}</FormLabel>
-                                                </FormItem>
-                                            )}
+                   <Step title="Goals" index={2} isActive={currentStep === 2} isCompleted={currentStep > 2}>
+                    <div className="space-y-8">
+                      <FormField
+                        name="primary_goal"
+                        control={form.control}
+                        render={({ field }) => (
+                          <FormItem>
+                            <div className="mb-4">
+                              <FormLabel className="text-base">Project's Primary Goal(s)</FormLabel>
+                              <FormMessage className="mt-2" />
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              {goalTypes.map((item) => (
+                                <FormItem key={item.id}>
+                                  <FormControl>
+                                    <Card
+                                      onClick={() => {
+                                        const currentValue = field.value || [];
+                                        const newValues = currentValue.includes(item.id)
+                                          ? currentValue.filter((id) => id !== item.id)
+                                          : [...currentValue, item.id];
+                                        field.onChange(newValues);
+                                      }}
+                                      className={cn(
+                                        "cursor-pointer transition-all border-2 flex items-center p-4",
+                                        field.value?.includes(item.id) ? "border-primary" : ""
+                                      )}
+                                    >
+                                      <Checkbox
+                                        checked={field.value?.includes(item.id)}
+                                        className="mr-4 h-5 w-5"
+                                        readOnly
+                                      />
+                                      <span className="font-medium">{item.label}</span>
+                                    </Card>
+                                  </FormControl>
+                                </FormItem>
+                              ))}
+                            </div>
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        name="outcome"
+                        control={form.control}
+                        render={() => (
+                          <FormItem>
+                            <div className="mb-4">
+                              <FormLabel className="text-base">Desired Outcome</FormLabel>
+                              <FormMessage className="mt-2" />
+                            </div>
+                            <div className="flex flex-wrap gap-4">
+                              {outcomeTypes.map((item) => (
+                                <FormField
+                                  key={item.id}
+                                  control={form.control}
+                                  name="outcome"
+                                  render={({ field }) => (
+                                    <FormItem key={item.id} className="flex flex-row items-start space-x-3 space-y-0">
+                                      <FormControl>
+                                        <Checkbox
+                                          checked={field.value?.includes(item.id)}
+                                          onCheckedChange={(checked) => {
+                                            return checked
+                                              ? field.onChange([...(field.value || []), item.id])
+                                              : field.onChange(field.value?.filter((value) => value !== item.id));
+                                          }}
                                         />
-                                    ))}
-                                    </div>
-                                <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <FormField
-                            name="outcome"
-                            render={() => (
-                                <FormItem>
-                                    <div className="mb-4">
-                                        <FormLabel className="text-base">Desired Outcome</FormLabel>
-                                    </div>
-                                    <div className="flex flex-wrap gap-4">
-                                        {outcomeTypes.map((item) => (
-                                            <FormField
-                                                key={item.id}
-                                                control={form.control}
-                                                name="outcome"
-                                                render={({ field }) => (
-                                                    <FormItem key={item.id} className="flex flex-row items-start space-x-3 space-y-0">
-                                                        <FormControl>
-                                                            <Checkbox
-                                                                checked={field.value?.includes(item.id)}
-                                                                onCheckedChange={(checked) => {
-                                                                    return checked
-                                                                        ? field.onChange([...(field.value || []), item.id])
-                                                                        : field.onChange(field.value?.filter((value) => value !== item.id));
-                                                                }}
-                                                            />
-                                                        </FormControl>
-                                                        <FormLabel className="font-normal">{item.label}</FormLabel>
-                                                    </FormItem>
-                                                )}
-                                            />
-                                        ))}
-                                    </div>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
+                                      </FormControl>
+                                      <FormLabel className="font-normal">{item.label}</FormLabel>
+                                    </FormItem>
+                                  )}
+                                />
+                              ))}
+                            </div>
+                          </FormItem>
+                        )}
+                      />
                     </div>
                   </Step>
                   <Step title="Outputs" index={3} isActive={currentStep === 3} isCompleted={currentStep > 3}>
@@ -462,3 +478,5 @@ export default function RequirementsPageContent() {
     </div>
   );
 }
+
+    

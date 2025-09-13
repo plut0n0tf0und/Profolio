@@ -8,7 +8,7 @@ import { Suspense } from 'react';
 import { Logo } from '@/components/logo';
 import { LoginErrorHandler } from '@/components/login-error-handler';
 
-function LoginPageContent() {
+export default function LoginPage() {
   return (
     <main className="flex min-h-screen w-full flex-col items-center justify-center bg-black p-4">
       <Suspense>
@@ -43,13 +43,5 @@ function LoginPageContent() {
         </div>
       </div>
     </main>
-  );
-}
-
-export default function LoginPage() {
-  return (
-    <Suspense>
-      <LoginPageContent />
-    </Suspense>
   );
 }
