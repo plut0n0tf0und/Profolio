@@ -71,6 +71,13 @@ const outputTypes = {
     { id: 'presentation', label: 'Presentation' },
     { id: 'accessibility audit', label: 'Accessibility Audit' },
     { id: 'video', label: 'Video' },
+    { id: 'mobile app', label: 'Mobile App' },
+    { id: 'web app', label: 'Web App' },
+    { id: 'desktop software', label: 'Desktop Software' },
+    { id: 'smartwatch interface', label: 'Smartwatch Interface' },
+    { id: 'tv or console experience', label: 'TV or Console Experience' },
+    { id: 'ar/vr application', label: 'AR/VR Application' },
+    { id: 'chatbot/voice interface', label: 'Chatbot/Voice Interface' },
   ],
   "Design Assets": [
     { id: 'wireframe', label: 'Wireframe' },
@@ -78,9 +85,12 @@ const outputTypes = {
     { id: 'visual design', label: 'Visual Design' },
     { id: 'information architecture', label: 'Information Architecture' },
     { id: 'content strategy', label: 'Content Strategy' },
+    { id: 'design system', label: 'Design System' },
+    { id: 'motion design', label: 'Motion Design' },
+    { id: 'animation', label: 'Animation' },
+    { id: 'voice interaction', label: 'Voice Interaction' },
   ],
 };
-
 
 const constraintTypes = [
   { id: 'limited budget', label: 'Limited Budget' },
@@ -279,7 +289,7 @@ function RequirementsPageContent() {
                                     <div className="mb-4">
                                         <FormLabel className="text-base flex items-center">
                                             Project Constraints
-                                            <span className="ml-2 text-sm font-normal text-muted-foreground">(Optional)</span>
+                                            <span className="ml-2 text-sm font-normal text-muted-foreground">Optional</span>
                                         </FormLabel>
                                     </div>
                                     <div className="flex flex-wrap gap-4">
@@ -344,10 +354,15 @@ function RequirementsPageContent() {
                                                             )}
                                                         >
                                                             <CardContent className="flex items-center p-4 gap-4">
-                                                                <Target className="h-6 w-6 text-primary flex-shrink-0" />
-                                                                <div>
-                                                                    <p className="font-semibold">{item.label}</p>
-                                                                    <p className="text-sm text-muted-foreground">{item.description}</p>
+                                                                <div className="flex items-center space-x-4">
+                                                                    <Checkbox
+                                                                        checked={field.value?.includes(item.id)}
+                                                                        className="h-5 w-5"
+                                                                    />
+                                                                    <div className="flex flex-col">
+                                                                        <p className="font-semibold">{item.label}</p>
+                                                                        <p className="text-sm text-muted-foreground">{item.description}</p>
+                                                                    </div>
                                                                 </div>
                                                             </CardContent>
                                                         </Card>
@@ -475,3 +490,5 @@ export default function RequirementsPage() {
     </Suspense>
   )
 }
+
+    
