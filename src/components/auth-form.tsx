@@ -42,6 +42,7 @@ const signUpSchema = z.object({
 });
 
 const formSchema = z.union([loginSchema, signUpSchema]);
+type FormSchema = z.infer<typeof formSchema>;
 
 interface AuthFormProps {
     mode: 'login' | 'signup';
@@ -56,12 +57,12 @@ export function AuthForm({ mode }: AuthFormProps) {
   );
   const [showForgotPassword, setShowForgotPassword] = useState(false);
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormSchema>({
     resolver: zodResolver(mode === 'login' ? loginSchema : signUpSchema),
     defaultValues: { email: '', password: '' },
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
+  const onSubmit = (values: FormSchema) => {
     startTransition(async () => {
       // This check ensures email and password are not undefined, satisfying TypeScript
       if (!values.email || !values.password) {
