@@ -20,7 +20,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { VerticalStepper, Step } from '@/components/ui/stepper';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { CalendarIcon, Smartphone, Laptop, Plug, Monitor, Save, Eye, Loader2, Coins, Workflow } from 'lucide-react';
+import { CalendarIcon, Smartphone, Laptop, Plug, Monitor, Save, Eye, Loader2, Coins, Workflow, Target } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 
 // Zod schema for validation
@@ -41,16 +41,16 @@ const requirementSchema = z.object({
 type FormData = z.infer<typeof requirementSchema>;
 
 const deviceTypes = [
-  { id: 'mobile', label: 'Mobile', icon: <Smartphone className="h-8 w-8" /> },
-  { id: 'desktop', label: 'Desktop', icon: <Laptop className="h-8 w-8" /> },
-  { id: 'electronics', label: 'Electronics', icon: <Plug className="h-8 w-8" /> },
-  { id: 'kiosk', label: 'Kiosk', icon: <Monitor className="h-8 w-8" /> },
+  { id: 'mobile', label: 'Mobile', icon: Smartphone },
+  { id: 'desktop', label: 'Desktop', icon: Laptop },
+  { id: 'electronics', label: 'Electronics', icon: Plug },
+  { id: 'kiosk', label: 'Kiosk', icon: Monitor },
 ];
 
 const goalTypes = [
-    { id: 'innovation & growth', label: 'Innovation & Growth'},
-    { id: 'optimization & conversion', label: 'Optimization & Conversion' },
-    { id: 'retention & engagement', label: 'Retention & Engagement' },
+    { id: 'innovation & growth', label: 'Innovation & Growth', description: 'Create new features, explore new markets' },
+    { id: 'optimization & conversion', label: 'Optimization & Conversion', description: 'Boost sign-ups, improve funnels' },
+    { id: 'retention & engagement', label: 'Retention & Engagement', description: 'Keep users active, reduce churn' },
 ];
 
 const outcomeTypes = [
@@ -60,46 +60,31 @@ const outcomeTypes = [
 ];
 
 const outputTypes = {
-  "🖥️ Digital Products": [
-    { id: "mobile app", label: "Mobile App" },
-    { id: "web app", label: "Web App" },
-    { id: "desktop software", label: "Desktop Software" },
-    { id: "smartwatch interface", label: "Smartwatch Interface" },
-    { id: "tv or console experience", label: "TV or Console Experience" },
-    { id: "ar/vr application", label: "AR/VR Application" },
+  "Reports & Prototypes": [
+    { id: 'usability report', label: 'Usability Report' },
+    { id: 'interactive prototype', label: 'Interactive Prototype' },
+    { id: 'journey map', label: 'Journey Map' },
+    { id: 'persona profile', label: 'Persona Profile' },
+    { id: 'service blueprint', label: 'Service Blueprint' },
+    { id: 'kpi dashboard/analytics report', label: 'KPI Dashboard/Analytics Report' },
+    { id: 'storyboards', label: 'Storyboards' },
+    { id: 'presentation', label: 'Presentation' },
+    { id: 'accessibility audit', label: 'Accessibility Audit' },
+    { id: 'video', label: 'Video' },
   ],
-  "📑 Research & Strategy": [
-    { id: "service blueprint", label: "Service Blueprint" },
-    { id: "journey map", label: "Journey Map" },
-    { id: "persona profile", label: "Persona Profile" },
-    { id: "usability report", label: "Usability Report" },
-    { id: "storyboards", label: "Storyboards" },
-    { id: "content strategy", label: "Content Strategy" },
-    { id: "kpi dashboard / analytics report", label: "KPI Dashboard / Analytics Report" },
-  ],
-  "🎨 Design Systems & Assets": [
-    { id: "design system", label: "Design System" },
-    { id: "ui design", label: "UI Design" },
-    { id: "wireframe", label: "Wireframe" },
-    { id: "information architecture", label: "Information Architecture" },
-    { id: "visual design", label: "Visual Design" },
-    { id: "motion design", label: "Motion Design" },
-    { id: "animation", label: "Animation" },
-    { id: "interactive prototype", label: "Interactive Prototype" },
-  ],
-  "🗣️ Communication & Media": [
-    { id: "accessibility audio", label: "Accessibility Audio" },
-    { id: "chatbot / voice interface", label: "Chatbot / Voice Interface" },
-    { id: "voice interaction", label: "Voice Interaction" },
-    { id: "presentation", label: "Presentation" },
-    { id: "video", label: "Video" },
+  "Design Assets": [
+    { id: 'wireframe', label: 'Wireframe' },
+    { id: 'ui design', label: 'UI Design' },
+    { id: 'visual design', label: 'Visual Design' },
+    { id: 'information architecture', label: 'Information Architecture' },
+    { id: 'content strategy', label: 'Content Strategy' },
   ],
 };
 
 
 const constraintTypes = [
-  { id: 'limited budget', label: 'Limited Budget', icon: <Coins className="h-4 w-4 text-muted-foreground" /> },
-  { id: 'tight deadline', label: 'Tight Deadline', icon: <Workflow className="h-4 w-4 text-muted-foreground" /> },
+  { id: 'limited budget', label: 'Limited Budget' },
+  { id: 'tight deadline', label: 'Tight Deadline' },
 ];
 
 export default function RequirementsPageContent() {
@@ -117,8 +102,6 @@ export default function RequirementsPageContent() {
       date: new Date(),
       problem_statement: '',
       role: '',
-      project_type: 'new',
-      existing_users: 'false',
       device_type: [],
       constraints: [],
       primary_goal: [],
@@ -135,18 +118,10 @@ export default function RequirementsPageContent() {
         if (data) {
           form.reset({
             ...data,
-            project_name: data.project_name || '',
-            problem_statement: data.problem_statement || '',
-            role: data.role || '',
-            project_type: data.project_type === 'old' ? 'existing' : (data.project_type || 'new'),
             date: new Date(data.date as string),
-            existing_users: data.existing_users === null ? 'false' : String(data.existing_users),
+            existing_users: data.existing_users === null ? undefined : String(data.existing_users),
             primary_goal: data.primary_goal || [],
-            device_type: data.device_type || [],
-            outcome: data.outcome || [],
-            output_type: data.output_type || [],
-            constraints: data.constraints || [],
-          });
+          } as any);
         } else {
             console.error('Failed to fetch requirement:', error);
             router.push('/requirements');
@@ -201,13 +176,9 @@ export default function RequirementsPageContent() {
   const handleShowRecommendations = async () => {
     const isValid = await form.trigger();
     if (isValid && requirementId) {
-      // Final save before navigating
-      await handleSaveAndNext();
       router.push(`/requirements/result/${requirementId}`);
-    } else if (!isValid) {
+    } else {
       toast({ title: 'Incomplete Form', description: 'Please complete all steps before viewing recommendations.' });
-    } else if (!requirementId) {
-      toast({ title: 'Save Required', description: 'Please save your progress on the first step.' });
     }
   };
 
@@ -289,7 +260,7 @@ export default function RequirementsPageContent() {
                                                     )}
                                                 >
                                                     <CardContent className="flex flex-col items-center justify-center p-4 gap-2">
-                                                        {item.icon}
+                                                        <item.icon className="h-8 w-8" />
                                                         <span className="font-medium">{item.label}</span>
                                                     </CardContent>
                                                 </Card>
@@ -332,10 +303,7 @@ export default function RequirementsPageContent() {
                                                                 }}
                                                             />
                                                         </FormControl>
-                                                        <FormLabel className="font-normal flex items-center gap-2">
-                                                            {item.icon}
-                                                            {item.label}
-                                                        </FormLabel>
+                                                        <FormLabel className="font-normal">{item.label}</FormLabel>
                                                     </FormItem>
                                                 )}
                                             />
@@ -348,89 +316,95 @@ export default function RequirementsPageContent() {
                     </div>
                   </Step>
                    <Step title="Goals" index={2} isActive={currentStep === 2} isCompleted={currentStep > 2}>
-                    <div className="space-y-8">
-                      <FormField
-                        name="primary_goal"
-                        control={form.control}
-                        render={({ field }) => (
-                          <FormItem>
-                            <div className="mb-4">
-                              <FormLabel className="text-base">Project's Primary Goal(s)</FormLabel>
-                              <FormMessage className="mt-2" />
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                              {goalTypes.map((item) => (
-                                <FormItem key={item.id}>
-                                  <FormControl>
-                                    <Card
-                                      onClick={() => {
-                                        const currentValue = field.value || [];
-                                        const newValues = currentValue.includes(item.id)
-                                          ? currentValue.filter((id) => id !== item.id)
-                                          : [...currentValue, item.id];
-                                        field.onChange(newValues);
-                                      }}
-                                      className={cn(
-                                        "cursor-pointer transition-all border-2 flex items-center p-4",
-                                        field.value?.includes(item.id) ? "border-primary" : ""
-                                      )}
-                                    >
-                                      <Checkbox
-                                        checked={field.value?.includes(item.id)}
-                                        className="mr-4 h-5 w-5"
-                                        disabled={true}
-                                      />
-                                      <span className="font-medium">{item.label}</span>
-                                    </Card>
-                                  </FormControl>
+                     <div className="space-y-6">
+                        <FormField
+                            name="primary_goal"
+                            render={() => (
+                                <FormItem>
+                                    <div className="mb-4">
+                                        <FormLabel className="text-base">Project's Primary Goal</FormLabel>
+                                    </div>
+                                    <div className="space-y-4">
+                                        {goalTypes.map((item) => (
+                                            <FormField
+                                                key={item.id}
+                                                control={form.control}
+                                                name="primary_goal"
+                                                render={({ field }) => (
+                                                <FormItem key={item.id}>
+                                                    <FormControl>
+                                                        <Card
+                                                            onClick={() => {
+                                                                const currentValue = field.value || [];
+                                                                const newValues = currentValue.includes(item.id)
+                                                                    ? currentValue.filter((id) => id !== item.id)
+                                                                    : [...currentValue, item.id];
+                                                                field.onChange(newValues);
+                                                            }}
+                                                            className={cn(
+                                                                "cursor-pointer transition-all border-2",
+                                                                field.value?.includes(item.id) ? "border-primary" : ""
+                                                            )}
+                                                        >
+                                                            <CardContent className="flex items-center p-4 gap-4">
+                                                                <Target className="h-6 w-6 text-primary flex-shrink-0" />
+                                                                <div>
+                                                                    <p className="font-semibold">{item.label}</p>
+                                                                    <p className="text-sm text-muted-foreground">{item.description}</p>
+                                                                </div>
+                                                            </CardContent>
+                                                        </Card>
+                                                    </FormControl>
+                                                </FormItem>
+                                                )}
+                                            />
+                                        ))}
+                                    </div>
+                                    <FormMessage />
                                 </FormItem>
-                              ))}
-                            </div>
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        name="outcome"
-                        control={form.control}
-                        render={() => (
-                          <FormItem>
-                            <div className="mb-4">
-                              <FormLabel className="text-base">Desired Outcome</FormLabel>
-                              <FormMessage className="mt-2" />
-                            </div>
-                            <div className="flex flex-wrap gap-4">
-                              {outcomeTypes.map((item) => (
-                                <FormField
-                                  key={item.id}
-                                  control={form.control}
-                                  name="outcome"
-                                  render={({ field }) => (
-                                    <FormItem key={item.id} className="flex flex-row items-start space-x-3 space-y-0">
-                                      <FormControl>
-                                        <Checkbox
-                                          checked={field.value?.includes(item.id)}
-                                          onCheckedChange={(checked) => {
-                                            return checked
-                                              ? field.onChange([...(field.value || []), item.id])
-                                              : field.onChange(field.value?.filter((value) => value !== item.id));
-                                          }}
-                                        />
-                                      </FormControl>
-                                      <FormLabel className="font-normal">{item.label}</FormLabel>
-                                    </FormItem>
-                                  )}
-                                />
-                              ))}
-                            </div>
-                          </FormItem>
-                        )}
-                      />
+                            )}
+                        />
+                        <FormField
+                            name="outcome"
+                            render={() => (
+                                <FormItem>
+                                    <div className="mb-4">
+                                        <FormLabel className="text-base">Desired Outcome</FormLabel>
+                                    </div>
+                                    <div className="flex flex-wrap gap-4">
+                                        {outcomeTypes.map((item) => (
+                                            <FormField
+                                                key={item.id}
+                                                control={form.control}
+                                                name="outcome"
+                                                render={({ field }) => (
+                                                    <FormItem key={item.id} className="flex flex-row items-start space-x-3 space-y-0">
+                                                        <FormControl>
+                                                            <Checkbox
+                                                                checked={field.value?.includes(item.id)}
+                                                                onCheckedChange={(checked) => {
+                                                                    return checked
+                                                                        ? field.onChange([...(field.value || []), item.id])
+                                                                        : field.onChange(field.value?.filter((value) => value !== item.id));
+                                                                }}
+                                                            />
+                                                        </FormControl>
+                                                        <FormLabel className="font-normal">{item.label}</FormLabel>
+                                                    </FormItem>
+                                                )}
+                                            />
+                                        ))}
+                                    </div>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
                     </div>
                   </Step>
                   <Step title="Outputs" index={3} isActive={currentStep === 3} isCompleted={currentStep > 3}>
                      <FormField
                         name="output_type"
-                        render={({ field }) => (
+                        render={() => (
                             <FormItem>
                                 <div className="mb-4">
                                     <FormLabel className="text-base">Desired Output Type(s)</FormLabel>
@@ -440,7 +414,7 @@ export default function RequirementsPageContent() {
                                 {Object.entries(outputTypes).map(([category, items]) => (
                                     <div key={category}>
                                         <h3 className="font-semibold mb-3 text-muted-foreground">{category}</h3>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-3">
                                             {items.map((item) => (
                                                 <FormField
                                                     key={item.id}
@@ -469,6 +443,7 @@ export default function RequirementsPageContent() {
                                     </div>
                                 ))}
                                 </div>
+                                <FormMessage />
                             </FormItem>
                         )}
                         />
