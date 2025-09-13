@@ -277,9 +277,9 @@ function RequirementsPageContent() {
                             render={() => (
                                 <FormItem>
                                     <div className="mb-4">
-                                        <FormLabel className="text-base">
+                                        <FormLabel className="text-base flex items-center">
                                             Project Constraints
-                                            <span className="ml-2 text-xs font-normal text-muted-foreground">Optional</span>
+                                            <span className="ml-2 text-sm font-normal text-muted-foreground">(Optional)</span>
                                         </FormLabel>
                                     </div>
                                     <div className="flex flex-wrap gap-4">
