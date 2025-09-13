@@ -75,7 +75,7 @@ export function AuthForm({ mode }: AuthFormProps) {
       }
 
       if (mode === 'signup') {
-          const { error } = await supabase.auth.signUp(values);
+          const { error } = await supabase.auth.signUp(values as z.infer<typeof signUpSchema>);
           if (error) {
               toast({
                 title: 'Sign Up Failed',
@@ -91,7 +91,7 @@ export function AuthForm({ mode }: AuthFormProps) {
               router.refresh();
           }
       } else { // login
-          const { error } = await supabase.auth.signInWithPassword(values);
+          const { error } = await supabase.auth.signInWithPassword(values as z.infer<typeof loginSchema>);
           if (error) {
               toast({
                 title: 'Login Failed',
@@ -254,5 +254,3 @@ export function AuthForm({ mode }: AuthFormProps) {
     </>
   );
 }
-
-    
