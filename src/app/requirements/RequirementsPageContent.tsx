@@ -149,6 +149,7 @@ export default function RequirementsPageContent() {
           ...formData,
           date: new Date(formData.date).toISOString(),
           existing_users: formData.existing_users === 'true',
+          output_type: formData.output_type,
       };
 
       let result;
@@ -177,7 +178,18 @@ export default function RequirementsPageContent() {
     const isValid = await form.trigger();
     if (isValid && requirementId) {
       router.push(`/requirements/result/${requirementId}`);
-    } else {
+    } else if (isValid && !requirementId) {
+      // If form is valid but we haven't saved yet (e.g. user fills all steps then clicks 'Show')
+      // we need to save first.
+      await handleSaveAndNext();
+      const finalId = form.getValues().project_name ? requirementId : null; // a bit of a hack to get the new id
+      if(requirementId) {
+        router.push(`/requirements/result/${requirementId}`);
+      } else {
+        toast({ title: 'Could not save', description: 'Please try saving the last step first.' });
+      }
+    }
+     else {
       toast({ title: 'Incomplete Form', description: 'Please complete all steps before viewing recommendations.' });
     }
   };

@@ -1,3 +1,4 @@
+
 import { createBrowserClient } from '@supabase/ssr';
 import type { PostgrestError, User } from '@supabase/supabase-js';
 import * as z from 'zod';
@@ -125,7 +126,6 @@ export async function insertRequirement(
   const requirementToInsert = {
     ...requirement,
     user_id: user.id,
-    project_type: requirement.project_type === 'existing' ? 'old' : 'new'
   };
 
   const { data, error } = await supabase
