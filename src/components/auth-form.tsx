@@ -41,27 +41,12 @@ const signUpSchema = z.object({
     .min(8, { message: 'Password must be at least 8 characters long.' }),
 });
 
+type LoginData = z.infer<typeof loginSchema>;
+type SignUpData = z.infer<typeof signUpSchema>;
+
 interface AuthFormProps {
     mode: 'login' | 'signup';
 }
-
-async function getProviderUrl(provider: 'google' | 'github', redirectTo: string) {
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider,
-    options: {
-      redirectTo,
-      // Important: this tells Supabase to return the URL instead of redirecting
-      skipBrowserRedirect: true, 
-    },
-  });
-
-  if (error) {
-    console.error('Error getting provider URL:', error);
-    return null;
-  }
-  return data.url;
-}
-
 
 export function AuthForm({ mode }: AuthFormProps) {
   const { toast } = useToast();
@@ -72,12 +57,12 @@ export function AuthForm({ mode }: AuthFormProps) {
   );
   const [showForgotPassword, setShowForgotPassword] = useState(false);
 
-  const form = useForm<z.infer<typeof loginSchema | typeof signUpSchema>>({
+  const form = useForm<LoginData | SignUpData>({
     resolver: zodResolver(mode === 'login' ? loginSchema : signUpSchema),
     defaultValues: { email: '', password: '' },
   });
 
-  const onSubmit = (values: z.infer<typeof loginSchema | typeof signUpSchema>) => {
+  const onSubmit = (values: LoginData | SignUpData) => {
     startTransition(async () => {
         if (mode === 'signup') {
             const result = signUpSchema.safeParse(values);
@@ -85,6 +70,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                 toast({ title: 'Invalid data', description: 'Please check your inputs.', variant: 'destructive'});
                 return;
             }
+            // `result.data` is now correctly typed as SignUpData
             const { error } = await supabase.auth.signUp(result.data);
             if (error) {
                 toast({
@@ -106,6 +92,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                 toast({ title: 'Invalid data', description: 'Please check your inputs.', variant: 'destructive'});
                 return;
             }
+            // `result.data` is now correctly typed as LoginData
             const { error } = await supabase.auth.signInWithPassword(result.data);
             if (error) {
                 toast({
