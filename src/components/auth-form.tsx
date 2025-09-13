@@ -54,7 +54,7 @@ export function AuthForm({ mode }: AuthFormProps) {
   );
   const [showForgotPassword, setShowForgotPassword] = useState(false);
 
-  const form = useForm<z.infer<typeof loginSchema | typeof signUpSchema>>({
+  const form = useForm({
     resolver: zodResolver(mode === 'login' ? loginSchema : signUpSchema),
     defaultValues: { email: '', password: '' },
   });
