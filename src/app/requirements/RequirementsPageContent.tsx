@@ -149,7 +149,7 @@ export default function RequirementsPageContent() {
           ...formData,
           date: new Date(formData.date).toISOString(),
           existing_users: formData.existing_users === 'true',
-          output_type: formData.output_type,
+          output_type: formData.output_type, // Explicitly include output_type
       };
 
       let result;
@@ -489,3 +489,5 @@ export default function RequirementsPageContent() {
     </div>
   );
 }
+
+    
