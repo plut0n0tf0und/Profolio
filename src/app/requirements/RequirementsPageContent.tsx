@@ -54,7 +54,7 @@ const goalTypes = [
 ];
 
 const outcomeTypes = [
-  { id: 'qualitative', label: 'Qualitative'},
+  { id: 'qualitative', label: 'Qualitative' },
   { id: 'quantitative', label: 'Quantitative' },
   { id: 'insight', label: 'Insight' },
 ];
@@ -121,7 +121,7 @@ export default function RequirementsPageContent() {
             project_name: data.project_name || '',
             problem_statement: data.problem_statement || '',
             role: data.role || '',
-            project_type: data.project_type || 'new',
+            project_type: data.project_type === 'old' ? 'existing' : (data.project_type || 'new'),
             date: new Date(data.date as string),
             existing_users: data.existing_users === null ? 'false' : String(data.existing_users),
             primary_goal: data.primary_goal || [],
@@ -361,7 +361,7 @@ export default function RequirementsPageContent() {
                                       <Checkbox
                                         checked={field.value?.includes(item.id)}
                                         className="mr-4 h-5 w-5"
-                                        readOnly
+                                        disabled={true}
                                       />
                                       <span className="font-medium">{item.label}</span>
                                     </Card>

@@ -1,5 +1,3 @@
-
-
 import { createBrowserClient } from '@supabase/ssr';
 import type { PostgrestError, User } from '@supabase/supabase-js';
 import * as z from 'zod';
@@ -119,7 +117,7 @@ export async function updateUserProfile(updates: { full_name?: string; role?: st
 }
 
 export async function insertRequirement(
-  requirement: Requirement
+  requirement: Partial<Requirement>
 ): Promise<{ data: Requirement | null; error: PostgrestError | null }> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { data: null, error: { message: 'User not authenticated', details: '', hint: '', code: '401', name: '' } };
@@ -142,7 +140,7 @@ export async function insertRequirement(
 
 export async function updateRequirement(
   id: string,
-  updates: Requirement
+  updates: Partial<Requirement>
 ): Promise<{ data: Requirement | null; error: PostgrestError | null }> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { data: null, error: { message: 'User not authenticated', details: '', hint: '', code: '401', name: '' } };
@@ -192,7 +190,6 @@ export async function fetchRequirementById(
     .maybeSingle();
 
   if (error) console.error("Error fetching requirement by ID:", error);
-  if (data?.date) data.date = new Date(data.date);
 
   return { data, error };
 }
@@ -252,7 +249,7 @@ export async function saveOrUpdateResult(
     }
   } catch (error: any) {
     console.error("Error in saveOrUpdateResult:", error);
-    return { data, null };
+    return { data: null, error };
   }
 }
 
@@ -458,5 +455,3 @@ export async function fetchRemixedTechniquesByProjectId(projectId: string): Prom
     if (error) console.error("Error fetching remixed techniques by project ID:", error);
     return { data, error };
 }
-
-    
