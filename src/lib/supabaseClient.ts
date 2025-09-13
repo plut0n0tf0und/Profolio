@@ -184,6 +184,7 @@ export async function insertRequirement(
   const requirementToInsert = {
     ...requirement,
     user_id: user.id,
+    project_type: requirement.project_type,
   };
 
   const { data, error } = await supabase
