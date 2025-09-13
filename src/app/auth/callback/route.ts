@@ -1,4 +1,4 @@
-import { createSupabaseServerClient } from '@/lib/supabase-server';
+import { createClient } from '@/lib/supabase-server';
 import { NextResponse, type NextRequest } from 'next/server';
 
 export async function GET(request: NextRequest) {
@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${origin}/?error=${errorMessage}`);
   }
 
-  const supabase = createSupabaseServerClient();
+  const supabase = await createClient();
 
   // Exchange OAuth code for session (temporary)
   const { data, error } = await supabase.auth.exchangeCodeForSession(code);
