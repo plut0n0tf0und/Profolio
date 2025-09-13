@@ -41,6 +41,8 @@ const signUpSchema = z.object({
     .min(8, { message: 'Password must be at least 8 characters long.' }),
 });
 
+const formSchema = z.union([loginSchema, signUpSchema]);
+
 interface AuthFormProps {
     mode: 'login' | 'signup';
 }
@@ -54,52 +56,51 @@ export function AuthForm({ mode }: AuthFormProps) {
   );
   const [showForgotPassword, setShowForgotPassword] = useState(false);
 
-  const form = useForm({
+  const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(mode === 'login' ? loginSchema : signUpSchema),
     defaultValues: { email: '', password: '' },
   });
 
-  const onSubmit = (values: z.infer<typeof loginSchema | typeof signUpSchema>) => {
+  const onSubmit = (values: z.infer<typeof formSchema>) => {
     startTransition(async () => {
       // This check ensures email and password are not undefined, satisfying TypeScript
-      if (values.email && values.password) {
-        if (mode === 'signup') {
-            const { error } = await supabase.auth.signUp(values);
-            if (error) {
-                toast({
-                  title: 'Sign Up Failed',
-                  description: error.message || 'An unexpected error occurred.',
-                  variant: 'destructive',
-                });
-            } else {
-                toast({
-                  title: 'Welcome!',
-                  description: 'You have successfully signed up. Redirecting...',
-                });
-                router.push('/dashboard');
-                router.refresh();
-            }
-        } else { // login
-            const { error } = await supabase.auth.signInWithPassword(values);
-            if (error) {
-                toast({
-                  title: 'Login Failed',
-                  description: error.message || 'Invalid email or password.',
-                  variant: 'destructive',
-                });
-              } else {
-                router.push('/dashboard');
-                router.refresh();
-              }
-        }
-      } else {
-        // This case should ideally not be reached due to Zod validation,
-        // but it's good practice for type safety.
+      if (!values.email || !values.password) {
         toast({
             title: 'Error',
             description: 'Email and password are required.',
             variant: 'destructive',
         });
+        return;
+      }
+
+      if (mode === 'signup') {
+          const { error } = await supabase.auth.signUp(values);
+          if (error) {
+              toast({
+                title: 'Sign Up Failed',
+                description: error.message || 'An unexpected error occurred.',
+                variant: 'destructive',
+              });
+          } else {
+              toast({
+                title: 'Welcome!',
+                description: 'You have successfully signed up. Redirecting...',
+              });
+              router.push('/dashboard');
+              router.refresh();
+          }
+      } else { // login
+          const { error } = await supabase.auth.signInWithPassword(values);
+          if (error) {
+              toast({
+                title: 'Login Failed',
+                description: error.message || 'Invalid email or password.',
+                variant: 'destructive',
+              });
+            } else {
+              router.push('/dashboard');
+              router.refresh();
+            }
       }
     });
   };
@@ -139,9 +140,6 @@ export function AuthForm({ mode }: AuthFormProps) {
     }
   };
   
-  
-  
-
   return (
     <>
     <Card className="w-full border-0 bg-transparent shadow-none">
