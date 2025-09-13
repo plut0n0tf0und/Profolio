@@ -20,7 +20,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { VerticalStepper, Step } from '@/components/ui/stepper';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { CalendarIcon, Smartphone, Laptop, Plug, Monitor, Save, Eye, Loader2, Coins, Workflow, Target } from 'lucide-react';
+import { CalendarIcon, Smartphone, Laptop, Plug, Monitor, Save, Eye, Loader2, Target } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 
 // Zod schema for validation
