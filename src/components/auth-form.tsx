@@ -41,9 +41,6 @@ const signUpSchema = z.object({
     .min(8, { message: 'Password must be at least 8 characters long.' }),
 });
 
-type LoginSchema = z.infer<typeof loginSchema>;
-type SignUpSchema = z.infer<typeof signUpSchema>;
-
 interface AuthFormProps {
     mode: 'login' | 'signup';
 }
@@ -57,17 +54,17 @@ export function AuthForm({ mode }: AuthFormProps) {
   );
   const [showForgotPassword, setShowForgotPassword] = useState(false);
 
-  const schema = mode === 'login' ? loginSchema : signUpSchema;
-
-  const form = useForm<z.infer<typeof schema>>({
-    resolver: zodResolver(schema),
+  const form = useForm<z.infer<typeof loginSchema | typeof signUpSchema>>({
+    resolver: zodResolver(mode === 'login' ? loginSchema : signUpSchema),
     defaultValues: { email: '', password: '' },
   });
 
-  const onSubmit = (values: z.infer<typeof schema>) => {
+  const onSubmit = (values: z.infer<typeof loginSchema | typeof signUpSchema>) => {
     startTransition(async () => {
+      // This check ensures email and password are not undefined, satisfying TypeScript
+      if (values.email && values.password) {
         if (mode === 'signup') {
-            const { error } = await supabase.auth.signUp(values as SignUpSchema);
+            const { error } = await supabase.auth.signUp(values);
             if (error) {
                 toast({
                   title: 'Sign Up Failed',
@@ -83,7 +80,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                 router.refresh();
             }
         } else { // login
-            const { error } = await supabase.auth.signInWithPassword(values as LoginSchema);
+            const { error } = await supabase.auth.signInWithPassword(values);
             if (error) {
                 toast({
                   title: 'Login Failed',
@@ -95,6 +92,15 @@ export function AuthForm({ mode }: AuthFormProps) {
                 router.refresh();
               }
         }
+      } else {
+        // This case should ideally not be reached due to Zod validation,
+        // but it's good practice for type safety.
+        toast({
+            title: 'Error',
+            description: 'Email and password are required.',
+            variant: 'destructive',
+        });
+      }
     });
   };
 
@@ -106,7 +112,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         provider,
         options: {
           redirectTo: `${window.location.origin}/auth/callback${mode === 'login' ? '?is_login=true' : ''}`,
-          skipBrowserRedirect: true, // stop auto redirect so we can handle toast first
+          skipBrowserRedirect: true,
         },
       });
   
@@ -121,7 +127,7 @@ export function AuthForm({ mode }: AuthFormProps) {
       }
   
       if (data?.url) {
-        window.location.href = data.url; // now manually redirect
+        window.location.href = data.url;
       }
     } catch (err) {
       toast({
@@ -133,6 +139,9 @@ export function AuthForm({ mode }: AuthFormProps) {
     }
   };
   
+  
+  
+
   return (
     <>
     <Card className="w-full border-0 bg-transparent shadow-none">
