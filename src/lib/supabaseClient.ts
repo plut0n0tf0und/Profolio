@@ -184,7 +184,7 @@ export async function insertRequirement(
   const requirementToInsert = {
     ...requirement,
     user_id: user.id,
-    project_type: requirement.project_type,
+    project_type: requirement.project_type, // This should now match DB constraints
   };
 
   const { data, error } = await supabase
@@ -271,6 +271,7 @@ export async function saveOrUpdateResult(
         existing_users: requirement.existing_users,
         primary_goal: requirement.primary_goal,
         constraints: requirement.constraints,
+        project_type: requirement.project_type,
     };
 
     const { data: existingResult, error: selectError } = await supabase

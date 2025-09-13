@@ -62,7 +62,7 @@ const outcomeTypes = [
 
 const outputTypes = {
   "Digital Products": {
-    icon: <Smartphone className="h-5 w-5" />,
+    icon: Smartphone,
     items: [
         { id: 'mobile app', label: 'Mobile App' },
         { id: 'web app', label: 'Web App' },
@@ -73,7 +73,7 @@ const outputTypes = {
     ]
   },
   "Research & Strategy": {
-    icon: <BookOpen className="h-5 w-5" />,
+    icon: BookOpen,
     items: [
         { id: 'service blueprint', label: 'Service Blueprint', description: 'A diagram visualizing the relationships between different service components.' },
         { id: 'journey map', label: 'Journey Map', description: 'A visualization of the user\'s experience through your service.' },
@@ -85,7 +85,7 @@ const outputTypes = {
     ]
   },
   "Design Systems & Assets": {
-    icon: <Palette className="h-5 w-5" />,
+    icon: Palette,
     items: [
         { id: 'design system', label: 'Design System', description: 'A collection of reusable components, guided by clear standards.' },
         { id: 'ui design', label: 'UI Design' },
@@ -98,7 +98,7 @@ const outputTypes = {
     ]
   },
   "Communication & Media": {
-    icon: <PresentationIcon className="h-5 w-5" />,
+    icon: PresentationIcon,
     items: [
         { id: 'accessibility audit', label: 'Accessibility Audit', description: 'An audit of your product\'s conformance with accessibility standards (WCAG).' },
         { id: 'chatbot/voice interface', label: 'Chatbot / Voice Interface' },
@@ -176,6 +176,7 @@ export default function RequirementsPageContent() {
           ...formData,
           date: new Date(formData.date).toISOString(),
           existing_users: formData.existing_users === 'true',
+          project_type: formData.project_type,
       };
 
       let result;
@@ -445,19 +446,21 @@ export default function RequirementsPageContent() {
                             <FormItem>
                                 <div className="space-y-6">
                                 {Object.entries(outputTypes).map(([group, {icon: GroupIcon, items}]) => (
-                                    <div key={group} className="rounded-lg border bg-card-nested/50 p-4">
-                                        <h4 className="font-semibold text-base text-muted-foreground mb-4 flex items-center gap-2">
-                                            {GroupIcon}
-                                            {group}
-                                        </h4>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
+                                    <Card key={group} className="bg-card-nested/50">
+                                        <CardHeader>
+                                            <CardTitle className="font-semibold text-lg flex items-center gap-2">
+                                                <GroupIcon className="h-5 w-5 text-muted-foreground" />
+                                                {group}
+                                            </CardTitle>
+                                        </CardHeader>
+                                        <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
                                             {items.map((item) => (
                                                 <FormField
                                                     key={item.id}
                                                     control={form.control}
                                                     name="output_type"
                                                     render={({ field }) => (
-                                                        <FormItem key={item.id} className="flex flex-row items-center space-x-3 space-y-0">
+                                                        <FormItem className="flex flex-row items-center space-x-3 space-y-0">
                                                             <FormControl>
                                                                 <Checkbox
                                                                     checked={field.value?.includes(item.id)}
@@ -485,8 +488,8 @@ export default function RequirementsPageContent() {
                                                     )}
                                                 />
                                             ))}
-                                        </div>
-                                    </div>
+                                        </CardContent>
+                                    </Card>
                                 ))}
                                 </div>
                                 <FormMessage className="mt-4" />
