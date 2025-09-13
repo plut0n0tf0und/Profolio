@@ -64,44 +64,47 @@ export function AuthForm({ mode }: AuthFormProps) {
 
   const onSubmit = (values: FormSchema) => {
     startTransition(async () => {
-      // This check ensures email and password are not undefined, satisfying TypeScript
-      if (!values.email || !values.password) {
+      try {
+        if (mode === 'signup') {
+            const { email, password } = signUpSchema.parse(values);
+            const { error } = await supabase.auth.signUp({ email, password });
+            if (error) {
+                toast({
+                  title: 'Sign Up Failed',
+                  description: error.message || 'An unexpected error occurred.',
+                  variant: 'destructive',
+                });
+            } else {
+                toast({
+                  title: 'Welcome!',
+                  description: 'You have successfully signed up. Redirecting...',
+                });
+                router.push('/dashboard');
+                router.refresh();
+            }
+        } else { // login
+            const { email, password } = loginSchema.parse(values);
+            const { error } = await supabase.auth.signInWithPassword({ email, password });
+            if (error) {
+                toast({
+                  title: 'Login Failed',
+                  description: error.message || 'Invalid email or password.',
+                  variant: 'destructive',
+                });
+              } else {
+                router.push('/dashboard');
+                router.refresh();
+              }
+        }
+      } catch (error) {
+        // This will catch Zod parsing errors, though they are unlikely
+        // if the resolver is working correctly.
+        console.error("Form submission error:", error);
         toast({
             title: 'Error',
-            description: 'Email and password are required.',
+            description: 'An unexpected error occurred during submission.',
             variant: 'destructive',
         });
-        return;
-      }
-
-      if (mode === 'signup') {
-          const { error } = await supabase.auth.signUp(values as z.infer<typeof signUpSchema>);
-          if (error) {
-              toast({
-                title: 'Sign Up Failed',
-                description: error.message || 'An unexpected error occurred.',
-                variant: 'destructive',
-              });
-          } else {
-              toast({
-                title: 'Welcome!',
-                description: 'You have successfully signed up. Redirecting...',
-              });
-              router.push('/dashboard');
-              router.refresh();
-          }
-      } else { // login
-          const { error } = await supabase.auth.signInWithPassword(values as z.infer<typeof loginSchema>);
-          if (error) {
-              toast({
-                title: 'Login Failed',
-                description: error.message || 'Invalid email or password.',
-                variant: 'destructive',
-              });
-            } else {
-              router.push('/dashboard');
-              router.refresh();
-            }
       }
     });
   };
