@@ -434,34 +434,41 @@ export default function RequirementsPageContent() {
                             <FormItem>
                                 <div className="mb-4">
                                     <FormLabel className="text-base">Desired Output Type(s)</FormLabel>
+                                    <FormMessage className="mt-2" />
                                 </div>
-                                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                {outputTypes.map((item) => (
-                                    <FormField
-                                        key={item.id}
-                                        control={form.control}
-                                        name="output_type"
-                                        render={({ field }) => {
-                                            return (
-                                                <FormItem key={item.id} className="flex flex-row items-start space-x-3 space-y-0">
-                                                    <FormControl>
-                                                        <Checkbox
-                                                            checked={field.value?.includes(item.id)}
-                                                            onCheckedChange={(checked) => {
-                                                                return checked
-                                                                    ? field.onChange([...(field.value || []), item.id])
-                                                                    : field.onChange(field.value?.filter((value) => value !== item.id));
-                                                            }}
-                                                        />
-                                                    </FormControl>
-                                                    <FormLabel className="font-normal">{item.label}</FormLabel>
-                                                </FormItem>
-                                            );
-                                        }}
-                                    />
+                                <div className="space-y-4">
+                                {Object.entries(outputTypes).map(([category, items]) => (
+                                    <div key={category}>
+                                        <h3 className="font-semibold mb-2">{category}</h3>
+                                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                            {items.map((item) => (
+                                                <FormField
+                                                    key={item.id}
+                                                    control={form.control}
+                                                    name="output_type"
+                                                    render={({ field }) => {
+                                                        return (
+                                                            <FormItem key={item.id} className="flex flex-row items-start space-x-3 space-y-0">
+                                                                <FormControl>
+                                                                    <Checkbox
+                                                                        checked={field.value?.includes(item.id)}
+                                                                        onCheckedChange={(checked) => {
+                                                                            return checked
+                                                                                ? field.onChange([...(field.value || []), item.id])
+                                                                                : field.onChange(field.value?.filter((value) => value !== item.id));
+                                                                        }}
+                                                                    />
+                                                                </FormControl>
+                                                                <FormLabel className="font-normal">{item.label}</FormLabel>
+                                                            </FormItem>
+                                                        );
+                                                    }}
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
                                 ))}
                                 </div>
-                                <FormMessage />
                             </FormItem>
                         )}
                         />
@@ -495,5 +502,3 @@ export default function RequirementsPageContent() {
     </div>
   );
 }
-
-    
