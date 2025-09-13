@@ -54,7 +54,7 @@ export function PasswordStrengthInput({ field }: PasswordStrengthInputProps) {
         toast({
           title: 'Error',
           description: 'Could not suggest a password. Please try again.',
-          className: 'px-3 py-2 text-sm border border-neutral-300 bg-neutral-50 text-neutral-900 rounded-lg shadow-md',
+          variant: 'destructive',
         });
       }
     });
@@ -77,7 +77,7 @@ export function PasswordStrengthInput({ field }: PasswordStrengthInputProps) {
           size="sm"
           onClick={handleSuggestPassword}
           disabled={isPending}
-          className="h-8 p-0 text-accent hover:underline-offset-4"
+          className="h-8 p-0 text-primary hover:underline-offset-4"
         >
           {isPending ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />

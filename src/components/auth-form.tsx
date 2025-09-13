@@ -80,12 +80,17 @@ export function AuthForm({ mode }: AuthFormProps) {
   const onSubmit = (values: z.infer<typeof loginSchema | typeof signUpSchema>) => {
     startTransition(async () => {
         if (mode === 'signup') {
-            const { error } = await supabase.auth.signUp(values);
+            const result = signUpSchema.safeParse(values);
+            if (!result.success) {
+                toast({ title: 'Invalid data', description: 'Please check your inputs.', variant: 'destructive'});
+                return;
+            }
+            const { error } = await supabase.auth.signUp(result.data);
             if (error) {
                 toast({
                   title: 'Sign Up Failed',
                   description: error.message || 'An unexpected error occurred.',
-                  className: 'px-3 py-2 text-sm border border-neutral-300 bg-neutral-50 text-neutral-900 rounded-lg shadow-md',
+                  variant: 'destructive',
                 });
             } else {
                 toast({
@@ -96,12 +101,17 @@ export function AuthForm({ mode }: AuthFormProps) {
                 router.refresh();
             }
         } else { // login
-            const { error } = await supabase.auth.signInWithPassword(values);
+            const result = loginSchema.safeParse(values);
+             if (!result.success) {
+                toast({ title: 'Invalid data', description: 'Please check your inputs.', variant: 'destructive'});
+                return;
+            }
+            const { error } = await supabase.auth.signInWithPassword(result.data);
             if (error) {
                 toast({
                   title: 'Login Failed',
                   description: error.message || 'Invalid email or password.',
-                  className: 'px-3 py-2 text-sm border border-neutral-300 bg-neutral-50 text-neutral-900 rounded-lg shadow-md',
+                  variant: 'destructive',
                 });
               } else {
                 router.push('/dashboard');
@@ -127,7 +137,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         toast({
           title: 'Authentication Failed',
           description: error.message || `Failed to sign in with ${provider}.`,
-          className: 'px-3 py-2 text-sm border border-neutral-300 bg-neutral-50 text-neutral-900 rounded-lg shadow-md',
+          variant: 'destructive',
         });
         setSocialLoginPending(null);
         return;
@@ -140,7 +150,7 @@ export function AuthForm({ mode }: AuthFormProps) {
       toast({
         title: 'Authentication Failed',
         description: 'Unexpected error occurred.',
-        className: 'px-3 py-2 text-sm border border-neutral-300 bg-neutral-50 text-neutral-900 rounded-lg shadow-md',
+        variant: 'destructive',
       });
       setSocialLoginPending(null);
     }
