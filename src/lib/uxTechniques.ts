@@ -46,12 +46,12 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
     return recommendations;
   }
   
-  const isLean = requirement.constraints?.some(c => ['tight deadline', 'limited budget', 'tight budget'].includes(c.toLowerCase()));
+  const isLean = requirement.constraints?.some(c => ['tight-deadline', 'limited-budget', 'tight budget'].includes(c.toLowerCase()));
   
   // PASS 1: Hard Filters
   let candidates = allTechniques.filter(tech => {
-    // Project Type Filter
-    const projectType = requirement.project_type?.toLowerCase() === 'old' ? 'existing' : requirement.project_type?.toLowerCase();
+    // Project Type Filter: 'old' in DB maps to 'existing' in UI
+    const projectType = requirement.project_type?.toLowerCase();
     if (projectType && !tech.project_types.map(p => p.toLowerCase()).includes(projectType)) {
       return false;
     }

@@ -183,14 +183,10 @@ export async function insertRequirement(
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { data: null, error: { message: 'User not authenticated', details: '', hint: '', code: '401', name: '' } };
 
-  const primaryGoalAsArray = Array.isArray(requirement.primary_goal) 
-    ? requirement.primary_goal 
-    : (requirement.primary_goal ? [requirement.primary_goal] : []);
-
   const requirementToInsert = {
     ...requirement,
     user_id: user.id,
-    primary_goal: primaryGoalAsArray,
+    project_type: requirement.project_type === 'existing' ? 'old' : 'new'
   };
 
   const { data, error } = await supabase
@@ -210,18 +206,14 @@ export async function updateRequirement(
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { data: null, error: { message: 'User not authenticated', details: '', hint: '', code: '401', name: '' } };
 
-  const primaryGoalAsArray = Array.isArray(updates.primary_goal) 
-    ? updates.primary_goal 
-    : (updates.primary_goal ? [updates.primary_goal] : []);
-
-  const updatesWithArrayGoal = {
+  const updatesToSave = {
     ...updates,
-    primary_goal: primaryGoalAsArray,
+    project_type: updates.project_type === 'existing' ? 'old' : 'new'
   };
 
   const { data, error } = await supabase
       .from('requirements')
-      .update(updatesWithArrayGoal)
+      .update(updatesToSave)
       .eq('id', id)
       .eq('user_id', user.id)
       .select()

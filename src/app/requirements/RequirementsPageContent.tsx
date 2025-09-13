@@ -354,44 +354,56 @@ export default function RequirementsPageContent() {
                   </Step>
                   <Step title="Goals" index={2} isActive={currentStep === 2} isCompleted={currentStep > 2}>
                     <div className="space-y-6">
-                    <FormField
-                        control={form.control}
-                        name="primary_goal"
-                        render={({ field }) => (
-                            <FormItem>
-                            <div className="mb-4">
-                                <FormLabel className="text-base">Project's Primary Goal(s)</FormLabel>
-                            </div>
-                            <div className="space-y-4">
-                                {goalTypes.map((item) => (
-                                <Card
-                                    key={item.id}
-                                    onClick={() => {
-                                    const currentValue = field.value || [];
-                                    const newValues = currentValue.includes(item.id)
-                                        ? currentValue.filter((id) => id !== item.id)
-                                        : [...currentValue, item.id];
-                                    field.onChange(newValues);
-                                    }}
-                                    data-state={field.value?.includes(item.id) ? 'checked' : 'unchecked'}
-                                    className={cn('cursor-pointer transition-all border-2 data-[state=checked]:border-primary')}
-                                >
-                                    <CardContent className="flex items-center p-4 gap-4">
-                                    <Checkbox
-                                        checked={field.value?.includes(item.id)}
-                                        className="h-5 w-5 pointer-events-none"
-                                    />
-                                    <div className="flex flex-col">
-                                        <Label className="font-semibold cursor-pointer">{item.label}</Label>
-                                        <p className="text-sm text-muted-foreground">{item.description}</p>
+                        <FormField
+                            control={form.control}
+                            name="primary_goal"
+                            render={() => (
+                                <FormItem>
+                                    <div className="mb-4">
+                                        <FormLabel className="text-base">Project's Primary Goal(s)</FormLabel>
                                     </div>
-                                    </CardContent>
-                                </Card>
-                                ))}
-                            </div>
-                            <FormMessage />
-                            </FormItem>
-                        )}
+                                    <div className="space-y-4">
+                                    {goalTypes.map((item) => (
+                                        <FormField
+                                            key={item.id}
+                                            control={form.control}
+                                            name="primary_goal"
+                                            render={({ field }) => {
+                                                return (
+                                                <FormItem key={item.id} className="flex flex-row items-start space-x-3 space-y-0">
+                                                    <FormControl>
+                                                        <Card
+                                                            onClick={() => {
+                                                                const currentValue = field.value || [];
+                                                                const newValues = currentValue.includes(item.id)
+                                                                    ? currentValue.filter((id) => id !== item.id)
+                                                                    : [...currentValue, item.id];
+                                                                field.onChange(newValues);
+                                                            }}
+                                                            data-state={field.value?.includes(item.id) ? 'checked' : 'unchecked'}
+                                                            className={cn('w-full cursor-pointer transition-all border-2 data-[state=checked]:border-primary')}
+                                                        >
+                                                            <CardContent className="flex items-center p-4 gap-4">
+                                                                <Checkbox
+                                                                    checked={field.value?.includes(item.id)}
+                                                                    className="h-5 w-5 pointer-events-none"
+                                                                />
+                                                                <div className="flex flex-col">
+                                                                    <Label className="font-semibold cursor-pointer">{item.label}</Label>
+                                                                    <p className="text-sm text-muted-foreground">{item.description}</p>
+                                                                </div>
+                                                            </CardContent>
+                                                        </Card>
+                                                    </FormControl>
+                                                </FormItem>
+                                                );
+                                            }}
+                                        />
+                                    ))}
+                                    </div>
+                                <FormMessage />
+                                </FormItem>
+                            )}
                         />
                         <FormField
                             name="outcome"
