@@ -436,11 +436,11 @@ export default function RequirementsPageContent() {
                                     <FormLabel className="text-base">Desired Output Type(s)</FormLabel>
                                     <FormMessage className="mt-2" />
                                 </div>
-                                <div className="space-y-4">
+                                <div className="space-y-6">
                                 {Object.entries(outputTypes).map(([category, items]) => (
                                     <div key={category}>
-                                        <h3 className="font-semibold mb-2">{category}</h3>
-                                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                        <h3 className="font-semibold mb-3 text-muted-foreground">{category}</h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             {items.map((item) => (
                                                 <FormField
                                                     key={item.id}
@@ -448,7 +448,7 @@ export default function RequirementsPageContent() {
                                                     name="output_type"
                                                     render={({ field }) => {
                                                         return (
-                                                            <FormItem key={item.id} className="flex flex-row items-start space-x-3 space-y-0">
+                                                            <FormItem key={item.id} className="flex flex-row items-center space-x-3 space-y-0">
                                                                 <FormControl>
                                                                     <Checkbox
                                                                         checked={field.value?.includes(item.id)}
@@ -502,5 +502,3 @@ export default function RequirementsPageContent() {
     </div>
   );
 }
-
-    
