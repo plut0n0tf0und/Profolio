@@ -60,24 +60,39 @@ const outcomeTypes = [
 ];
 
 const outputTypes = {
-  "Reports & Prototypes": [
-    { id: 'usability report', label: 'Usability Report' },
-    { id: 'persona profile', label: 'Persona Profile' },
-    { id: 'storyboards', label: 'Storyboards' },
-    { id: 'video', label: 'Video' },
-    { id: 'interactive prototype', label: 'Interactive Prototype' },
-    { id: 'service blueprint', label: 'Service Blueprint' },
-    { id: 'presentation', label: 'Presentation' },
-    { id: 'journey map', label: 'Journey Map' },
-    { id: 'kpi dashboard/analytics report', label: 'KPI Dashboard/Analytics Report' },
-    { id: 'accessibility audit', label: 'Accessibility Audit' },
+  "🖥️ Digital Products": [
+    { id: "mobile app", label: "Mobile App" },
+    { id: "web app", label: "Web App" },
+    { id: "desktop software", label: "Desktop Software" },
+    { id: "smartwatch interface", label: "Smartwatch Interface" },
+    { id: "tv or console experience", label: "TV or Console Experience" },
+    { id: "ar/vr application", label: "AR/VR Application" },
   ],
-  "Design Assets": [
-    { id: 'wireframe', label: 'Wireframe' },
-    { id: 'information architecture', label: 'Information Architecture' },
-    { id: 'ui design', label: 'UI Design' },
-    { id: 'content strategy', label: 'Content Strategy' },
-    { id: 'visual design', label: 'Visual Design' },
+  "📑 Research & Strategy": [
+    { id: "service blueprint", label: "Service Blueprint" },
+    { id: "journey map", label: "Journey Map" },
+    { id: "persona profile", label: "Persona Profile" },
+    { id: "usability report", label: "Usability Report" },
+    { id: "storyboards", label: "Storyboards" },
+    { id: "content strategy", label: "Content Strategy" },
+    { id: "kpi dashboard / analytics report", label: "KPI Dashboard / Analytics Report" },
+  ],
+  "🎨 Design Systems & Assets": [
+    { id: "design system", label: "Design System" },
+    { id: "ui design", label: "UI Design" },
+    { id: "wireframe", label: "Wireframe" },
+    { id: "information architecture", label: "Information Architecture" },
+    { id: "visual design", label: "Visual Design" },
+    { id: "motion design", label: "Motion Design" },
+    { id: "animation", label: "Animation" },
+    { id: "interactive prototype", label: "Interactive Prototype" },
+  ],
+  "🗣️ Communication & Media": [
+    { id: "accessibility audio", label: "Accessibility Audio" },
+    { id: "chatbot / voice interface", label: "Chatbot / Voice Interface" },
+    { id: "voice interaction", label: "Voice Interaction" },
+    { id: "presentation", label: "Presentation" },
+    { id: "video", label: "Video" },
   ],
 };
 
@@ -415,7 +430,7 @@ export default function RequirementsPageContent() {
                   <Step title="Outputs" index={3} isActive={currentStep === 3} isCompleted={currentStep > 3}>
                      <FormField
                         name="output_type"
-                        render={() => (
+                        render={({ field }) => (
                             <FormItem>
                                 <div className="mb-4">
                                     <FormLabel className="text-base">Desired Output Type(s)</FormLabel>
@@ -425,7 +440,7 @@ export default function RequirementsPageContent() {
                                 {Object.entries(outputTypes).map(([category, items]) => (
                                     <div key={category}>
                                         <h3 className="font-semibold mb-3 text-muted-foreground">{category}</h3>
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-3">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             {items.map((item) => (
                                                 <FormField
                                                     key={item.id}
