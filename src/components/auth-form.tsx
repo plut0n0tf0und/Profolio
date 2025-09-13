@@ -41,8 +41,8 @@ const signUpSchema = z.object({
     .min(8, { message: 'Password must be at least 8 characters long.' }),
 });
 
-type LoginData = z.infer<typeof loginSchema>;
-type SignUpData = z.infer<typeof signUpSchema>;
+type LoginSchema = z.infer<typeof loginSchema>;
+type SignUpSchema = z.infer<typeof signUpSchema>;
 
 interface AuthFormProps {
     mode: 'login' | 'signup';
@@ -57,55 +57,55 @@ export function AuthForm({ mode }: AuthFormProps) {
   );
   const [showForgotPassword, setShowForgotPassword] = useState(false);
 
-  const form = useForm<LoginData | SignUpData>({
+  const form = useForm<LoginSchema | SignUpSchema>({
     resolver: zodResolver(mode === 'login' ? loginSchema : signUpSchema),
     defaultValues: { email: '', password: '' },
   });
 
-  const handleSignUp = (values: SignUpData) => {
+  const onSubmit = (values: LoginSchema | SignUpSchema) => {
     startTransition(async () => {
-      const { error } = await supabase.auth.signUp(values);
-      if (error) {
-        toast({
-          title: 'Sign Up Failed',
-          description: error.message || 'An unexpected error occurred.',
-          variant: 'destructive',
-        });
-      } else {
-        toast({
-          title: 'Welcome!',
-          description: 'You have successfully signed up. Redirecting...',
-        });
-        router.push('/dashboard');
-        router.refresh();
-      }
+        if (mode === 'signup') {
+            const result = signUpSchema.safeParse(values);
+            if (!result.success) {
+                // This should theoretically not happen due to the resolver, but it's good practice
+                toast({ title: 'Invalid data', description: 'Please check your inputs.', variant: 'destructive' });
+                return;
+            }
+            const { error } = await supabase.auth.signUp(result.data);
+            if (error) {
+                toast({
+                  title: 'Sign Up Failed',
+                  description: error.message || 'An unexpected error occurred.',
+                  variant: 'destructive',
+                });
+            } else {
+                toast({
+                  title: 'Welcome!',
+                  description: 'You have successfully signed up. Redirecting...',
+                });
+                router.push('/dashboard');
+                router.refresh();
+            }
+        } else { // login
+            const result = loginSchema.safeParse(values);
+             if (!result.success) {
+                toast({ title: 'Invalid data', description: 'Please check your inputs.', variant: 'destructive' });
+                return;
+            }
+            const { error } = await supabase.auth.signInWithPassword(result.data);
+            if (error) {
+                toast({
+                  title: 'Login Failed',
+                  description: error.message || 'Invalid email or password.',
+                  variant: 'destructive',
+                });
+              } else {
+                router.push('/dashboard');
+                router.refresh();
+              }
+        }
     });
   };
-
-  const handleLogin = (values: LoginData) => {
-    startTransition(async () => {
-      const { error } = await supabase.auth.signInWithPassword(values);
-      if (error) {
-        toast({
-          title: 'Login Failed',
-          description: error.message || 'Invalid email or password.',
-          variant: 'destructive',
-        });
-      } else {
-        router.push('/dashboard');
-        router.refresh();
-      }
-    });
-  };
-
-  const onSubmit = (values: LoginData | SignUpData) => {
-    if (mode === 'signup') {
-      handleSignUp(values as SignUpData);
-    } else {
-      handleLogin(values as LoginData);
-    }
-  };
-
 
   const handleSocialLogin = async (provider: 'google' | 'github') => {
     setSocialLoginPending(provider);
@@ -142,9 +142,6 @@ export function AuthForm({ mode }: AuthFormProps) {
     }
   };
   
-  
-  
-
   return (
     <>
     <Card className="w-full border-0 bg-transparent shadow-none">
