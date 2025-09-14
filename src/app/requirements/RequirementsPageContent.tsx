@@ -20,8 +20,9 @@ import { Calendar } from '@/components/ui/calendar';
 import { VerticalStepper, Step } from '@/components/ui/stepper';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { CalendarIcon, Smartphone, Laptop, Plug, Monitor, Save, Eye, Loader2, Target } from 'lucide-react';
+import { CalendarIcon, Smartphone, Laptop, Plug, Monitor, Save, Eye, Loader2, Target, Info } from 'lucide-react';
 import { Label } from '@/components/ui/label';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 // Zod schema for validation
 const requirementSchema = z.object({
@@ -69,33 +70,32 @@ const outputTypes = {
     { id: 'ar-vr-application', label: 'AR/VR Application' },
   ],
   '📑 Research & Strategy': [
-    { id: 'service-blueprint', label: 'Service Blueprint' },
+    { id: 'service-blueprint', label: 'Service Blueprint', tooltip: 'Shows how frontstage & backstage processes connect to user experience.' },
     { id: 'journey-map', label: 'Journey Map' },
-    { id: 'persona-profile', label: 'Persona Profile' },
+    { id: 'persona-profile', label: 'Persona Profile', tooltip: 'Represents key user types with goals and behaviors.' },
     { id: 'usability-report', label: 'Usability Report' },
     { id: 'storyboards', label: 'Storyboards' },
     { id: 'content-strategy', label: 'Content Strategy' },
-    { id: 'kpi-dashboard-analytics-report', label: 'KPI Dashboard / Analytics Report' },
+    { id: 'kpi-dashboard-analytics-report', label: 'KPI Dashboard / Analytics Report', tooltip: 'Summarizes metrics and performance data visually.' },
   ],
   '🎨 Design Systems & Assets': [
     { id: 'design-system', label: 'Design System' },
     { id: 'ui-design', label: 'UI Design' },
     { id: 'wireframe', label: 'Wireframe' },
-    { id: 'information-architecture', label: 'Information Architecture' },
+    { id: 'information-architecture', label: 'Information Architecture', tooltip: 'Organizes content and navigation for usability.' },
     { id: 'visual-design', label: 'Visual Design' },
     { id: 'motion-design', label: 'Motion Design' },
     { id: 'animation', label: 'Animation' },
     { id: 'interactive-prototype', label: 'Interactive Prototype' },
   ],
   '🗣️ Communication & Media': [
-    { id: 'accessibility-audio', label: 'Accessibility Audio' },
+    { id: 'accessibility-audio', label: 'Accessibility Audio', tooltip: 'Evaluates audio-based accessibility like screen readers, voice navigation.' },
     { id: 'chatbot-voice-interface', label: 'Chatbot / Voice Interface' },
     { id: 'voice-interaction', label: 'Voice Interaction' },
     { id: 'presentation', label: 'Presentation' },
     { id: 'video', label: 'Video' },
   ],
 };
-
 
 const constraintTypes = [
   { id: 'limited budget', label: 'Limited Budget' },
@@ -433,16 +433,17 @@ export default function RequirementsPageContent() {
                      <FormField
                         name="output_type"
                         render={() => (
+                          <TooltipProvider>
                             <FormItem>
                                 <div className="mb-4">
                                     <FormLabel className="text-base">Desired Output Type(s)</FormLabel>
                                     <FormMessage className="mt-2" />
                                 </div>
-                                <div className="space-y-8">
+                                <div className="space-y-6">
                                 {Object.entries(outputTypes).map(([category, items]) => (
                                     <div key={category} className="rounded-lg border bg-card-nested p-4">
                                         <h3 className="font-semibold mb-4 text-foreground flex items-center gap-2">{category}</h3>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
                                             {items.map((item) => (
                                                 <FormField
                                                     key={item.id}
@@ -450,7 +451,7 @@ export default function RequirementsPageContent() {
                                                     name="output_type"
                                                     render={({ field }) => {
                                                         return (
-                                                            <FormItem key={item.id} className="flex flex-row items-center space-x-3 space-y-0">
+                                                            <FormItem key={item.id} className="flex flex-row items-center space-x-3 space-y-0 py-1">
                                                                 <FormControl>
                                                                     <Checkbox
                                                                         checked={field.value?.includes(item.id)}
@@ -461,7 +462,19 @@ export default function RequirementsPageContent() {
                                                                         }}
                                                                     />
                                                                 </FormControl>
-                                                                <FormLabel className="font-normal">{item.label}</FormLabel>
+                                                                <div className="flex items-center gap-2">
+                                                                  <FormLabel className="font-normal">{item.label}</FormLabel>
+                                                                  {item.tooltip && (
+                                                                    <Tooltip>
+                                                                      <TooltipTrigger asChild>
+                                                                        <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                                                                      </TooltipTrigger>
+                                                                      <TooltipContent>
+                                                                        <p>{item.tooltip}</p>
+                                                                      </TooltipContent>
+                                                                    </Tooltip>
+                                                                  )}
+                                                                </div>
                                                             </FormItem>
                                                         );
                                                     }}
@@ -473,6 +486,7 @@ export default function RequirementsPageContent() {
                                 </div>
                                 <FormMessage />
                             </FormItem>
+                          </TooltipProvider>
                         )}
                         />
                   </Step>
@@ -505,3 +519,5 @@ export default function RequirementsPageContent() {
     </div>
   );
 }
+
+    
