@@ -34,6 +34,9 @@ import { format } from 'date-fns';
 type StageTechniques = { [key: string]: {name: string, slug: string}[] };
 
 const FiveDProcess = ({ techniques, projectId }: { techniques: StageTechniques, projectId: string }) => {
+  // Always open all stages by default, even if empty.
+  const allStages = ['Discover', 'Define', 'Design', 'Develop', 'Deliver'];
+  
   return (
     <Card className="w-full">
       <CardHeader>
@@ -43,31 +46,34 @@ const FiveDProcess = ({ techniques, projectId }: { techniques: StageTechniques, 
       <CardContent>
         <Accordion 
           type="multiple" 
-          defaultValue={Object.keys(techniques)} 
+          defaultValue={allStages} 
           className="w-full"
         >
-          {Object.entries(techniques).map(([stage, stageTechs]) => (
-            <AccordionItem value={stage} key={stage}>
-              <AccordionTrigger className="text-lg font-semibold">{stage}</AccordionTrigger>
-              <AccordionContent>
-                {stageTechs.length > 0 ? (
-                  <div className="space-y-3 p-2">
-                    {stageTechs.map(technique => (
-                      <Card key={technique.name} className="bg-background/50 border-border/50 hover:border-primary/50 transition-all">
-                        <CardContent className="flex items-center justify-between p-4">
-                           <Link href={`/dashboard/technique/${technique.slug}?projectId=${projectId}`} className="font-medium cursor-pointer hover:underline">
-                            {technique.name}
-                          </Link>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="p-2 text-muted-foreground">No specific techniques recommended for this stage based on your selections.</p>
-                )}
-              </AccordionContent>
-            </AccordionItem>
-          ))}
+          {allStages.map((stage) => {
+            const stageTechs = techniques[stage] || [];
+            return (
+              <AccordionItem value={stage} key={stage}>
+                <AccordionTrigger className="text-lg font-semibold">{stage}</AccordionTrigger>
+                <AccordionContent>
+                  {stageTechs.length > 0 ? (
+                    <div className="space-y-3 p-2">
+                      {stageTechs.map(technique => (
+                        <Card key={technique.name} className="bg-background/50 border-border/50 hover:border-primary/50 transition-all">
+                          <CardContent className="flex items-center justify-between p-4">
+                             <Link href={`/dashboard/technique/${technique.slug}?projectId=${projectId}`} className="font-medium cursor-pointer hover:underline">
+                              {technique.name}
+                            </Link>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="p-2 text-muted-foreground">No specific techniques recommended for this stage based on your selections.</p>
+                  )}
+                </AccordionContent>
+              </AccordionItem>
+            );
+          })}
         </Accordion>
       </CardContent>
     </Card>
@@ -121,7 +127,6 @@ export default function ResultPage() {
         return;
       }
       
-      // Set requirement data first, then trigger filtering in another effect
       setRequirement(data);
       setIsLoading(false);
     };
@@ -130,8 +135,6 @@ export default function ResultPage() {
   }, [requirementId, router, toast]);
 
   useEffect(() => {
-    // This effect runs when `requirement` state is updated.
-    // This solves the race condition where filtering was running with stale data.
     if (requirement) {
       const filteredTechniques = getFilteredTechniques(requirement);
       setStageTechniques(filteredTechniques);
