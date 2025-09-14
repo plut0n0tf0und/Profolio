@@ -149,7 +149,7 @@ export default function RequirementsPageContent() {
           ...formData,
           date: new Date(formData.date).toISOString(),
           existing_users: formData.existing_users === 'true',
-          output_type: formData.output_type, // Explicitly include output_type
+          output_type: formData.output_type,
       };
 
       let result;
@@ -160,7 +160,8 @@ export default function RequirementsPageContent() {
       }
 
       if (result.error) {
-          toast({ title: 'Save Failed', description: 'Could not save your progress.', variant: 'destructive' });
+          console.error("Error inserting requirement:", result.error);
+          toast({ title: 'Save Failed', description: result.error.message || 'Could not save your progress.', variant: 'destructive' });
       } else if (result.data) {
           if (!requirementId) {
             setRequirementId(result.data.id);
@@ -236,7 +237,7 @@ export default function RequirementsPageContent() {
                        <FormField name="problem_statement" render={({ field }) => ( <FormItem> <FormLabel>Problem Statement</FormLabel> <FormControl><Textarea {...field} rows={3} /></FormControl> <FormMessage /> </FormItem> )} />
                        <FormField name="role" render={({ field }) => ( <FormItem> <FormLabel>Your Role</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem> )} />
                        <div className="flex flex-col md:flex-row md:items-center gap-6">
-                            <FormField name="project_type" render={({ field }) => ( <FormItem className="space-y-3"> <FormLabel>Project Type</FormLabel> <FormControl><RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4"> <FormItem className="flex items-center space-x-2"> <FormControl><RadioGroupItem value="new" id="new" /></FormControl> <Label htmlFor="new">New Project</Label> </FormItem> <FormItem className="flex items-center space-x-2"> <FormControl><RadioGroupItem value="existing" id="existing" /></FormControl> <Label htmlFor="existing">Existing Project</Label> </FormItem> </RadioGroup></FormControl> <FormMessage /> </FormItem> )} />
+                            <FormField name="project_type" render={({ field }) => ( <FormItem className="space-y-3"> <FormLabel>Project Type</FormLabel> <FormControl><RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4"> <FormItem className="flex items-center space-x-2"> <FormControl><RadioGroupItem value="new" id="new" /></FormControl> <Label htmlFor="new">New Project</Label> </FormItem> <FormItem className="flex items-center space-x-2"> <FormControl><RadioGroupItem value="old" id="existing" /></FormControl> <Label htmlFor="existing">Existing Project</Label> </FormItem> </RadioGroup></FormControl> <FormMessage /> </FormItem> )} />
                             <FormField name="existing_users" render={({ field }) => ( <FormItem className="space-y-3"> <FormLabel>Existing Users</FormLabel> <FormControl><RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4"> <FormItem className="flex items-center space-x-2"> <FormControl><RadioGroupItem value="true" id="users-yes" /></FormControl> <Label htmlFor="users-yes">Yes</Label> </FormItem> <FormItem className="flex items-center space-x-2"> <FormControl><RadioGroupItem value="false" id="users-no" /></FormControl> <Label htmlFor="users-no">No</Label> </FormItem> </RadioGroup></FormControl> <FormMessage /> </FormItem> )} />
                        </div>
                     </div>
@@ -489,5 +490,3 @@ export default function RequirementsPageContent() {
     </div>
   );
 }
-
-    
