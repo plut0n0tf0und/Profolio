@@ -61,7 +61,7 @@ const outcomeTypes = [
 ];
 
 const outputTypes = {
-  '🖥️ Digital Products': [
+  'Digital Products': [
     { id: 'mobile-app', label: 'Mobile App' },
     { id: 'web-app', label: 'Web App' },
     { id: 'desktop-software', label: 'Desktop Software' },
@@ -69,7 +69,7 @@ const outputTypes = {
     { id: 'tv-or-console-experience', label: 'TV or Console Experience' },
     { id: 'ar-vr-application', label: 'AR/VR Application' },
   ],
-  '📑 Research & Strategy': [
+  'Research & Strategy': [
     { id: 'service-blueprint', label: 'Service Blueprint', tooltip: 'Shows how frontstage & backstage processes connect to user experience.' },
     { id: 'journey-map', label: 'Journey Map' },
     { id: 'persona-profile', label: 'Persona Profile', tooltip: 'Represents key user types with goals and behaviors.' },
@@ -78,7 +78,7 @@ const outputTypes = {
     { id: 'content-strategy', label: 'Content Strategy' },
     { id: 'kpi-dashboard-analytics-report', label: 'KPI Dashboard / Analytics Report', tooltip: 'Summarizes metrics and performance data visually.' },
   ],
-  '🎨 Design Systems & Assets': [
+  'Design Systems & Assets': [
     { id: 'design-system', label: 'Design System' },
     { id: 'ui-design', label: 'UI Design' },
     { id: 'wireframe', label: 'Wireframe' },
@@ -88,7 +88,7 @@ const outputTypes = {
     { id: 'animation', label: 'Animation' },
     { id: 'interactive-prototype', label: 'Interactive Prototype' },
   ],
-  '🗣️ Communication & Media': [
+  'Communication & Media': [
     { id: 'accessibility-audio', label: 'Accessibility Audio', tooltip: 'Evaluates audio-based accessibility like screen readers, voice navigation.' },
     { id: 'chatbot-voice-interface', label: 'Chatbot / Voice Interface' },
     { id: 'voice-interaction', label: 'Voice Interaction' },
@@ -96,6 +96,7 @@ const outputTypes = {
     { id: 'video', label: 'Video' },
   ],
 };
+
 
 const constraintTypes = [
   { id: 'limited budget', label: 'Limited Budget' },
@@ -439,11 +440,11 @@ export default function RequirementsPageContent() {
                                     <FormLabel className="text-base">Desired Output Type(s)</FormLabel>
                                     <FormMessage className="mt-2" />
                                 </div>
-                                <div className="space-y-6">
+                                <div className="space-y-4">
                                 {Object.entries(outputTypes).map(([category, items]) => (
                                     <div key={category} className="rounded-lg border bg-card-nested p-4">
                                         <h3 className="font-semibold mb-4 text-foreground flex items-center gap-2">{category}</h3>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
                                             {items.map((item) => (
                                                 <FormField
                                                     key={item.id}
@@ -463,7 +464,7 @@ export default function RequirementsPageContent() {
                                                                     />
                                                                 </FormControl>
                                                                 <div className="flex items-center gap-2">
-                                                                  <FormLabel className="font-normal">{item.label}</FormLabel>
+                                                                  <FormLabel className="font-normal leading-snug">{item.label}</FormLabel>
                                                                   {item.tooltip && (
                                                                     <Tooltip>
                                                                       <TooltipTrigger asChild>
@@ -519,5 +520,3 @@ export default function RequirementsPageContent() {
     </div>
   );
 }
-
-    
