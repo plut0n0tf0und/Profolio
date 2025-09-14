@@ -75,23 +75,36 @@ const outputTypes = {
   'Digital Products': [
     { id: 'mobile-app', label: 'Mobile App' },
     { id: 'web-app', label: 'Web App' },
+    { id: 'desktop-software', label: 'Desktop Software' },
+    { id: 'smartwatch-interface', label: 'Smartwatch Interface' },
+    { id: 'tv-or-console-experience', label: 'TV or Console Experience' },
+    { id: 'ar-vr-application', label: 'AR/VR Application' },
   ],
   'Research & Strategy': [
     { id: 'service-blueprint', label: 'Service Blueprint', tooltip: 'Shows how frontstage & backstage processes connect to user experience.' },
     { id: 'journey-map', label: 'Journey Map' },
     { id: 'persona-profile', label: 'Persona Profile', tooltip: 'Represents key user types with goals and behaviors.' },
     { id: 'usability-report', label: 'Usability Report' },
+    { id: 'storyboards', label: 'Storyboards' },
+    { id: 'content-strategy', label: 'Content Strategy' },
     { id: 'kpi-dashboard-analytics-report', label: 'KPI Dashboard / Analytics Report', tooltip: 'Summarizes metrics and performance data visually.' },
   ],
   'Design Systems & Assets': [
     { id: 'design-system', label: 'Design System' },
+    { id: 'ui-design', label: 'UI Design' },
     { id: 'wireframe', label: 'Wireframe' },
     { id: 'information-architecture', label: 'Information Architecture', tooltip: 'Organizes content and navigation for usability.' },
+    { id: 'visual-design', label: 'Visual Design' },
+    { id: 'motion-design', label: 'Motion Design' },
+    { id: 'animation', label: 'Animation' },
     { id: 'interactive-prototype', label: 'Interactive Prototype' },
   ],
   'Communication & Media': [
     { id: 'accessibility-audio', label: 'Accessibility Audio', tooltip: 'Evaluates audio-based accessibility like screen readers, voice navigation.' },
+    { id: 'chatbot-voice-interface', label: 'Chatbot / Voice Interface' },
+    { id: 'voice-interaction', label: 'Voice Interaction' },
     { id: 'presentation', label: 'Presentation' },
+    { id: 'video', label: 'Video' },
   ],
 };
 
