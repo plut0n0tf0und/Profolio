@@ -30,6 +30,7 @@ import { Badge } from '@/components/ui/badge';
 import { ChevronLeft, Save, Loader2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
+import { outputTypeLabels } from '@/lib/output-type-labels';
 
 type StageTechniques = { [key: string]: {name: string, slug: string}[] };
 
@@ -239,7 +240,7 @@ export default function ResultPage() {
                   <div>
                       <h4 className="font-semibold mb-2">Output Types</h4>
                       <div className="flex flex-wrap gap-2">
-                         {requirement.output_type?.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
+                         {requirement.output_type?.map(tag => <Badge key={tag} variant="secondary">{outputTypeLabels[tag] || tag}</Badge>)}
                       </div>
                   </div>
                   <div>
