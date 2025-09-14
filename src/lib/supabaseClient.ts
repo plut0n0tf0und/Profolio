@@ -20,6 +20,7 @@ const RequirementSchema = z.object({
   existing_users: z.boolean().nullable(),
   primary_goal: z.array(z.string()).optional().nullable(),
   constraints: z.array(z.string()).optional().nullable(),
+  deadline: z.string().optional().nullable(),
 });
 export type Requirement = z.infer<typeof RequirementSchema>;
 
@@ -41,6 +42,7 @@ const SavedResultSchema = z.object({
   primary_goal: z.array(z.string()).optional().nullable(),
   constraints: z.array(z.string()).optional().nullable(),
   project_type: z.string().optional(),
+  deadline: z.string().optional().nullable(),
 });
 export type SavedResult = z.infer<typeof SavedResultSchema>;
 
@@ -213,6 +215,7 @@ export async function saveOrUpdateResult(
         primary_goal: requirement.primary_goal,
         constraints: requirement.constraints,
         project_type: requirement.project_type,
+        deadline: requirement.deadline,
     };
 
     const { data: existingResult, error: selectError } = await supabase
@@ -451,5 +454,3 @@ export async function fetchRemixedTechniquesByProjectId(projectId: string): Prom
     if (error) console.error("Error fetching remixed techniques by project ID:", error);
     return { data, error };
 }
-
-    

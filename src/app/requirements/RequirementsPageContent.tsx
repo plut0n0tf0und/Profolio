@@ -20,9 +20,10 @@ import { Calendar } from '@/components/ui/calendar';
 import { VerticalStepper, Step } from '@/components/ui/stepper';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { CalendarIcon, Smartphone, Laptop, Plug, Monitor, Save, Eye, Loader2, Target, Info, CircuitBoard, BookOpen, Layers, MessageSquare } from 'lucide-react';
+import { CalendarIcon, Smartphone, Laptop, Plug, Monitor, Save, Eye, Loader2, Target, Info, CircuitBoard, BookOpen, Layers, MessageSquare, Clock } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 // Zod schema for validation
 const requirementSchema = z.object({
@@ -31,12 +32,22 @@ const requirementSchema = z.object({
   problem_statement: z.string().min(1, 'Problem statement is required.'),
   role: z.string().min(1, 'Your role is required.'),
   project_type: z.string({ required_error: 'Please select a project type.' }),
-  existing_users: z.string({ required_error: 'Please specify if you have existing users.' }),
+  existing_users: z.string().optional(),
   device_type: z.array(z.string()).min(1, 'Please select at least one device type.'),
   constraints: z.array(z.string()).optional(),
+  deadline: z.string().optional(),
   primary_goal: z.array(z.string()).min(1, 'Please select at least one primary goal.'),
   outcome: z.array(z.string()).min(1, 'Please select at least one desired outcome.'),
   output_type: z.array(z.string()).min(1, 'Please select at least one output type.'),
+}).refine(data => {
+    // If project_type is selected, existing_users must also be selected.
+    if (data.project_type) {
+        return !!data.existing_users;
+    }
+    return true;
+}, {
+    message: 'Please answer the follow-up question about users/customers.',
+    path: ['existing_users'],
 });
 
 type FormData = z.infer<typeof requirementSchema>;
@@ -64,36 +75,23 @@ const outputTypes = {
   'Digital Products': [
     { id: 'mobile-app', label: 'Mobile App' },
     { id: 'web-app', label: 'Web App' },
-    { id: 'desktop-software', label: 'Desktop Software' },
-    { id: 'smartwatch-interface', label: 'Smartwatch Interface' },
-    { id: 'tv-or-console-experience', label: 'TV or Console Experience' },
-    { id: 'ar-vr-application', label: 'AR/VR Application' },
   ],
   'Research & Strategy': [
     { id: 'service-blueprint', label: 'Service Blueprint', tooltip: 'Shows how frontstage & backstage processes connect to user experience.' },
     { id: 'journey-map', label: 'Journey Map' },
     { id: 'persona-profile', label: 'Persona Profile', tooltip: 'Represents key user types with goals and behaviors.' },
     { id: 'usability-report', label: 'Usability Report' },
-    { id: 'storyboards', label: 'Storyboards' },
-    { id: 'content-strategy', label: 'Content Strategy' },
     { id: 'kpi-dashboard-analytics-report', label: 'KPI Dashboard / Analytics Report', tooltip: 'Summarizes metrics and performance data visually.' },
   ],
   'Design Systems & Assets': [
     { id: 'design-system', label: 'Design System' },
-    { id: 'ui-design', label: 'UI Design' },
     { id: 'wireframe', label: 'Wireframe' },
     { id: 'information-architecture', label: 'Information Architecture', tooltip: 'Organizes content and navigation for usability.' },
-    { id: 'visual-design', label: 'Visual Design' },
-    { id: 'motion-design', label: 'Motion Design' },
-    { id: 'animation', label: 'Animation' },
     { id: 'interactive-prototype', label: 'Interactive Prototype' },
   ],
   'Communication & Media': [
     { id: 'accessibility-audio', label: 'Accessibility Audio', tooltip: 'Evaluates audio-based accessibility like screen readers, voice navigation.' },
-    { id: 'chatbot-voice-interface', label: 'Chatbot / Voice Interface' },
-    { id: 'voice-interaction', label: 'Voice Interaction' },
     { id: 'presentation', label: 'Presentation' },
-    { id: 'video', label: 'Video' },
   ],
 };
 
@@ -102,6 +100,8 @@ const constraintTypes = [
   { id: 'limited budget', label: 'Limited Budget' },
   { id: 'tight deadline', label: 'Tight Deadline' },
 ];
+
+const deadlineOptions = ['1-2 weeks', '3-4 weeks', '1-2 months', '3+ months', 'Custom'];
 
 const categoryIcons: { [key: string]: React.ElementType } = {
   'Digital Products': CircuitBoard,
@@ -117,6 +117,7 @@ export default function RequirementsPageContent() {
   const [currentStep, setCurrentStep] = useState(0);
   const [requirementId, setRequirementId] = useState<string | null>(searchParams.get('id'));
   const [isSaving, setIsSaving] = useState(false);
+  const [showCustomDeadline, setShowCustomDeadline] = useState(false);
 
   const form = useForm<FormData>({
     resolver: zodResolver(requirementSchema),
@@ -127,11 +128,24 @@ export default function RequirementsPageContent() {
       role: '',
       device_type: [],
       constraints: [],
+      deadline: '',
       primary_goal: [],
       outcome: [],
       output_type: [],
     },
   });
+  
+  const watchedProjectType = form.watch('project_type');
+  const watchedConstraints = form.watch('constraints');
+  const isTightDeadlineChecked = watchedConstraints?.includes('tight deadline');
+
+  useEffect(() => {
+    // If "Tight Deadline" is unchecked, clear the deadline value
+    if (!isTightDeadlineChecked) {
+      form.setValue('deadline', undefined);
+      setShowCustomDeadline(false);
+    }
+  }, [isTightDeadlineChecked, form]);
 
   useEffect(() => {
     const requirementIdFromParams = searchParams.get('id');
@@ -144,7 +158,13 @@ export default function RequirementsPageContent() {
             date: new Date(data.date as string),
             existing_users: data.existing_users === null ? undefined : String(data.existing_users),
             primary_goal: data.primary_goal || [],
+            deadline: data.deadline || '',
           } as any);
+
+          if (data.deadline && !deadlineOptions.includes(data.deadline)) {
+            setShowCustomDeadline(true);
+          }
+
         } else {
             console.error('Failed to fetch requirement:', error);
             router.push('/requirements');
@@ -156,7 +176,7 @@ export default function RequirementsPageContent() {
 
   const steps = [
     { name: 'Project Basics', fields: ['project_name', 'date', 'problem_statement', 'role', 'project_type', 'existing_users'] },
-    { name: 'Context', fields: ['device_type', 'constraints'] },
+    { name: 'Context', fields: ['device_type', 'constraints', 'deadline'] },
     { name: 'Goals', fields: ['primary_goal', 'outcome'] },
     { name: 'Outputs', fields: ['output_type'] },
   ];
@@ -171,7 +191,7 @@ export default function RequirementsPageContent() {
       const payload: Partial<Requirement> = {
           ...formData,
           date: new Date(formData.date).toISOString(),
-          existing_users: formData.existing_users === 'true',
+          existing_users: formData.existing_users ? formData.existing_users === 'true' : undefined,
           output_type: formData.output_type,
       };
 
@@ -259,10 +279,10 @@ export default function RequirementsPageContent() {
                        </div>
                        <FormField name="problem_statement" render={({ field }) => ( <FormItem> <FormLabel>Problem Statement</FormLabel> <FormControl><Textarea {...field} rows={3} /></FormControl> <FormMessage /> </FormItem> )} />
                        <FormField name="role" render={({ field }) => ( <FormItem> <FormLabel>Your Role</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem> )} />
-                       <div className="flex flex-col md:flex-row md:items-center gap-6">
-                            <FormField name="project_type" render={({ field }) => ( <FormItem className="space-y-3"> <FormLabel>Project Type</FormLabel> <FormControl><RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4"> <FormItem className="flex items-center space-x-2"> <FormControl><RadioGroupItem value="new" id="new" /></FormControl> <Label htmlFor="new">New Project</Label> </FormItem> <FormItem className="flex items-center space-x-2"> <FormControl><RadioGroupItem value="old" id="existing" /></FormControl> <Label htmlFor="existing">Existing Project</Label> </FormItem> </RadioGroup></FormControl> <FormMessage /> </FormItem> )} />
-                            <FormField name="existing_users" render={({ field }) => ( <FormItem className="space-y-3"> <FormLabel>Existing Users</FormLabel> <FormControl><RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4"> <FormItem className="flex items-center space-x-2"> <FormControl><RadioGroupItem value="true" id="users-yes" /></FormControl> <Label htmlFor="users-yes">Yes</Label> </FormItem> <FormItem className="flex items-center space-x-2"> <FormControl><RadioGroupItem value="false" id="users-no" /></FormControl> <Label htmlFor="users-no">No</Label> </FormItem> </RadioGroup></FormControl> <FormMessage /> </FormItem> )} />
-                       </div>
+                       <FormField name="project_type" render={({ field }) => ( <FormItem className="space-y-3"> <FormLabel>Project Type</FormLabel> <FormControl><RadioGroup onValueChange={(value) => { field.onChange(value); form.setValue('existing_users', undefined, { shouldValidate: true }); }} value={field.value} className="flex gap-4"> <FormItem className="flex items-center space-x-2"> <FormControl><RadioGroupItem value="new" id="new" /></FormControl> <Label htmlFor="new">New Project</Label> </FormItem> <FormItem className="flex items-center space-x-2"> <FormControl><RadioGroupItem value="old" id="existing" /></FormControl> <Label htmlFor="existing">Existing Project</Label> </FormItem> </RadioGroup></FormControl> <FormMessage /> </FormItem> )} />
+                       {watchedProjectType && (
+                            <FormField name="existing_users" render={({ field }) => ( <FormItem className="space-y-3 p-4 border rounded-md bg-card-nested"> <FormLabel>{watchedProjectType === 'new' ? 'Do you have existing customers to talk to?' : 'Do you have existing users?'}</FormLabel> <FormControl><RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4"> <FormItem className="flex items-center space-x-2"> <FormControl><RadioGroupItem value="true" id="users-yes" /></FormControl> <Label htmlFor="users-yes">Yes</Label> </FormItem> <FormItem className="flex items-center space-x-2"> <FormControl><RadioGroupItem value="false" id="users-no" /></FormControl> <Label htmlFor="users-no">No</Label> </FormItem> </RadioGroup></FormControl> <FormMessage /> </FormItem> )} />
+                       )}
                     </div>
                   </Step>
                   <Step title="Context" index={1} isActive={currentStep === 1} isCompleted={currentStep > 1}>
@@ -318,31 +338,81 @@ export default function RequirementsPageContent() {
                                     <div className="mb-4">
                                         <FormLabel className="text-base flex items-center">
                                             Project Constraints
-                                            <span className="ml-2 text-sm font-normal text-muted-foreground">(Optional)</span>
                                         </FormLabel>
                                     </div>
-                                    <div className="flex flex-wrap gap-4">
+                                    <div className="space-y-4">
                                         {constraintTypes.map((item) => (
-                                            <FormField
-                                                key={item.id}
-                                                control={form.control}
-                                                name="constraints"
-                                                render={({ field }) => (
-                                                    <FormItem key={item.id} className="flex flex-row items-start space-x-3 space-y-0">
-                                                        <FormControl>
-                                                            <Checkbox
-                                                                checked={field.value?.includes(item.id)}
-                                                                onCheckedChange={(checked) => {
-                                                                    return checked
-                                                                        ? field.onChange([...(field.value || []), item.id])
-                                                                        : field.onChange(field.value?.filter((value) => value !== item.id));
-                                                                }}
-                                                            />
-                                                        </FormControl>
-                                                        <FormLabel className="font-normal">{item.label}</FormLabel>
-                                                    </FormItem>
+                                            <div key={item.id} className={cn("p-4 border rounded-md transition-all", isTightDeadlineChecked && item.id === 'tight deadline' ? 'bg-card-nested' : '')}>
+                                                <div className="flex items-center justify-between">
+                                                    <FormField
+                                                        control={form.control}
+                                                        name="constraints"
+                                                        render={({ field }) => (
+                                                            <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                                                                <FormControl>
+                                                                    <Checkbox
+                                                                        checked={field.value?.includes(item.id)}
+                                                                        onCheckedChange={(checked) => {
+                                                                            return checked
+                                                                                ? field.onChange([...(field.value || []), item.id])
+                                                                                : field.onChange(field.value?.filter((value) => value !== item.id));
+                                                                        }}
+                                                                    />
+                                                                </FormControl>
+                                                                <FormLabel className="font-normal flex items-center gap-2">
+                                                                    {item.id === 'tight deadline' && <Clock className="h-4 w-4 text-muted-foreground" />}
+                                                                    {item.label}
+                                                                </FormLabel>
+                                                            </FormItem>
+                                                        )}
+                                                    />
+                                                </div>
+                                                {item.id === 'tight deadline' && isTightDeadlineChecked && (
+                                                     <div className="mt-4 pl-8">
+                                                        <FormField
+                                                            control={form.control}
+                                                            name="deadline"
+                                                            render={({ field }) => (
+                                                            <FormItem>
+                                                                <FormLabel>Specify Deadline</FormLabel>
+                                                                {showCustomDeadline ? (
+                                                                    <FormControl>
+                                                                        <Input 
+                                                                            placeholder="e.g., End of Q3" 
+                                                                            {...field}
+                                                                            onBlur={() => { if (!field.value) setShowCustomDeadline(false); }}
+                                                                            autoFocus
+                                                                        />
+                                                                    </FormControl>
+                                                                ) : (
+                                                                    <Select
+                                                                        onValueChange={(value) => {
+                                                                        if (value === 'Custom') {
+                                                                            setShowCustomDeadline(true);
+                                                                            field.onChange('');
+                                                                        } else {
+                                                                            field.onChange(value);
+                                                                        }
+                                                                        }}
+                                                                        value={field.value}
+                                                                    >
+                                                                        <FormControl>
+                                                                            <SelectTrigger>
+                                                                                <SelectValue placeholder="Select a timeframe" />
+                                                                            </SelectTrigger>
+                                                                        </FormControl>
+                                                                        <SelectContent>
+                                                                            {deadlineOptions.map(option => <SelectItem key={option} value={option}>{option}</SelectItem>)}
+                                                                        </SelectContent>
+                                                                    </Select>
+                                                                )}
+                                                                <FormMessage />
+                                                            </FormItem>
+                                                            )}
+                                                        />
+                                                    </div>
                                                 )}
-                                            />
+                                            </div>
                                         ))}
                                     </div>
                                     <FormMessage />
@@ -533,5 +603,3 @@ export default function RequirementsPageContent() {
     </div>
   );
 }
-
-    
