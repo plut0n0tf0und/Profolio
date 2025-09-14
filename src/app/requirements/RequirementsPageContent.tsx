@@ -20,7 +20,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { VerticalStepper, Step } from '@/components/ui/stepper';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { CalendarIcon, Smartphone, Laptop, Plug, Monitor, Save, Eye, Loader2, Target, Info } from 'lucide-react';
+import { CalendarIcon, Smartphone, Laptop, Plug, Monitor, Save, Eye, Loader2, Target, Info, CircuitBoard, BookOpen, Layers, MessageSquare } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -102,6 +102,13 @@ const constraintTypes = [
   { id: 'limited budget', label: 'Limited Budget' },
   { id: 'tight deadline', label: 'Tight Deadline' },
 ];
+
+const categoryIcons: { [key: string]: React.ElementType } = {
+  'Digital Products': CircuitBoard,
+  'Research & Strategy': BookOpen,
+  'Design Systems & Assets': Layers,
+  'Communication & Media': MessageSquare,
+};
 
 export default function RequirementsPageContent() {
   const router = useRouter();
@@ -441,9 +448,14 @@ export default function RequirementsPageContent() {
                                     <FormMessage className="mt-2" />
                                 </div>
                                 <div className="space-y-4">
-                                {Object.entries(outputTypes).map(([category, items]) => (
+                                {Object.entries(outputTypes).map(([category, items]) => {
+                                    const Icon = categoryIcons[category];
+                                    return (
                                     <div key={category} className="rounded-lg border bg-card-nested p-4">
-                                        <h3 className="font-semibold mb-4 text-foreground flex items-center gap-2">{category}</h3>
+                                        <h3 className="font-semibold mb-4 text-foreground flex items-center gap-2">
+                                            {Icon && <Icon className="h-5 w-5 text-muted-foreground" />}
+                                            {category}
+                                        </h3>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
                                             {items.map((item) => (
                                                 <FormField
@@ -483,7 +495,8 @@ export default function RequirementsPageContent() {
                                             ))}
                                         </div>
                                     </div>
-                                ))}
+                                    );
+                                })}
                                 </div>
                                 <FormMessage />
                             </FormItem>
@@ -520,3 +533,5 @@ export default function RequirementsPageContent() {
     </div>
   );
 }
+
+    
