@@ -438,11 +438,11 @@ export default function RequirementsPageContent() {
                                     <FormLabel className="text-base">Desired Output Type(s)</FormLabel>
                                     <FormMessage className="mt-2" />
                                 </div>
-                                <div className="space-y-6">
+                                <div className="space-y-8">
                                 {Object.entries(outputTypes).map(([category, items]) => (
-                                    <div key={category}>
-                                        <h3 className="font-semibold mb-3 text-muted-foreground">{category}</h3>
-                                        <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+                                    <div key={category} className="rounded-lg border bg-card-nested p-4">
+                                        <h3 className="font-semibold mb-4 text-foreground flex items-center gap-2">{category}</h3>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
                                             {items.map((item) => (
                                                 <FormField
                                                     key={item.id}
