@@ -83,12 +83,12 @@ export default function PortfolioPage() {
 
     const handleBackToEditor = () => {
         if (!technique) return;
-        const techniqueDetails = allTechniqueDetails.find(t => t.name === technique.technique_name);
+        const techniqueDetails = allTechniqueDetails.techniques.find(t => t.label === technique.technique_name);
         if (!techniqueDetails) {
             toast({ title: 'Error', description: 'Could not find the original technique details to edit.' });
             return;
         }
-        const techniqueSlug = techniqueDetails.slug;
+        const techniqueSlug = allTechniqueDetails.techniques.find(t => t.label === technique.technique_name)?.id;
         const projectIdQuery = technique.project_id ? `&projectId=${technique.project_id}` : '';
         router.push(`/dashboard/technique/${techniqueSlug}?edit=true&remixId=${id}${projectIdQuery}`);
     };

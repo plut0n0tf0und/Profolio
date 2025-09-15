@@ -2,7 +2,7 @@
 'use client';
 
 import { useEffect, useState, useRef, useTransition } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, Loader2, FileText, FileUp } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -38,6 +38,7 @@ const Section = ({ title, children }: { title: string; children: React.ReactNode
 
 export default function FullPortfolioPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
   const [portfolio, setPortfolio] = useState<FullPortfolioOutput | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -45,10 +46,11 @@ export default function FullPortfolioPage() {
   const portfolioRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const projectId = searchParams.get('projectId');
     const generate = async () => {
       setIsLoading(true);
       try {
-        const { data, error } = await fetchAllRemixedTechniquesForUser();
+        const { data, error } = await fetchAllRemixedTechniquesForUser(projectId);
         if (error) {
           console.error("Error fetching remixed techniques:", error);
           toast({
@@ -91,7 +93,7 @@ export default function FullPortfolioPage() {
       }
     };
     generate();
-  }, [toast]);
+  }, [toast, searchParams]);
 
   const handleExport = () => {
     const content = portfolioRef.current;

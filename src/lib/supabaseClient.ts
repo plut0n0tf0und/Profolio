@@ -422,11 +422,11 @@ export async function fetchRemixedTechniqueById(id: string): Promise<{ data: Rem
     return { data, error };
 }
 
-export async function fetchAllRemixedTechniquesForUser(): Promise<{ data: RemixedTechnique[] | null; error: PostgrestError | null }> {
+export async function fetchAllRemixedTechniquesForUser(projectId?: string | null): Promise<{ data: RemixedTechnique[] | null; error: PostgrestError | null }> {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return { data: null, error: { message: 'User not authenticated', details: '', hint: '', code: '401', name: '' } };
 
-    const { data, error } = await supabase
+    let query = supabase
         .from('remixed_techniques')
         .select(`
             *,
@@ -434,8 +434,15 @@ export async function fetchAllRemixedTechniquesForUser(): Promise<{ data: Remixe
                 project_name
             )
         `)
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+        .eq('user_id', user.id);
+
+    if (projectId) {
+        query = query.eq('project_id', projectId);
+    }
+    
+    query = query.order('created_at', { ascending: false });
+
+    const { data, error } = await query;
 
     if (error) console.error("Error fetching all remixed techniques for user:", error);
     return { data, error };

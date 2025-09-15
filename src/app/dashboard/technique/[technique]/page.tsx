@@ -167,23 +167,23 @@ export default function TechniqueDetailPage() {
       
       setIsLoading(true);
       
-      const techniqueMetadata = allTechniqueMetadata.find(t => t.slug === techniqueSlug);
+      const techniqueMetadata = allTechniqueMetadata.techniques.find(t => t.id === techniqueSlug);
       
       if (!techniqueMetadata) {
         toast({ title: 'Error: Technique Not Found', variant: 'destructive' });
         router.push('/dashboard');
         return;
       }
-      console.debug(`[DEBUG] 2. Matched metadata from JSON: ${techniqueMetadata.name}`);
+      console.debug(`[DEBUG] 2. Matched metadata from JSON: ${techniqueMetadata.label}`);
 
       try {
-        const aiGeneratedDetails = await getTechniqueDetails({ techniqueName: techniqueMetadata.name });
+        const aiGeneratedDetails = await getTechniqueDetails({ techniqueName: techniqueMetadata.label });
         console.debug("[DEBUG] 3. AI flow returned data.", Object.keys(aiGeneratedDetails));
         
         const fullDetails = {
           ...aiGeneratedDetails,
-          name: techniqueMetadata.name,
-          slug: techniqueMetadata.slug
+          name: techniqueMetadata.label,
+          slug: techniqueMetadata.id
         };
         
         setDetails(fullDetails);

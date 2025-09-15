@@ -171,7 +171,7 @@ export default function ProjectDetailPage() {
             UX Recommendations
         </h1>
         <div className="flex items-center gap-2">
-            <Link href="/dashboard/full-portfolio" passHref>
+            <Link href={`/dashboard/full-portfolio?projectId=${id}`} passHref>
               <Button variant="outline" size="sm" disabled={isLoading}>
                 <Eye className="mr-2 h-4 w-4" />
                 View Full Portfolio
