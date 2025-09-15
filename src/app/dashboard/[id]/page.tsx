@@ -105,8 +105,8 @@ const BadgeGroup = ({ title, values }: { title: string, values: readonly string[
   <div>
     <h4 className="font-semibold mb-2">{title}</h4>
     <div className="flex flex-wrap gap-2">
-      {(values && values.length > 0)
-        ? values.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)
+      {(values ?? []).length > 0
+        ? (values ?? []).map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)
         : <Badge variant="outline">N/A</Badge>
       }
     </div>
@@ -274,3 +274,5 @@ export default function ProjectDetailPage() {
     </div>
   );
 }
+
+    
