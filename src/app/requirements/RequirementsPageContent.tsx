@@ -41,8 +41,8 @@ const requirementSchema = z.object({
   output_type: z.array(z.string()).min(1, 'Please select at least one output type.'),
 }).refine(data => {
     // If project_type is selected, existing_users must also be selected.
-    if (data.project_type) {
-        return !!data.existing_users;
+    if (data.project_type && !data.existing_users) {
+        return false;
     }
     return true;
 }, {
@@ -83,7 +83,7 @@ const outputTypes = {
   'Research & Strategy': [
     { id: 'storyboards', label: 'Storyboards' },
     { id: 'content-strategy', label: 'Content Strategy' },
-    { id: 'kpi-dashboard-analytics-report', label: 'KPI Dashboard / Analytics Report' },
+    { id: 'kpi-dashboard-analytics-report', label: 'KPI Dashboard / Analytics Report', tooltip: "A visual report tracking Key Performance Indicators (KPIs) and other metrics." },
   ],
   'Design Systems & Assets': [
     { id: 'design-system', label: 'Design System' },
