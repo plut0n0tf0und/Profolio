@@ -1,13 +1,14 @@
 
 import type { Requirement } from './supabaseClient';
-import techniqueDetails from '@/data/uxTechniqueDetails.json';
+import techniqueDetailsData from '@/data/uxTechniqueDetails.json';
 
 interface TechniqueDetail {
+  id: string;
   name: string;
   slug: string;
   stage: string;
   speed: 'fast' | 'medium' | 'slow';
-  focus: 'generative' | 'evaluative';
+  focus: 'generative' | 'evaluative' | 'mixed';
   outcomes: string[];
   output_types: string[];
   device_types: string[];
@@ -15,9 +16,13 @@ interface TechniqueDetail {
   user_base: string[];
   goals: string[];
   constraints: string[];
+  // The JSON now contains scoring_rules, which we can add to the type for future use,
+  // but it's not strictly necessary for the current function.
+  scoring_rules?: any;
 }
 
-const allTechniques: TechniqueDetail[] = techniqueDetails as TechniqueDetail[];
+const allTechniques: TechniqueDetail[] = techniqueDetailsData.techniques as unknown as TechniqueDetail[];
+
 
 /**
  * Checks for a non-empty intersection between two string arrays, ignoring case.
