@@ -42,6 +42,7 @@ const SavedResultSchema = z.object({
   primary_goal: z.array(z.string()).optional().nullable(),
   constraints: z.array(z.string()).optional().nullable(),
   project_type: z.string().optional(),
+  deadline: z.string().optional().nullable(), // Added this line
 });
 export type SavedResult = z.infer<typeof SavedResultSchema>;
 
@@ -253,6 +254,7 @@ export async function saveOrUpdateResult(
         primary_goal: normalizedRequirement.primary_goal ?? [],
         constraints: normalizedRequirement.constraints ?? [],
         project_type: normalizedRequirement.project_type,
+        deadline: normalizedRequirement.deadline, // Including deadline in the save payload
     };
 
     const { data: existingResult, error: selectError } = await supabase
