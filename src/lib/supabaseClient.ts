@@ -102,13 +102,13 @@ if (!supabaseUrl || !supabaseAnonKey) {
 export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey);
 
 // Helper function to normalize null array fields to empty arrays
-function normalizeArrayFields<T extends { [K in keyof T]: T[K] }>(item: T | null): T | null {
+function normalizeArrayFields<T extends { [key: string]: any }>(item: T | null): T | null {
   if (!item) return null;
   const arrayFields: (keyof T)[] = ['output_type', 'outcome', 'device_type', 'primary_goal', 'constraints'].filter(f => f in item) as (keyof T)[];
   const normalizedItem = { ...item };
   for (const field of arrayFields) {
     if (normalizedItem[field] === null) {
-      (normalizedItem as any)[field] = [];
+      normalizedItem[field] = [];
     }
   }
   return normalizedItem;
@@ -221,13 +221,13 @@ export async function saveOrUpdateResult(
         role: requirement.role,
         date: typeof requirement.date === 'string' ? requirement.date : requirement.date?.toISOString(),
         problem_statement: requirement.problem_statement,
-        output_type: requirement.output_type,
-        outcome: requirement.outcome,
-        device_type: requirement.device_type,
+        output_type: requirement.output_type ?? [],
+        outcome: requirement.outcome ?? [],
+        device_type: requirement.device_type ?? [],
         stage_techniques: null, // This can be updated later
         existing_users: requirement.existing_users,
-        primary_goal: requirement.primary_goal,
-        constraints: requirement.constraints,
+        primary_goal: requirement.primary_goal ?? [],
+        constraints: requirement.constraints ?? [],
         project_type: requirement.project_type,
         deadline: requirement.deadline,
     };
