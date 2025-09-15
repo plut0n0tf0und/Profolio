@@ -4,150 +4,161 @@ import techniqueDetailsData from '@/data/uxTechniqueDetails.json';
 
 interface TechniqueDetail {
   id: string;
-  name: string;
-  slug: string;
-  stage: string;
-  speed: 'fast' | 'medium' | 'slow';
-  focus: 'generative' | 'evaluative' | 'mixed';
-  outcomes: string[];
-  output_types: string[];
-  device_types: string[];
-  project_types: string[];
-  user_base: string[];
-  goals: string[];
-  constraints: string[];
-  // The JSON now contains scoring_rules, which we can add to the type for future use,
-  // but it's not strictly necessary for the current function.
-  scoring_rules?: any;
+  label: string;
+  slug: string; // The slug is the id
+  tags: string[];
+  estimated_weeks: number;
+  cost_level: string;
+  outputs: string[];
 }
 
-// All stages that the UI expects to be present.
+interface Rule {
+  id: string;
+  description: string;
+  priority: number;
+  conditions: {
+    project_type?: 'new' | 'old';
+    existing_users?: boolean;
+    constraints?: string[];
+    constraints_excludes?: string[];
+    deadline_weeks_max?: number;
+    deadline_weeks_min?: number;
+    output_type_includes?: string[];
+    device_type_includes?: string[];
+  };
+  recommendations?: { technique_id: string; score: number; reason?: string }[];
+  adjustments?: {
+    tag_boost?: string[];
+    tag_penalty?: string[];
+    allowed_tags?: string[];
+    output_affinity?: string[];
+    boost_for_output_tags?: string[];
+  };
+}
+
+const allTechniques: TechniqueDetail[] = techniqueDetailsData.techniques.map(t => ({...t, slug: t.id}));
+const rules: Rule[] = techniqueDetailsData.rules as Rule[];
+
 const ALL_STAGES = ['Discover', 'Define', 'Design', 'Develop', 'Deliver'];
-
-const allTechniques: TechniqueDetail[] = techniqueDetailsData.techniques as unknown as TechniqueDetail[];
-
-
-/**
- * Checks for a non-empty intersection between two string arrays, ignoring case.
- */
-const doArraysIntersect = (reqArray: readonly string[], techArray: readonly string[]): boolean => {
-  if (!reqArray || reqArray.length === 0) return false;
-  if (!techArray || techArray.length === 0) return false;
-
-  const lowercasedReqSet = new Set(reqArray.map(item => item.toLowerCase()));
-  return techArray.some(item => lowercasedReqSet.has(item.toLowerCase()));
+// A loose mapping from technique tag/keyword to 5D stage
+const techniqueToStageMapping: { [key: string]: string } = {
+    'heuristic-evaluation': 'Define',
+    'expert-review': 'Define',
+    'guerrilla-testing': 'Design',
+    'quick-survey': 'Discover',
+    'recruit-survey-research': 'Discover',
+    'user-interviews': 'Discover',
+    'field-research': 'Discover',
+    'card-sorting': 'Define',
+    'tree-testing': 'Define',
+    'diary-study': 'Discover',
+    'competitive-analysis': 'Discover',
+    'analytics-review': 'Define',
+    'a-b-testing': 'Develop',
+    'journey-mapping': 'Define',
+    'persona-creation': 'Define',
+    'lofi-wireframes': 'Design',
+    'rapid-prototyping': 'Design',
+    'interactive-prototype-testing': 'Design',
+    'hi-fi-prototype': 'Design',
+    'design-system': 'Develop',
+    'content-strategy': 'Define',
+    'storyboards': 'Design',
+    'presentation_pack': 'Deliver',
+    'video_case': 'Deliver',
+    'accessibility-audit': 'Develop',
+    'service-blueprint': 'Define',
+    'kpi-dashboard': 'Deliver',
+    'chatbot-voice-design': 'Design',
 };
 
-/**
- * Retrieves a filtered and scored list of UX techniques based on project requirements.
- */
+
+function parseDeadline(deadline?: string | null): number | null {
+    if (!deadline) return null;
+    const match = deadline.match(/(\d+)/);
+    return match ? parseInt(match[1], 10) : null;
+}
+
 export function getFilteredTechniques(requirement: Requirement): Record<string, { name: string; slug: string }[]> {
-  const recommendations = ALL_STAGES.reduce((acc, stage) => {
-    acc[stage] = [];
-    return acc;
-  }, {} as Record<string, { name: string; slug: string }[]>);
+    // --- SAFEGUARD ---
+    // This is the definitive fix. We ensure that any nullable array from the
+    // requirement object is defaulted to an empty array before any logic runs.
+    const safeRequirement = {
+        ...requirement,
+        constraints: requirement.constraints ?? [],
+        output_type: requirement.output_type ?? [],
+        primary_goal: requirement.primary_goal ?? [],
+        outcome: requirement.outcome ?? [],
+        device_type: requirement.device_type ?? [],
+    };
+    // --- END SAFEGUARD ---
 
-  if (!requirement) return recommendations;
-  
-  // SAFEGUARDS: Immediately default all nullable array fields to empty arrays.
-  // This is the core fix to prevent crashes in the logic below.
-  const safeConstraints = requirement.constraints ?? [];
-  const safeOutputTypes = requirement.output_type ?? [];
-  const safePrimaryGoals = requirement.primary_goal ?? [];
-  const safeOutcomes = requirement.outcome ?? [];
-  const safeDeviceTypes = requirement.device_type ?? [];
+    let scores: { [key: string]: number } = {};
+    allTechniques.forEach(t => scores[t.id] = 0);
+    let allowedTechniques: Set<string> | null = null;
+    const deadlineWeeks = parseDeadline(safeRequirement.deadline);
 
-  // Detect lean mode (tight budget or deadline)
-  const isLean = safeConstraints.some(c =>
-    ['tight deadline', 'limited budget', 'tight budget'].includes(c.toLowerCase())
-  );
+    // Apply rules
+    for (const rule of rules) {
+        const conditions = rule.conditions;
+        let match = true;
 
-  // Deadline parsing (only applies if tight deadline is selected)
-  let deadlineSpeed: 'fast' | 'medium' | 'slow' | null = null;
-  if (requirement.deadline) {
-    const deadlineStr = requirement.deadline.toLowerCase();
-    if (deadlineStr.includes('1') || deadlineStr.includes('2')) {
-      deadlineSpeed = 'fast';
-    } else if (deadlineStr.includes('3') || deadlineStr.includes('4')) {
-      deadlineSpeed = 'medium';
-    } else if (deadlineStr.includes('week') || deadlineStr.includes('month') || deadlineStr.includes('custom')) {
-      deadlineSpeed = 'slow';
-    }
-  }
-
-  // PASS 1: Hard Filters
-  let candidates = allTechniques.filter(tech => {
-    // Project Type Filter
-    const projectType = requirement.project_type?.toLowerCase() === 'old'
-      ? 'existing'
-      : requirement.project_type?.toLowerCase();
-    if (projectType && !tech.project_types.map(p => p.toLowerCase()).includes(projectType)) {
-      return false;
-    }
-
-    // User Base Filter
-    const userContext = requirement.existing_users === false ? 'no users' : 'existing';
-    if (!tech.user_base.map(ub => ub.toLowerCase()).includes(userContext)) {
-      return false;
-    }
-
-    // Deadline / Lean filtering
-    if (deadlineSpeed && tech.speed !== deadlineSpeed) {
-      return false;
-    }
-    if (isLean && tech.speed === 'slow') {
-      return false;
-    }
-
-    return true;
-  });
-
-  // PASS 2: Scoring
-  let scoredTechniques = candidates.map(tech => {
-    let score = 0;
-
-    // Huge bonus for matching output types
-    if (doArraysIntersect(safeOutputTypes, tech.output_types)) score += 10;
-
-    // Strong bonus for aligning with primary goals
-    if (doArraysIntersect(safePrimaryGoals, tech.goals)) score += 5;
-
-    // Deadline-aware scoring
-    if (deadlineSpeed && tech.speed === deadlineSpeed) score += 3;
-
-    // Lean preference for evaluative
-    if (isLean && tech.focus === 'evaluative') score += 2;
-
-    // Minor bonuses for outcomes and device type
-    if (doArraysIntersect(safeOutcomes, tech.outcomes)) score++;
-    if (doArraysIntersect(safeDeviceTypes, tech.device_types)) score++;
-
-    return { ...tech, score };
-  });
-
-  // PASS 3: Rank & Select
-  ALL_STAGES.forEach(stage => {
-    const techniquesForStage = scoredTechniques
-      .filter(tech => tech.stage.toLowerCase() === stage.toLowerCase())
-      .sort((a, b) => b.score - a.score);
-
-    // Selection rules
-    const limit = isLean ? 2 : 3;
-    const minScore = isLean ? 5 : 1;
-    let finalTechniques = techniquesForStage
-      .filter(tech => tech.score >= minScore)
-      .slice(0, limit);
-
-    // Fallbacks
-    if (finalTechniques.length === 0 && techniquesForStage.length > 0) {
-      finalTechniques = techniquesForStage.slice(0, 1);
+        if (conditions.project_type && conditions.project_type !== safeRequirement.project_type) match = false;
+        if (conditions.existing_users !== undefined && conditions.existing_users !== safeRequirement.existing_users) match = false;
+        if (conditions.constraints && !conditions.constraints.every(c => safeRequirement.constraints.includes(c))) match = false;
+        if (conditions.constraints_excludes && conditions.constraints_excludes.some(c => safeRequirement.constraints.includes(c))) match = false;
+        if (deadlineWeeks !== null) {
+            if (conditions.deadline_weeks_max && deadlineWeeks > conditions.deadline_weeks_max) match = false;
+            if (conditions.deadline_weeks_min && deadlineWeeks < conditions.deadline_weeks_min) match = false;
+        }
+        if (conditions.output_type_includes && !conditions.output_type_includes.some(ot => safeRequirement.output_type.includes(ot))) match = false;
+        if (conditions.device_type_includes && !conditions.device_type_includes.some(dt => safeRequirement.device_type.includes(dt))) match = false;
+        
+        if (match) {
+            if (rule.recommendations) {
+                rule.recommendations.forEach(rec => {
+                    scores[rec.technique_id] = (scores[rec.technique_id] || 0) + rec.score;
+                });
+            }
+            if (rule.adjustments) {
+                const { tag_boost, tag_penalty, allowed_tags } = rule.adjustments;
+                allTechniques.forEach(tech => {
+                    if (tag_boost && tech.tags.some(t => tag_boost.includes(t))) scores[tech.id] += 20;
+                    if (tag_penalty && tech.tags.some(t => tag_penalty.includes(t))) scores[tech.id] -= 50;
+                });
+                if (allowed_tags) {
+                    allowedTechniques = new Set();
+                    allTechniques.forEach(tech => {
+                        if (tech.tags.some(t => allowed_tags.includes(t))) {
+                            allowedTechniques!.add(tech.id);
+                        }
+                    });
+                }
+            }
+        }
     }
 
-    recommendations[stage] = finalTechniques.map(tech => ({
-      name: tech.name,
-      slug: tech.slug,
-    }));
-  });
+    let finalTechniques = allTechniques
+        .map(tech => ({ ...tech, score: scores[tech.id] }))
+        .filter(tech => tech.score > 0);
 
-  return recommendations;
+    if (allowedTechniques) {
+        finalTechniques = finalTechniques.filter(tech => allowedTechniques!.has(tech.id));
+    }
+    
+    finalTechniques.sort((a, b) => b.score - a.score);
+    
+    const recommendations: Record<string, { name: string; slug: string }[]> = ALL_STAGES.reduce((acc, stage) => {
+        acc[stage] = [];
+        return acc;
+    }, {} as Record<string, { name: string; slug: string }[]>);
+
+    finalTechniques.slice(0, 10).forEach(tech => {
+        const stage = techniqueToStageMapping[tech.id] || 'Define'; // Default to Define if no mapping
+        if (recommendations[stage] && recommendations[stage].length < 3) {
+            recommendations[stage].push({ name: tech.label, slug: tech.slug });
+        }
+    });
+
+    return recommendations;
 }
