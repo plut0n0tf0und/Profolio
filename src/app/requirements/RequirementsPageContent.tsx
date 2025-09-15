@@ -81,26 +81,19 @@ const outputTypes = {
     { id: 'ar-vr-application', label: 'AR/VR Application' },
   ],
   'Research & Strategy': [
-    { id: 'service-blueprint', label: 'Service Blueprint', tooltip: 'Shows how frontstage & backstage processes connect to user experience.' },
-    { id: 'journey-map', label: 'Journey Map' },
-    { id: 'persona-profile', label: 'Persona Profile', tooltip: 'Represents key user types with goals and behaviors.' },
-    { id: 'usability-report', label: 'Usability Report' },
     { id: 'storyboards', label: 'Storyboards' },
     { id: 'content-strategy', label: 'Content Strategy' },
-    { id: 'kpi-dashboard-analytics-report', label: 'KPI Dashboard / Analytics Report', tooltip: 'Summarizes metrics and performance data visually.' },
+    { id: 'kpi-dashboard-analytics-report', label: 'KPI Dashboard / Analytics Report' },
   ],
   'Design Systems & Assets': [
     { id: 'design-system', label: 'Design System' },
     { id: 'ui-design', label: 'UI Design' },
-    { id: 'wireframe', label: 'Wireframe' },
-    { id: 'information-architecture', label: 'Information Architecture', tooltip: 'Organizes content and navigation for usability.' },
     { id: 'visual-design', label: 'Visual Design' },
     { id: 'motion-design', label: 'Motion Design' },
     { id: 'animation', label: 'Animation' },
-    { id: 'interactive-prototype', label: 'Interactive Prototype' },
   ],
   'Communication & Media': [
-    { id: 'accessibility-audio', label: 'Accessibility Audio', tooltip: 'Evaluates audio-based accessibility like screen readers, voice navigation.' },
+    { id: 'accessibility-audio', label: 'Accessibility Audio' },
     { id: 'chatbot-voice-interface', label: 'Chatbot / Voice Interface' },
     { id: 'voice-interaction', label: 'Voice Interaction' },
     { id: 'presentation', label: 'Presentation' },
@@ -291,7 +284,7 @@ export default function RequirementsPageContent() {
                        </div>
                        <FormField name="problem_statement" render={({ field }) => ( <FormItem> <FormLabel>Problem Statement</FormLabel> <FormControl><Textarea {...field} rows={3} /></FormControl> <FormMessage /> </FormItem> )} />
                        <FormField name="role" render={({ field }) => ( <FormItem> <FormLabel>Your Role</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem> )} />
-                       <FormField name="project_type" render={({ field }) => ( <FormItem className="space-y-3"> <FormLabel>Project Type</FormLabel> <FormControl><RadioGroup onValueChange={(value) => { field.onChange(value); form.setValue('existing_users', undefined, { shouldValidate: true }); }} value={field.value} className="flex gap-4"> <FormItem className="flex items-center space-x-2"> <FormControl><RadioGroupItem value="new" id="new" /></FormControl> <Label htmlFor="new">New Project</Label> </FormItem> <FormItem className="flex items-center space-x-2"> <FormControl><RadioGroupItem value="old" id="existing" /></FormControl> <Label htmlFor="existing">Existing Project</Label> </FormItem> </RadioGroup></FormControl> <FormMessage /> </FormItem> )} />
+                       <FormField name="project_type" render={({ field }) => ( <FormItem className="space-y-3"> <FormLabel>Project Type</FormLabel> <FormControl><RadioGroup onValueChange={(value) => { field.onChange(value); form.setValue('existing_users', undefined, { shouldValidate: false }); }} value={field.value} className="flex gap-4"> <FormItem className="flex items-center space-x-2"> <FormControl><RadioGroupItem value="new" id="new" /></FormControl> <Label htmlFor="new">New Project</Label> </FormItem> <FormItem className="flex items-center space-x-2"> <FormControl><RadioGroupItem value="old" id="existing" /></FormControl> <Label htmlFor="existing">Existing Project</Label> </FormItem> </RadioGroup></FormControl> <FormMessage /> </FormItem> )} />
                        {watchedProjectType && (
                             <FormField name="existing_users" render={({ field }) => ( <FormItem className="space-y-3 p-4 border rounded-md bg-card-nested"> <FormLabel>{watchedProjectType === 'new' ? 'Do you have existing customers to talk to?' : 'Do you have existing users?'}</FormLabel> <FormControl><RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-4"> <FormItem className="flex items-center space-x-2"> <FormControl><RadioGroupItem value="true" id="users-yes" /></FormControl> <Label htmlFor="users-yes">Yes</Label> </FormItem> <FormItem className="flex items-center space-x-2"> <FormControl><RadioGroupItem value="false" id="users-no" /></FormControl> <Label htmlFor="users-no">No</Label> </FormItem> </RadioGroup></FormControl> <FormMessage /> </FormItem> )} />
                        )}
@@ -615,5 +608,3 @@ export default function RequirementsPageContent() {
     </div>
   );
 }
-
-    
