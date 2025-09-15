@@ -101,14 +101,18 @@ const RequirementDetailSkeleton = () => (
 );
 
 const BadgeGroup = ({ title, values }: { title: string, values: readonly string[] | null | undefined }) => {
-  // Safeguard: Default to an empty array if values are null or undefined to prevent crashes.
-  const displayValues = values ?? [];
+  // Safeguard: Default to an empty array if values are null/undefined
+  const displayValues = Array.isArray(values) ? values : [];
   return (
     <div>
       <h4 className="font-semibold mb-2">{title}</h4>
       <div className="flex flex-wrap gap-2">
         {displayValues.length > 0
-          ? displayValues.map(tag => <Badge key={tag} variant="secondary">{outputTypeLabels[tag] || tag}</Badge>)
+          ? displayValues.map(tag => (
+              <Badge key={tag} variant="secondary">
+                {outputTypeLabels?.[tag] || tag}
+              </Badge>
+            ))
           : <Badge variant="outline">N/A</Badge>
         }
       </div>
