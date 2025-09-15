@@ -100,6 +100,18 @@ const RequirementDetailSkeleton = () => (
   </div>
 );
 
+const BadgeGroup = ({ title, values }: { title: string, values: string[] | null | undefined }) => (
+  <div>
+    <h4 className="font-semibold mb-2">{title}</h4>
+    <div className="flex flex-wrap gap-2">
+      {(values && values.length > 0)
+        ? values.map(tag => <Badge key={tag} variant="secondary">{outputTypeLabels[tag] || tag}</Badge>)
+        : <Badge variant="outline">N/A</Badge>
+      }
+    </div>
+  </div>
+);
+
 export default function ResultPage() {
   const router = useRouter();
   const params = useParams();
@@ -240,48 +252,25 @@ export default function ResultPage() {
                     <p className="text-muted-foreground">{requirement.problem_statement || 'N/A'}</p>
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                    <div>
-                        <h4 className="font-semibold mb-2">Output Types</h4>
-                        <div className="flex flex-wrap gap-2">
-                          {(requirement.output_type ?? []).map(tag => <Badge key={tag} variant="secondary">{outputTypeLabels[tag] || tag}</Badge>)}
-                        </div>
-                    </div>
-                    <div>
-                        <h4 className="font-semibold mb-2">Outcomes</h4>
-                        <div className="flex flex-wrap gap-2">
-                          {(requirement.outcome ?? []).map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
-                        </div>
-                    </div>
-                    <div>
-                        <h4 className="font-semibold mb-2">Device Types</h4>
-                        <div className="flex flex-wrap gap-2">
-                          {(requirement.device_type ?? []).map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
-                        </div>
-                    </div>
+                    <BadgeGroup title="Output Types" values={requirement.output_type} />
+                    <BadgeGroup title="Outcomes" values={requirement.outcome} />
+                    <BadgeGroup title="Device Types" values={requirement.device_type} />
                     <div>
                       <h4 className="font-semibold mb-2">Project Type</h4>
                       <div className="flex flex-wrap gap-2">
-                        {requirement.project_type && <Badge variant="secondary" className="capitalize">{requirement.project_type}</Badge>}
+                        {requirement.project_type ? <Badge variant="secondary" className="capitalize">{requirement.project_type}</Badge> : <Badge variant="outline">N/A</Badge>}
                       </div>
                     </div>
                     <div>
                       <h4 className="font-semibold mb-2">Existing Users</h4>
                       <div className="flex flex-wrap gap-2">
-                        {requirement.existing_users !== null && typeof requirement.existing_users !== 'undefined' && <Badge variant="secondary">{requirement.existing_users ? 'Yes' : 'No'}</Badge>}
+                        {requirement.existing_users !== null && typeof requirement.existing_users !== 'undefined' 
+                          ? <Badge variant="secondary">{requirement.existing_users ? 'Yes' : 'No'}</Badge> 
+                          : <Badge variant="outline">N/A</Badge>}
                       </div>
                     </div>
-                    <div>
-                      <h4 className="font-semibold mb-2">Primary Goal</h4>
-                      <div className="flex flex-wrap gap-2">
-                          {(requirement.primary_goal ?? []).map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
-                      </div>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold mb-2">Constraints</h4>
-                      <div className="flex flex-wrap gap-2">
-                        {(requirement.constraints ?? []).map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
-                      </div>
-                    </div>
+                    <BadgeGroup title="Primary Goal" values={requirement.primary_goal} />
+                    <BadgeGroup title="Constraints" values={requirement.constraints} />
                   </div>
                 </CardContent>
               </Card>
