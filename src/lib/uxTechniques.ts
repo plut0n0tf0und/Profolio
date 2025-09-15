@@ -50,7 +50,7 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
   if (!requirement) return recommendations;
 
   // Detect lean mode (tight budget or deadline)
-  const isLean = requirement.constraints?.some(c =>
+  const isLean = (requirement.constraints ?? []).some(c =>
     ['tight deadline', 'limited budget', 'tight budget'].includes(c.toLowerCase())
   );
 
