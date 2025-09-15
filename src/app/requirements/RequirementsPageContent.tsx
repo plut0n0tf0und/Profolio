@@ -205,11 +205,21 @@ export default function RequirementsPageContent() {
     if (isValid) {
       setIsSaving(true);
       const formData = form.getValues();
+      
+      // Construct the payload explicitly to ensure all fields, especially arrays, are correctly handled.
       const payload: Partial<Requirement> = {
-          ...formData,
+          project_name: formData.project_name,
           date: new Date(formData.date).toISOString(),
+          problem_statement: formData.problem_statement,
+          role: formData.role,
+          project_type: formData.project_type,
           existing_users: formData.existing_users ? formData.existing_users === 'true' : undefined,
-          output_type: formData.output_type,
+          device_type: formData.device_type ?? [],
+          constraints: formData.constraints ?? [],
+          deadline: formData.deadline,
+          primary_goal: formData.primary_goal ?? [],
+          outcome: formData.outcome ?? [],
+          output_type: formData.output_type ?? [],
       };
 
       let result;
@@ -656,3 +666,5 @@ export default function RequirementsPageContent() {
     </div>
   );
 }
+
+    
