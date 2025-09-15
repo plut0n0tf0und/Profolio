@@ -28,7 +28,8 @@ const allTechniques: TechniqueDetail[] = techniqueDetailsData.techniques as unkn
  * Checks for a non-empty intersection between two string arrays, ignoring case.
  */
 const doArraysIntersect = (reqArray: readonly string[] | undefined | null, techArray: readonly string[]): boolean => {
-  if (!reqArray || reqArray.length === 0) return false;
+  // Safeguard: Ensure reqArray is an array before processing.
+  if (!Array.isArray(reqArray) || reqArray.length === 0) return false;
   if (!techArray || techArray.length === 0) return false;
 
   const lowercasedReqSet = new Set(reqArray.map(item => item.toLowerCase()));
@@ -49,8 +50,11 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
 
   if (!requirement) return recommendations;
 
+  // Safeguard: Default potentially null/undefined arrays to empty arrays.
+  const safeConstraints = requirement.constraints ?? [];
+
   // Detect lean mode (tight budget or deadline)
-  const isLean = (requirement.constraints ?? []).some(c =>
+  const isLean = safeConstraints.some(c =>
     ['tight deadline', 'limited budget', 'tight budget'].includes(c.toLowerCase())
   );
 
@@ -98,11 +102,17 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
   let scoredTechniques = candidates.map(tech => {
     let score = 0;
 
+    // Safeguard: Ensure requirement arrays are valid before use.
+    const safeOutputTypes = requirement.output_type ?? [];
+    const safePrimaryGoals = requirement.primary_goal ?? [];
+    const safeOutcomes = requirement.outcome ?? [];
+    const safeDeviceTypes = requirement.device_type ?? [];
+
     // Huge bonus for matching output types
-    if (doArraysIntersect(requirement.output_type, tech.output_types)) score += 10;
+    if (doArraysIntersect(safeOutputTypes, tech.output_types)) score += 10;
 
     // Strong bonus for aligning with primary goals
-    if (doArraysIntersect(requirement.primary_goal, tech.goals)) score += 5;
+    if (doArraysIntersect(safePrimaryGoals, tech.goals)) score += 5;
 
     // Deadline-aware scoring
     if (deadlineSpeed && tech.speed === deadlineSpeed) score += 3;
@@ -111,8 +121,8 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
     if (isLean && tech.focus === 'evaluative') score += 2;
 
     // Minor bonuses for outcomes and device type
-    if (doArraysIntersect(requirement.outcome, tech.outcomes)) score++;
-    if (doArraysIntersect(requirement.device_type, tech.device_types)) score++;
+    if (doArraysIntersect(safeOutcomes, tech.outcomes)) score++;
+    if (doArraysIntersect(safeDeviceTypes, tech.device_types)) score++;
 
     return { ...tech, score };
   });

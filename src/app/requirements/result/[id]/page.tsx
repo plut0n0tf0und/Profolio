@@ -101,6 +101,7 @@ const RequirementDetailSkeleton = () => (
 );
 
 const BadgeGroup = ({ title, values }: { title: string, values: readonly string[] | null | undefined }) => {
+  // Safeguard: Default to an empty array if values are null or undefined to prevent crashes.
   const displayValues = values ?? [];
   return (
     <div>
@@ -286,5 +287,3 @@ export default function ResultPage() {
     </div>
   );
 }
-
-    
