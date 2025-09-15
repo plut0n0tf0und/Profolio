@@ -242,19 +242,19 @@ export async function saveOrUpdateResult(
     const dataToSave: Partial<SavedResult> = {
         user_id: user.id,
         requirement_id: normalizedRequirement.id,
-        project_name: normalizedRequirement.project_name,
-        role: normalizedRequirement.role,
-        date: typeof normalizedRequirement.date === 'string' ? normalizedRequirement.date : normalizedRequirement.date?.toISOString(),
-        problem_statement: normalizedRequirement.problem_statement,
+        project_name: normalizedRequirement.project_name || null,
+        role: normalizedRequirement.role || null,
+        date: (normalizedRequirement.date ? new Date(normalizedRequirement.date).toISOString() : null),
+        problem_statement: normalizedRequirement.problem_statement || null,
         output_type: normalizedRequirement.output_type ?? [],
         outcome: normalizedRequirement.outcome ?? [],
         device_type: normalizedRequirement.device_type ?? [],
-        stage_techniques: null, // This can be updated later
-        existing_users: normalizedRequirement.existing_users,
+        stage_techniques: null,
+        existing_users: normalizedRequirement.existing_users ?? null,
         primary_goal: normalizedRequirement.primary_goal ?? [],
         constraints: normalizedRequirement.constraints ?? [],
-        project_type: normalizedRequirement.project_type,
-        deadline: normalizedRequirement.deadline, // Including deadline in the save payload
+        project_type: normalizedRequirement.project_type || null,
+        deadline: normalizedRequirement.deadline || null,
     };
 
     const { data: existingResult, error: selectError } = await supabase
@@ -267,16 +267,15 @@ export async function saveOrUpdateResult(
     if (selectError) throw selectError;
 
     if (existingResult) {
-      // It exists, just return it. The user may update details from the edit page.
       const { data, error } = await supabase
         .from('saved_results')
-        .select('*')
+        .update(dataToSave)
         .eq('id', existingResult.id)
+        .select()
         .single();
       if (error) throw error;
       return { data: normalizeArrayFields(data as SavedResult), error: null };
     } else {
-      // It doesn't exist, create it.
       const { data, error } = await supabase
         .from('saved_results')
         .insert(dataToSave)
@@ -500,3 +499,5 @@ export async function fetchRemixedTechniquesByProjectId(projectId: string): Prom
     if (error) console.error("Error fetching remixed techniques by project ID:", error);
     return { data, error };
 }
+
+    
