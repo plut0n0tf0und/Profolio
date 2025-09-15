@@ -102,16 +102,24 @@ if (!supabaseUrl || !supabaseAnonKey) {
 export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey);
 
 // Helper function to normalize null array fields to empty arrays
-function normalizeArrayFields<T extends { [key: string]: any }>(item: T | null): T | null {
-  if (!item) return null;
-  const arrayFields: (keyof T)[] = ['output_type', 'outcome', 'device_type', 'primary_goal', 'constraints'].filter(f => f in item) as (keyof T)[];
-  const normalizedItem = { ...item };
-  for (const field of arrayFields) {
-    if (normalizedItem[field] === null) {
-      normalizedItem[field] = [];
+function normalizeArrayFields<T extends Record<string, unknown>>(item: T | null): T | null {
+    if (!item) return null;
+
+    const normalizedItem = { ...item };
+    const arrayFields: (keyof T)[] = [
+        'output_type',
+        'outcome',
+        'device_type',
+        'primary_goal',
+        'constraints',
+    ];
+
+    for (const field of arrayFields) {
+        if (field in normalizedItem && normalizedItem[field] === null) {
+            (normalizedItem as any)[field] = [];
+        }
     }
-  }
-  return normalizedItem;
+    return normalizedItem;
 }
 
 
@@ -162,9 +170,18 @@ export async function updateRequirement(
   if (!user) return { data: null, error: { message: 'User not authenticated', details: '', hint: '', code: '401', name: '' } };
   
   // This was the bug. It was not including all fields. Now it does.
+  const payload: Partial<Requirement> = {
+    ...updates,
+    output_type: updates.output_type ?? [],
+    outcome: updates.outcome ?? [],
+    device_type: updates.device_type ?? [],
+    primary_goal: updates.primary_goal ?? [],
+    constraints: updates.constraints ?? [],
+  };
+
   const { data, error } = await supabase
       .from('requirements')
-      .update(updates)
+      .update(payload)
       .eq('id', id)
       .eq('user_id', user.id)
       .select()
