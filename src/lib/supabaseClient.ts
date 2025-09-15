@@ -13,10 +13,10 @@ const RequirementSchema = z.object({
   date: z.union([z.date(), z.string()]).optional(),
   problem_statement: z.string().optional(),
   role: z.string().optional(),
-  output_type: z.array(z.string()).optional(),
-  outcome: z.array(z.string()).optional(),
-  device_type: z.array(z.string()).optional(),
-  project_type: z.string().optional(),
+  output_type: z.array(z.string()).optional().nullable(),
+  outcome: z.array(z.string()).optional().nullable(),
+  device_type: z.array(z.string()).optional().nullable(),
+  project_type: z.string().optional().nullable(),
   existing_users: z.boolean().nullable(),
   primary_goal: z.array(z.string()).optional().nullable(),
   constraints: z.array(z.string()).optional().nullable(),
@@ -41,8 +41,8 @@ const SavedResultSchema = z.object({
   existing_users: z.boolean().nullable(),
   primary_goal: z.array(z.string()).optional().nullable(),
   constraints: z.array(z.string()).optional().nullable(),
-  project_type: z.string().optional(),
-  deadline: z.string().optional().nullable(), // Added this line
+  project_type: z.string().optional().nullable(),
+  deadline: z.string().optional().nullable(),
 });
 export type SavedResult = z.infer<typeof SavedResultSchema>;
 
@@ -237,24 +237,24 @@ export async function saveOrUpdateResult(
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return { data: null, error: { message: 'User not authenticated', code: '401' } };
 
-    const normalizedRequirement = normalizeArrayFields(requirement);
-
+    // **CRITICAL FIX**: Sanitize all data *before* attempting to save.
+    // This ensures nullish array fields become empty arrays.
     const dataToSave: Partial<SavedResult> = {
         user_id: user.id,
-        requirement_id: normalizedRequirement.id,
-        project_name: normalizedRequirement.project_name || null,
-        role: normalizedRequirement.role || null,
-        date: (normalizedRequirement.date ? new Date(normalizedRequirement.date).toISOString() : null),
-        problem_statement: normalizedRequirement.problem_statement || null,
-        output_type: normalizedRequirement.output_type ?? [],
-        outcome: normalizedRequirement.outcome ?? [],
-        device_type: normalizedRequirement.device_type ?? [],
-        stage_techniques: null,
-        existing_users: normalizedRequirement.existing_users ?? null,
-        primary_goal: normalizedRequirement.primary_goal ?? [],
-        constraints: normalizedRequirement.constraints ?? [],
-        project_type: normalizedRequirement.project_type || null,
-        deadline: normalizedRequirement.deadline || null,
+        requirement_id: requirement.id,
+        project_name: requirement.project_name || null,
+        role: requirement.role || null,
+        date: (requirement.date ? new Date(requirement.date).toISOString() : null),
+        problem_statement: requirement.problem_statement || null,
+        output_type: requirement.output_type ?? [],
+        outcome: requirement.outcome ?? [],
+        device_type: requirement.device_type ?? [],
+        stage_techniques: null, // This is intentionally null for now
+        existing_users: requirement.existing_users ?? null,
+        primary_goal: requirement.primary_goal ?? [],
+        constraints: requirement.constraints ?? [],
+        project_type: requirement.project_type || null,
+        deadline: requirement.deadline || null,
     };
 
     const { data: existingResult, error: selectError } = await supabase
@@ -499,5 +499,3 @@ export async function fetchRemixedTechniquesByProjectId(projectId: string): Prom
     if (error) console.error("Error fetching remixed techniques by project ID:", error);
     return { data, error };
 }
-
-    
