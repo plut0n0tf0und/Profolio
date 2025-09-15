@@ -102,16 +102,17 @@ if (!supabaseUrl || !supabaseAnonKey) {
 export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey);
 
 // Helper function to normalize null array fields to empty arrays
-function normalizeArrayFields<T extends Record<string, any>>(item: T | null): T | null {
-    if (!item) return null;
+function normalizeArrayFields<T extends Requirement | SavedResult | null>(item: T): T {
+    if (!item) return item;
 
+    // This function ensures that any field that should be an array is, at minimum, an empty array.
     return {
         ...item,
-        output_type: item.output_type ?? [],
-        outcome: item.outcome ?? [],
-        device_type: item.device_type ?? [],
-        primary_goal: item.primary_goal ?? [],
-        constraints: item.constraints ?? [],
+        output_type: Array.isArray(item.output_type) ? item.output_type : [],
+        outcome: Array.isArray(item.outcome) ? item.outcome : [],
+        device_type: Array.isArray(item.device_type) ? item.device_type : [],
+        primary_goal: Array.isArray(item.primary_goal) ? item.primary_goal : [],
+        constraints: Array.isArray(item.constraints) ? item.constraints : [],
     };
 }
 
