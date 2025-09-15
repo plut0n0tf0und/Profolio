@@ -1,3 +1,4 @@
+
 import type { Requirement } from './supabaseClient';
 import techniqueDetails from '@/data/uxTechniqueDetails.json';
 
@@ -41,16 +42,32 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
     Deliver: [],
   };
 
-  if (!requirement) {
-    return recommendations;
+  if (!requirement) return recommendations;
+
+  // Detect lean mode (tight budget or deadline)
+  const isLean = requirement.constraints?.some(c =>
+    ['tight deadline', 'limited budget', 'tight budget'].includes(c.toLowerCase())
+  );
+
+  // Deadline parsing (only applies if tight deadline is selected)
+  let deadlineSpeed: 'fast' | 'medium' | 'slow' | null = null;
+  if (requirement.deadline) {
+    const deadlineStr = requirement.deadline.toLowerCase();
+    if (deadlineStr.includes('1') || deadlineStr.includes('2')) {
+      deadlineSpeed = 'fast';
+    } else if (deadlineStr.includes('3') || deadlineStr.includes('4')) {
+      deadlineSpeed = 'medium';
+    } else if (deadlineStr.includes('week') || deadlineStr.includes('month') || deadlineStr.includes('custom')) {
+      deadlineSpeed = 'slow';
+    }
   }
-  
-  const isLean = requirement.constraints?.some(c => ['tight deadline', 'limited budget', 'tight budget'].includes(c.toLowerCase()));
-  
+
   // PASS 1: Hard Filters
   let candidates = allTechniques.filter(tech => {
     // Project Type Filter
-    const projectType = requirement.project_type?.toLowerCase() === 'old' ? 'existing' : requirement.project_type?.toLowerCase();
+    const projectType = requirement.project_type?.toLowerCase() === 'old'
+      ? 'existing'
+      : requirement.project_type?.toLowerCase();
     if (projectType && !tech.project_types.map(p => p.toLowerCase()).includes(projectType)) {
       return false;
     }
@@ -61,8 +78,11 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
       return false;
     }
 
-    // If lean, apply an aggressive filter for speed. Only fast techniques are allowed.
-    if (isLean && tech.speed !== 'fast') {
+    // Deadline / Lean filtering
+    if (deadlineSpeed && tech.speed !== deadlineSpeed) {
+      return false;
+    }
+    if (isLean && tech.speed === 'slow') {
       return false;
     }
 
@@ -72,58 +92,51 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
   // PASS 2: Scoring
   let scoredTechniques = candidates.map(tech => {
     let score = 0;
-    
-    // Most important: does it produce the desired output? (Huge bonus)
-    if (doArraysIntersect(requirement.output_type, tech.output_types)) {
-      score += 10;
-    }
-    
-    // Second most important: does it align with the primary goal? (Strong bonus)
-    if (doArraysIntersect(requirement.primary_goal, tech.goals)) {
-      score += 5;
-    }
 
-    // Lean projects prefer evaluative techniques over generative ones.
-    if (isLean && tech.focus === 'evaluative') {
-      score += 3;
-    }
+    // Huge bonus for matching output types
+    if (doArraysIntersect(requirement.output_type, tech.output_types)) score += 10;
 
-    // General attribute matching (minor bonus)
+    // Strong bonus for aligning with primary goals
+    if (doArraysIntersect(requirement.primary_goal, tech.goals)) score += 5;
+
+    // Deadline-aware scoring
+    if (deadlineSpeed && tech.speed === deadlineSpeed) score += 3;
+
+    // Lean preference for evaluative
+    if (isLean && tech.focus === 'evaluative') score += 2;
+
+    // Minor bonuses for outcomes and device type
     if (doArraysIntersect(requirement.outcome, tech.outcomes)) score++;
     if (doArraysIntersect(requirement.device_type, tech.device_types)) score++;
 
     return { ...tech, score };
   });
 
-  // PASS 3: Rank and Select
+  // PASS 3: Rank & Select
   const stages = Object.keys(recommendations);
-  
+
   stages.forEach(stage => {
     const techniquesForStage = scoredTechniques
       .filter(tech => tech.stage.toLowerCase() === stage.toLowerCase())
-      .sort((a, b) => b.score - a.score); // Sort by score, descending
+      .sort((a, b) => b.score - a.score);
 
-    // If lean, be very selective. Otherwise, be a bit more generous.
+    // Selection rules
     const limit = isLean ? 2 : 3;
     const minScore = isLean ? 5 : 1;
-
     let finalTechniques = techniquesForStage
-      .filter(tech => tech.score >= minScore) // Filter out low-scoring techniques
+      .filter(tech => tech.score >= minScore)
       .slice(0, limit);
 
-    // GUARANTEE Pass: If no techniques were found, fall back to less strict criteria
-    if (finalTechniques.length === 0) {
-      // Fallback 1: Ignore minScore, just take the top one if it exists.
-      if (techniquesForStage.length > 0) {
-        finalTechniques = techniquesForStage.slice(0, 1);
-      }
-      // Fallback 2: If still nothing, it means no techniques for this stage passed the hard filters.
-      // This is expected sometimes.
+    // Fallbacks
+    if (finalTechniques.length === 0 && techniquesForStage.length > 0) {
+      finalTechniques = techniquesForStage.slice(0, 1);
     }
-      
-    recommendations[stage] = finalTechniques.map(tech => ({ name: tech.name, slug: tech.slug }));
-  });
 
+    recommendations[stage] = finalTechniques.map(tech => ({
+      name: tech.name,
+      slug: tech.slug,
+    }));
+  });
 
   return recommendations;
 }

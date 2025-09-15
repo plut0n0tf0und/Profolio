@@ -1,367 +1,196 @@
-
-[
-  {
-    "name": "heuristic evaluation",
-    "slug": "heuristic-evaluation",
-    "stage": "discover",
-    "speed": "medium",
-    "focus": "evaluative",
-    "outcomes": ["qualitative", "insight", "quantitative"],
-    "output_types": ["usability-report"],
-    "device_types": ["mobile", "desktop", "electronics", "kiosk"],
-    "project_types": ["new", "existing"],
-    "user_base": ["no users", "existing"],
-    "goals": ["innovation & growth", "optimization & conversion"],
-    "constraints": ["limited budget", "tight deadline"]
+{
+  "meta": {
+    "version": "1.0",
+    "generated_by": "assistant",
+    "description": "Comprehensive rule-and-technique mapping for Profolio recommendation engine. Use parser to traverse rules and score techniques based on user input.",
+    "notes": "Rules are ordered by priority. A scoring engine should evaluate each rule that matches and sum technique scores. Techniques are defined in the techniques array. Output types and device types use canonical ids used across the app."
   },
-  {
-    "name": "user interviews",
-    "slug": "user-interviews",
-    "stage": "discover",
-    "speed": "medium",
-    "focus": "generative",
-    "outcomes": ["qualitative", "insight"],
-    "output_types": ["usability-report", "persona-profile", "journey-map", "presentation"],
-    "device_types": ["mobile", "desktop", "electronics", "kiosk"],
-    "project_types": ["new", "existing"],
-    "user_base": ["new", "existing"],
-    "goals": ["innovation & growth", "retention & engagement"],
-    "constraints": ["limited budget"]
-  },
-  {
-    "name": "contextual inquiry (shadowing)",
-    "slug": "contextual-inquiry-shadowing",
-    "stage": "discover",
-    "speed": "slow",
-    "focus": "generative",
-    "outcomes": ["qualitative", "insight"],
-    "output_types": ["usability-report", "persona-profile", "journey-map", "presentation"],
-    "device_types": ["mobile", "desktop", "electronics", "kiosk"],
-    "project_types": ["new", "existing"],
-    "user_base": ["new", "existing"],
-    "goals": ["innovation & growth"],
-    "constraints": ["limited budget"]
-  },
-  {
-    "name": "diary studies",
-    "slug": "diary-studies",
-    "stage": "discover",
-    "speed": "slow",
-    "focus": "generative",
-    "outcomes": ["qualitative", "insight"],
-    "output_types": ["journey-map", "persona-profile", "usability-report"],
-    "device_types": ["mobile", "desktop", "electronics"],
-    "project_types": ["existing"],
-    "user_base": ["existing"],
-    "goals": ["retention & engagement"],
-    "constraints": ["limited budget"]
-  },
-  {
-    "name": "field studies / ethnographic research",
-    "slug": "field-studies-ethnographic-research",
-    "stage": "discover",
-    "speed": "slow",
-    "focus": "generative",
-    "outcomes": ["qualitative", "insight"],
-    "output_types": ["persona-profile", "journey-map", "service-blueprint"],
-    "device_types": ["mobile", "desktop", "electronics", "kiosk"],
-    "project_types": ["new", "existing"],
-    "user_base": ["new", "existing"],
-    "goals": ["innovation & growth"],
-    "constraints": []
-  },
-  {
-    "name": "surveys & questionnaires",
-    "slug": "surveys-questionnaires",
-    "stage": "discover",
-    "speed": "fast",
-    "focus": "evaluative",
-    "outcomes": ["quantitative", "qualitative"],
-    "output_types": ["usability-report", "kpi-dashboard-analytics-report", "presentation"],
-    "device_types": ["mobile", "desktop"],
-    "project_types": ["new", "existing"],
-    "user_base": ["new", "existing", "no users"],
-    "goals": ["optimization & conversion"],
-    "constraints": ["limited budget", "tight deadline"]
-  },
-  {
-    "name": "web/app analytics review",
-    "slug": "web-app-analytics-review",
-    "stage": "discover",
-    "speed": "fast",
-    "focus": "evaluative",
-    "outcomes": ["quantitative"],
-    "output_types": ["kpi-dashboard-analytics-report", "presentation", "usability-report"],
-    "device_types": ["mobile", "desktop"],
-    "project_types": ["existing"],
-    "user_base": ["existing"],
-    "goals": ["optimization & conversion"],
-    "constraints": ["limited budget"]
-  },
-  {
-    "name": "competitor benchmarking",
-    "slug": "competitor-benchmarking",
-    "stage": "discover",
-    "speed": "fast",
-    "focus": "evaluative",
-    "outcomes": ["quantitative", "insight"],
-    "output_types": ["kpi-dashboard-analytics-report", "presentation", "usability-report"],
-    "device_types": ["mobile", "desktop"],
-    "project_types": ["new", "existing"],
-    "user_base": ["new", "existing", "no users"],
-    "goals": ["innovation & growth", "optimization & conversion"],
-    "constraints": ["limited budget", "tight deadline"]
-  },
-  {
-    "name": "card sorting",
-    "slug": "card-sorting",
-    "stage": "discover",
-    "speed": "medium",
-    "focus": "evaluative",
-    "outcomes": ["qualitative", "insight"],
-    "output_types": ["information-architecture"],
-    "device_types": ["mobile", "desktop"],
-    "project_types": ["new", "existing"],
-    "user_base": ["new", "existing", "no users"],
-    "goals": ["optimization & conversion"],
-    "constraints": ["limited budget", "tight deadline"]
-  },
-  {
-    "name": "tree testing",
-    "slug": "tree-testing",
-    "stage": "discover",
-    "speed": "fast",
-    "focus": "evaluative",
-    "outcomes": ["quantitative"],
-    "output_types": ["information-architecture", "usability-report"],
-    "device_types": ["mobile", "desktop"],
-    "project_types": ["existing"],
-    "user_base": ["new", "existing", "no users"],
-    "goals": ["optimization & conversion"],
-    "constraints": ["limited budget", "tight deadline"]
-  },
-  {
-    "name": "persona creation & validation",
-    "slug": "persona-creation-validation",
-    "stage": "define",
-    "speed": "slow",
-    "focus": "generative",
-    "outcomes": ["qualitative", "insight"],
-    "output_types": ["persona-profile", "presentation"],
-    "device_types": ["mobile", "desktop", "electronics", "kiosk"],
-    "project_types": ["new", "existing"],
-    "user_base": ["new", "existing", "no users"],
-    "goals": ["innovation & growth"],
-    "constraints": ["limited budget"]
-  },
-  {
-    "name": "empathy mapping",
-    "slug": "empathy-mapping",
-    "stage": "define",
-    "speed": "medium",
-    "focus": "generative",
-    "outcomes": ["qualitative", "insight"],
-    "output_types": ["persona-profile", "journey-map"],
-    "device_types": ["mobile", "desktop", "electronics", "kiosk"],
-    "project_types": ["new", "existing"],
-    "user_base": ["new", "existing", "no users"],
-    "goals": ["retention & engagement"],
-    "constraints": ["limited budget", "tight deadline"]
-  },
-  {
-    "name": "customer journey mapping",
-    "slug": "customer-journey-mapping",
-    "stage": "define",
-    "speed": "slow",
-    "focus": "generative",
-    "outcomes": ["qualitative", "insight"],
-    "output_types": ["journey-map", "service-blueprint", "presentation"],
-    "device_types": ["mobile", "desktop", "electronics", "kiosk"],
-    "project_types": ["new", "existing"],
-    "user_base": ["new", "existing", "no users"],
-    "goals": ["retention & engagement"],
-    "constraints": ["limited budget"]
-  },
-  {
-    "name": "affinity diagramming",
-    "slug": "affinity-diagramming",
-    "stage": "define",
-    "speed": "medium",
-    "focus": "generative",
-    "outcomes": ["insight"],
-    "output_types": ["journey-map", "persona-profile", "presentation"],
-    "device_types": ["mobile", "desktop", "electronics", "kiosk"],
-    "project_types": ["new", "existing"],
-    "user_base": ["new", "existing", "no users"],
-    "goals": ["innovation & growth", "retention & engagement"],
-    "constraints": ["limited budget", "tight deadline"]
-  },
-  {
-    "name": "prioritization matrices (moscow, kano, etc.)",
-    "slug": "prioritization-matrices-moscow-kano-etc",
-    "stage": "define",
-    "speed": "fast",
-    "focus": "evaluative",
-    "outcomes": ["quantitative"],
-    "output_types": ["kpi-dashboard-analytics-report", "presentation"],
-    "device_types": ["mobile", "desktop", "electronics", "kiosk"],
-    "project_types": ["new", "existing"],
-    "user_base": ["new", "existing", "no users"],
-    "goals": ["optimization & conversion"],
-    "constraints": ["limited budget", "tight deadline"]
-  },
-  {
-    "name": "wireframing",
-    "slug": "wireframing",
-    "stage": "design",
-    "speed": "medium",
-    "focus": "generative",
-    "outcomes": ["insight"],
-    "output_types": ["wireframe", "interactive-prototype"],
-    "device_types": ["mobile", "desktop"],
-    "project_types": ["new", "existing"],
-    "user_base": ["new", "existing", "no users"],
-    "goals": ["innovation & growth"],
-    "constraints": ["limited budget", "tight deadline"]
-  },
-  {
-    "name": "low-fidelity prototyping",
-    "slug": "low-fidelity-prototyping",
-    "stage": "design",
-    "speed": "fast",
-    "focus": "generative",
-    "outcomes": ["qualitative"],
-    "output_types": ["interactive-prototype", "usability-report"],
-    "device_types": ["mobile", "desktop"],
-    "project_types": ["new", "existing"],
-    "user_base": ["new", "existing", "no users"],
-    "goals": ["innovation & growth"],
-    "constraints": ["limited budget", "tight deadline"]
-  },
-  {
-    "name": "information architecture (sitemaps, task flows)",
-    "slug": "information-architecture-sitemaps-task-flows",
-    "stage": "design",
-    "speed": "medium",
-    "focus": "generative",
-    "outcomes": ["insight"],
-    "output_types": ["information-architecture", "wireframe"],
-    "device_types": ["mobile", "desktop", "kiosk"],
-    "project_types": ["new", "existing"],
-    "user_base": ["new", "existing", "no users"],
-    "goals": ["optimization & conversion", "retention & engagement"],
-    "constraints": ["limited budget", "tight deadline"]
-  },
-  {
-    "name": "high-fidelity prototyping",
-    "slug": "high-fidelity-prototyping",
-    "stage": "develop",
-    "speed": "slow",
-    "focus": "generative",
-    "outcomes": ["qualitative"],
-    "output_types": ["interactive-prototype", "usability-report"],
-    "device_types": ["mobile", "desktop"],
-    "project_types": ["new", "existing"],
-    "user_base": ["new", "existing", "no users"],
-    "goals": ["innovation & growth"],
-    "constraints": ["limited budget"]
-  },
-  {
-    "name": "ui design (screens, components)",
-    "slug": "ui-design-screens-components",
-    "stage": "develop",
-    "speed": "medium",
-    "focus": "generative",
-    "outcomes": ["qualitative"],
-    "output_types": ["design-system"],
-    "device_types": ["mobile", "desktop"],
-    "project_types": ["new", "existing"],
-    "user_base": ["new", "existing", "no users"],
-    "goals": ["optimization & conversion", "retention & engagement"],
-    "constraints": ["limited budget"]
-  },
-  {
-    "name": "motion design / microinteractions",
-    "slug": "motion-design-microinteractions",
-    "stage": "develop",
-    "speed": "medium",
-    "focus": "generative",
-    "outcomes": ["qualitative"],
-    "output_types": ["interactive-prototype"],
-    "device_types": ["mobile", "desktop"],
-    "project_types": ["new", "existing"],
-    "user_base": ["new", "existing", "no users"],
-    "goals": ["retention & engagement"],
-    "constraints": ["limited budget"]
-  },
-  {
-    "name": "accessibility testing",
-    "slug": "accessibility-testing",
-    "stage": "develop",
-    "speed": "medium",
-    "focus": "evaluative",
-    "outcomes": ["qualitative", "quantitative"],
-    "output_types": ["usability-report", "accessibility-audio", "interactive-prototype"],
-    "device_types": ["mobile", "desktop"],
-    "project_types": ["new", "existing"],
-    "user_base": ["new", "existing", "no users"],
-    "goals": ["optimization & conversion", "retention & engagement"],
-    "constraints": ["limited budget", "tight deadline"]
-  },
-  {
-    "name": "a/b testing",
-    "slug": "a-b-testing",
-    "stage": "deliver",
-    "speed": "fast",
-    "focus": "evaluative",
-    "outcomes": ["quantitative"],
-    "output_types": ["kpi-dashboard-analytics-report"],
-    "device_types": ["mobile", "desktop"],
-    "project_types": ["existing"],
-    "user_base": ["existing"],
-    "goals": ["optimization & conversion"],
-    "constraints": ["limited budget"]
-  },
-  {
-    "name": "usability observation (validation)",
-    "slug": "usability-observation-validation",
-    "stage": "deliver",
-    "speed": "medium",
-    "focus": "evaluative",
-    "outcomes": ["qualitative", "insight"],
-    "output_types": ["usability-report", "interactive-prototype"],
-    "device_types": ["mobile", "desktop", "kiosk"],
-    "project_types": ["existing"],
-    "user_base": ["existing"],
-    "goals": ["optimization & conversion"],
-    "constraints": ["limited budget"]
-  },
-  {
-    "name": "post-launch analytics review",
-    "slug": "post-launch-analytics-review",
-    "stage": "deliver",
-    "speed": "fast",
-    "focus": "evaluative",
-    "outcomes": ["quantitative"],
-    "output_types": ["kpi-dashboard-analytics-report", "presentation", "usability-report"],
-    "device_types": ["mobile", "desktop"],
-    "project_types": ["existing"],
-    "user_base": ["existing"],
-    "goals": ["optimization & conversion", "retention & engagement"],
-    "constraints": ["limited budget"]
-  },
-  {
-    "name": "success metrics & kpis tracking",
-    "slug": "success-metrics-kpis-tracking",
-    "stage": "deliver",
-    "speed": "medium",
-    "focus": "evaluative",
-    "outcomes": ["quantitative"],
-    "output_types": ["kpi-dashboard-analytics-report", "presentation"],
-    "device_types": ["mobile", "desktop", "electronics", "kiosk"],
-    "project_types": ["existing"],
-    "user_base": ["existing"],
-    "goals": ["optimization & conversion", "retention & engagement"],
-    "constraints": ["limited budget"]
+  "techniques": [
+    { "id": "heuristic-evaluation", "label": "Heuristic Evaluation / Expert Review", "tags": ["fast","low-cost","expert","requires_no_users"], "estimated_weeks": 0.25, "cost_level": "low", "outputs": [] },
+    { "id": "expert-review", "label": "Expert UX Review", "tags": ["fast","low-cost","expert","requires_no_users"], "estimated_weeks": 0.5, "cost_level": "low", "outputs": [] },
+    { "id": "guerrilla-testing", "label": "Guerrilla Testing", "tags": ["fast","low-cost","moderate","requires_users_optional"], "estimated_weeks": 0.5, "cost_level": "low", "outputs": ["wireframe","interactive_prototype"] },
+    { "id": "quick-survey", "label": "Quick Survey (online)", "tags": ["fast","low-cost","quantitative","requires_users"], "estimated_weeks": 0.5, "cost_level": "low", "outputs": ["insight_report"] },
+    { "id": "recruit-survey-research", "label": "Recruit & Survey Target Users", "tags": ["moderate","requires_users","quantitative"], "estimated_weeks": 1, "cost_level": "medium", "outputs": ["insight_report"] },
+    { "id": "user-interviews", "label": "User Interviews (moderated)", "tags": ["moderate","qualitative","requires_users"], "estimated_weeks": 1, "cost_level": "medium", "outputs": ["persona_profile","journey_map"] },
+    { "id": "field-research", "label": "Field / Contextual Research", "tags": ["slow","qualitative","requires_users"], "estimated_weeks": 4, "cost_level": "high", "outputs": ["insight_report","journey_map"] },
+    { "id": "card-sorting", "label": "Card Sorting", "tags": ["moderate","ia","requires_users_optional"], "estimated_weeks": 1, "cost_level": "low", "outputs": ["information_architecture"] },
+    { "id": "tree-testing", "label": "Tree Testing", "tags": ["moderate","ia","requires_users"], "estimated_weeks": 1, "cost_level": "medium", "outputs": ["information_architecture"] },
+    { "id": "diary-study", "label": "Diary / Longitudinal Study", "tags": ["slow","qualitative","requires_users"], "estimated_weeks": 8, "cost_level": "high", "outputs": ["insight_report"] },
+    { "id": "competitive-analysis", "label": "Competitive / Market Analysis", "tags": ["fast","strategy","requires_no_users"], "estimated_weeks": 1, "cost_level": "low", "outputs": ["insight_report"] },
+    { "id": "analytics-review", "label": "Analytics Review & KPI Audit", "tags": ["fast","quantitative","requires_no_users"], "estimated_weeks": 0.5, "cost_level": "low", "outputs": ["kpi_dashboard_analytics_report"] },
+    { "id": "a-b-testing", "label": "A/B Testing", "tags": ["moderate","quantitative","requires_users"], "estimated_weeks": 4, "cost_level": "medium", "outputs": ["kpi_dashboard_analytics_report"] },
+    { "id": "journey-mapping", "label": "Journey Mapping", "tags": ["moderate","strategic","requires_users_optional"], "estimated_weeks": 1, "cost_level": "medium", "outputs": ["journey_map"] },
+    { "id": "persona-creation", "label": "Persona Creation", "tags": ["moderate","strategic","requires_users_optional"], "estimated_weeks": 1, "cost_level": "medium", "outputs": ["persona_profile"] },
+    { "id": "lofi-wireframes", "label": "Lo-fi Wireframes", "tags": ["fast","design","low-cost"], "estimated_weeks": 0.5, "cost_level": "low", "outputs": ["wireframe"] },
+    { "id": "rapid-prototyping", "label": "Rapid Prototyping (clickable)", "tags": ["fast","design","requires_no_users_optional"], "estimated_weeks": 1, "cost_level": "medium", "outputs": ["interactive_prototype"] },
+    { "id": "interactive-prototype-testing", "label": "Prototype Usability Testing", "tags": ["moderate","requires_users"], "estimated_weeks": 1.5, "cost_level": "medium", "outputs": ["interactive_prototype"] },
+    { "id": "hi-fi-prototype", "label": "Hi-fi Prototype / Visual Design", "tags": ["slow","design","high-cost"], "estimated_weeks": 3, "cost_level": "high", "outputs": ["ui_design","visual_design"] },
+    { "id": "design-system", "label": "Design System / Component Library", "tags": ["slow","design-heavy","requires_collaboration"], "estimated_weeks": 12, "cost_level": "high", "outputs": ["design_system"] },
+    { "id": "content-strategy", "label": "Content Strategy & Audit", "tags": ["moderate","content"], "estimated_weeks": 2, "cost_level": "medium", "outputs": ["content_strategy"] },
+    { "id": "storyboards", "label": "Storyboards", "tags": ["fast","creative"], "estimated_weeks": 0.5, "cost_level": "low", "outputs": ["storyboards"] },
+    { "id": "presentation_pack", "label": "Presentation / Stakeholder Deck", "tags": ["fast","communication"], "estimated_weeks": 0.5, "cost_level": "low", "outputs": ["presentation"] },
+    { "id": "video_case", "label": "Explainer / Demo Video", "tags": ["slow","communication"], "estimated_weeks": 2, "cost_level": "medium", "outputs": ["video"] },
+    { "id": "accessibility-audit", "label": "Accessibility Audit", "tags": ["moderate","compliance"], "estimated_weeks": 1, "cost_level": "medium", "outputs": ["accessibility_audio"] },
+    { "id": "service-blueprint", "label": "Service Blueprint", "tags": ["slow","strategic"], "estimated_weeks": 2, "cost_level": "medium", "outputs": ["service_blueprint"] },
+    { "id": "kpi-dashboard", "label": "KPI Dashboard / Analytics Report", "tags": ["moderate","analytics"], "estimated_weeks": 1, "cost_level": "medium", "outputs": ["kpi_dashboard_analytics_report"] },
+    { "id": "chatbot-voice-design", "label": "Chatbot / Voice Interface Design", "tags": ["moderate","specialized"], "estimated_weeks": 4, "cost_level": "high", "outputs": ["chatbot_voice_interface","voice_interaction"] }
+  ],
+  "rules": [
+    {
+      "id": "new_with_users_tight_1-2w",
+      "description": "New project with existing users + tight deadline 1-2 weeks",
+      "priority": 100,
+      "conditions": { "project_type": "new", "existing_users": true, "constraints": ["tight_deadline"], "deadline_weeks_max": 2 },
+      "recommendations": [
+        { "technique_id": "quick-survey", "score": 95, "reason": "fast quantitative insight from existing users" },
+        { "technique_id": "guerrilla-testing", "score": 90, "reason": "fast usability signal on early concepts" },
+        { "technique_id": "rapid-prototyping", "score": 85, "reason": "build quick clickable flows to validate" },
+        { "technique_id": "lofi-wireframes", "score": 70, "reason": "quick deliverable for alignment" }
+      ]
+    },
+    {
+      "id": "new_with_no_users_tight_1-2w",
+      "description": "New project without users + tight deadline",
+      "priority": 95,
+      "conditions": { "project_type": "new", "existing_users": false, "constraints": ["tight_deadline"], "deadline_weeks_max": 2 },
+      "recommendations": [
+        { "technique_id": "competitive-analysis", "score": 95, "reason": "fast market context without users" },
+        { "technique_id": "heuristic-evaluation", "score": 85, "reason": "expert quick wins" },
+        { "technique_id": "lofi-wireframes", "score": 70, "reason": "fast artifact to demo" }
+      ]
+    },
+    {
+      "id": "new_with_users_medium_3-4w",
+      "description": "New project with users + 3-4 weeks",
+      "priority": 90,
+      "conditions": { "project_type": "new", "existing_users": true, "constraints_excludes": ["tight_deadline"] , "deadline_weeks_min": 3, "deadline_weeks_max": 4 },
+      "recommendations": [
+        { "technique_id": "user-interviews", "score": 95 },
+        { "technique_id": "recruit-survey-research", "score": 90 },
+        { "technique_id": "journey-mapping", "score": 85 },
+        { "technique_id": "rapid-prototyping", "score": 80 }
+      ]
+    },
+    {
+      "id": "new_with_no_users_medium_3-4w",
+      "description": "New project without users + 3-4 weeks",
+      "priority": 88,
+      "conditions": { "project_type": "new", "existing_users": false, "constraints_excludes": ["tight_deadline"] , "deadline_weeks_min": 3, "deadline_weeks_max": 4 },
+      "recommendations": [
+        { "technique_id": "competitive-analysis", "score": 90 },
+        { "technique_id": "quick-survey", "score": 80, "reason": "recruit target users for quick feedback" },
+        { "technique_id": "card-sorting", "score": 70 }
+      ]
+    },
+    {
+      "id": "old_with_users_any",
+      "description": "Existing project with users (any deadline)",
+      "priority": 92,
+      "conditions": { "project_type": "old", "existing_users": true },
+      "recommendations": [
+        { "technique_id": "analytics-review", "score": 95 },
+        { "technique_id": "user-interviews", "score": 90 },
+        { "technique_id": "a-b-testing", "score": 85 },
+        { "technique_id": "journey-mapping", "score": 80 }
+      ]
+    },
+    {
+      "id": "old_with_no_users",
+      "description": "Existing project without users",
+      "priority": 86,
+      "conditions": { "project_type": "old", "existing_users": false },
+      "recommendations": [
+        { "technique_id": "heuristic-evaluation", "score": 90 },
+        { "technique_id": "expert-review", "score": 85 },
+        { "technique_id": "service-blueprint", "score": 70 }
+      ]
+    },
+    {
+      "id": "limited_budget_override",
+      "description": "If limited budget, boost low-cost techniques and demote high-cost ones",
+      "priority": 80,
+      "conditions": { "constraints": ["limited_budget"] },
+      "adjustments": { "tag_boost": ["low-cost"], "tag_penalty": ["high-cost","design-heavy"] }
+    },
+    {
+      "id": "tight_deadline_override_1-2w",
+      "description": "If tight deadline <= 2 weeks, only allow fast or low-cost methods",
+      "priority": 100,
+      "conditions": { "constraints": ["tight_deadline"], "deadline_weeks_max": 2 },
+      "adjustments": { "allowed_tags": ["fast","low-cost","expert","requires_no_users","requires_users_optional"] }
+    },
+    {
+      "id": "deadline_medium_3-4w",
+      "description": "If deadline 3-4 weeks, prefer mixed fast+moderate techniques",
+      "priority": 75,
+      "conditions": { "deadline_weeks_min": 3, "deadline_weeks_max": 4 },
+      "adjustments": { "tag_boost": ["moderate"] }
+    },
+    {
+      "id": "output_anchor_mobile_app",
+      "description": "If user requests Mobile App, boost mobile-affine techniques",
+      "priority": 95,
+      "conditions": { "output_type_includes": ["mobile-app"] },
+      "adjustments": { "output_affinity": ["mobile"] }
+    },
+    {
+      "id": "output_anchor_design_system",
+      "description": "If user requests Design System, boost design-system related techniques",
+      "priority": 98,
+      "conditions": { "output_type_includes": ["design-system"] },
+      "recommendations": [
+        { "technique_id": "design-system", "score": 100 },
+        { "technique_id": "hi-fi-prototype", "score": 80 },
+        { "technique_id": "content-strategy", "score": 70 }
+      ]
+    },
+    {
+      "id": "output_anchor_kpi_dashboard",
+      "description": "If user requests KPI Dashboard / Analytics Report",
+      "priority": 96,
+      "conditions": { "output_type_includes": ["kpi-dashboard-analytics-report"] },
+      "recommendations": [
+        { "technique_id": "analytics-review", "score": 100 },
+        { "technique_id": "a-b-testing", "score": 85 },
+        { "technique_id": "kpi-dashboard", "score": 80 }
+      ]
+    },
+    {
+      "id": "output_anchor_ui_design_or_visual",
+      "description": "If user requests UI Design or Visual Design",
+      "priority": 96,
+      "conditions": { "output_type_includes": ["ui-design","visual-design"] },
+      "recommendations": [
+        { "technique_id": "hi-fi-prototype", "score": 95 },
+        { "technique_id": "ui-design", "score": 90 },
+        { "technique_id": "visual-design", "score": 85 }
+      ]
+    },
+    {
+      "id": "device_mobile_specific",
+      "description": "If device_type includes mobile, prefer mobile testing/prototyping",
+      "priority": 70,
+      "conditions": { "device_type_includes": ["mobile"] },
+      "adjustments": { "boost_for_output_tags": ["mobile"] }
+    },
+    {
+      "id": "fallback_standard_set",
+      "description": "Default baseline recommendations when no specific rule applies",
+      "priority": 10,
+      "conditions": {},
+      "recommendations": [
+        { "technique_id": "lofi-wireframes", "score": 80 },
+        { "technique_id": "user-interviews", "score": 75 },
+        { "technique_id": "heuristic-evaluation", "score": 70 }
+      ]
+    }
+  ],
+  "helpers": {
+    "notes": "Rules are intentionally compact: engine should match all rules whose conditions are satisfied and then apply recommendations plus adjustments. Implement simple scoring aggregation: start 0 for each technique, add rule scores, apply tag boosts/penalties, then sort by final score and return top N (e.g., 5).",
+    "deadline_parsing_examples": [
+      { "input": "1-2 weeks", "normalized_weeks_min": 1, "normalized_weeks_max": 2 },
+      { "input": "3-4 weeks", "normalized_weeks_min": 3, "normalized_weeks_max": 4 },
+      { "input": "2months", "normalized_weeks_min": 8, "normalized_weeks_max": 9 }
+    ]
   }
-]
+}
