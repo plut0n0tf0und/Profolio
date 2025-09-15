@@ -105,13 +105,13 @@ export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey);
 function normalizeArrayFields<T extends Requirement | SavedResult | null>(item: T): T {
     if (!item) return item;
 
-    const arrayFields: (keyof T)[] = [
+    const arrayFields = [
         'output_type',
         'outcome',
         'device_type',
         'primary_goal',
         'constraints',
-    ];
+    ] as const;
 
     const normalizedItem = { ...item };
 
@@ -232,22 +232,24 @@ export async function saveOrUpdateResult(
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return { data: null, error: { message: 'User not authenticated', code: '401' } };
 
+    const normalizedRequirement = normalizeArrayFields(requirement);
+
     const dataToSave: Partial<SavedResult> = {
         user_id: user.id,
-        requirement_id: requirement.id,
-        project_name: requirement.project_name,
-        role: requirement.role,
-        date: typeof requirement.date === 'string' ? requirement.date : requirement.date?.toISOString(),
-        problem_statement: requirement.problem_statement,
-        output_type: requirement.output_type ?? [],
-        outcome: requirement.outcome ?? [],
-        device_type: requirement.device_type ?? [],
+        requirement_id: normalizedRequirement.id,
+        project_name: normalizedRequirement.project_name,
+        role: normalizedRequirement.role,
+        date: typeof normalizedRequirement.date === 'string' ? normalizedRequirement.date : normalizedRequirement.date?.toISOString(),
+        problem_statement: normalizedRequirement.problem_statement,
+        output_type: normalizedRequirement.output_type,
+        outcome: normalizedRequirement.outcome,
+        device_type: normalizedRequirement.device_type,
         stage_techniques: null, // This can be updated later
-        existing_users: requirement.existing_users,
-        primary_goal: requirement.primary_goal ?? [],
-        constraints: requirement.constraints ?? [],
-        project_type: requirement.project_type,
-        deadline: requirement.deadline,
+        existing_users: normalizedRequirement.existing_users,
+        primary_goal: normalizedRequirement.primary_goal,
+        constraints: normalizedRequirement.constraints,
+        project_type: normalizedRequirement.project_type,
+        deadline: normalizedRequirement.deadline,
     };
 
     const { data: existingResult, error: selectError } = await supabase
