@@ -136,18 +136,24 @@ export default function ResultPage() {
   }, [requirementId, router, toast]);
   
   const handleProceedToDashboard = async () => {
-    if (!requirement) {
+    setIsSaving(true);
+
+    // CRITICAL FIX: Re-fetch the requirement data right before saving.
+    // This ensures we have the absolute latest data from the 'requirements' table,
+    // including the selections from the final step, and prevents saving stale state.
+    const { data: latestRequirement, error: fetchError } = await fetchRequirementById(requirementId);
+    
+    if (fetchError || !latestRequirement) {
         toast({
             title: 'Project Data Not Loaded',
-            description: 'Cannot save project. Please try again.',
+            description: 'Cannot save project. Could not fetch latest data.',
             variant: 'destructive',
         });
+        setIsSaving(false);
         return;
     }
     
-    setIsSaving(true);
-    
-    const { data: savedResultData, error: saveError } = await saveOrUpdateResult(requirement);
+    const { data: savedResultData, error: saveError } = await saveOrUpdateResult(latestRequirement);
 
     if (saveError || !savedResultData?.id) {
        console.error("Error saving result:", saveError);
