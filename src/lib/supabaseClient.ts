@@ -101,19 +101,28 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey);
 
-// Helper function to normalize null array fields to empty arrays
+// Data Sanitization: Guarantees that nullable array fields from the DB are always arrays in the app.
 function normalizeArrayFields<T extends Requirement | SavedResult | null>(item: T): T {
     if (!item) return item;
 
-    // This function ensures that any field that should be an array is, at minimum, an empty array.
-    return {
-        ...item,
-        output_type: Array.isArray(item.output_type) ? item.output_type : [],
-        outcome: Array.isArray(item.outcome) ? item.outcome : [],
-        device_type: Array.isArray(item.device_type) ? item.device_type : [],
-        primary_goal: Array.isArray(item.primary_goal) ? item.primary_goal : [],
-        constraints: Array.isArray(item.constraints) ? item.constraints : [],
-    };
+    const arrayFields: (keyof T)[] = [
+        'output_type',
+        'outcome',
+        'device_type',
+        'primary_goal',
+        'constraints',
+    ];
+
+    const normalizedItem = { ...item };
+
+    for (const field of arrayFields) {
+        if (Array.isArray(normalizedItem[field])) {
+            continue; // Already an array, do nothing.
+        }
+        (normalizedItem as any)[field] = []; // If null, undefined, or not an array, default to [].
+    }
+    
+    return normalizedItem;
 }
 
 
@@ -485,5 +494,3 @@ export async function fetchRemixedTechniquesByProjectId(projectId: string): Prom
     if (error) console.error("Error fetching remixed techniques by project ID:", error);
     return { data, error };
 }
-
-    
