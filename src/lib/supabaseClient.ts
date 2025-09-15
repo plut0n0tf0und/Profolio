@@ -102,17 +102,18 @@ if (!supabaseUrl || !supabaseAnonKey) {
 export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey);
 
 // Helper function to normalize null array fields to empty arrays
-function normalizeArrayFields<T extends { [key: string]: any }>(item: T | null): T | null {
+function normalizeArrayFields<T extends { [K in keyof T]: T[K] }>(item: T | null): T | null {
   if (!item) return null;
-  const arrayFields = ['output_type', 'outcome', 'device_type', 'primary_goal', 'constraints'];
+  const arrayFields: (keyof T)[] = ['output_type', 'outcome', 'device_type', 'primary_goal', 'constraints'].filter(f => f in item) as (keyof T)[];
   const normalizedItem = { ...item };
   for (const field of arrayFields) {
     if (normalizedItem[field] === null) {
-      normalizedItem[field] = [];
+      (normalizedItem as any)[field] = [];
     }
   }
   return normalizedItem;
 }
+
 
 export async function deleteUserAccount(): Promise<{ error: any | null }> {
     const { error } = await supabase.rpc('delete_user_data');
