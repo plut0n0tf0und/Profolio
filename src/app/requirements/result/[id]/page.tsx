@@ -223,7 +223,7 @@ export default function ResultPage() {
 
       <main className="container mx-auto max-w-4xl p-4 md:p-8">
         <div className="space-y-8">
-          {isLoading ? <RequirementDetailSkeleton /> : requirement && (
+          {isLoading || !requirement ? <RequirementDetailSkeleton /> : (
             <Card>
               <CardHeader>
                 <CardTitle className="text-3xl">{requirement.project_name}</CardTitle>
