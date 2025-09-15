@@ -20,10 +20,21 @@ import { Calendar } from '@/components/ui/calendar';
 import { VerticalStepper, Step } from '@/components/ui/stepper';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import { CalendarIcon, Smartphone, Laptop, Plug, Monitor, Save, Eye, Loader2, Target, Info, CircuitBoard, BookOpen, Layers, MessageSquare, Clock } from 'lucide-react';
+import { CalendarIcon, Smartphone, Laptop, Plug, Monitor, Save, Eye, Loader2, Target, Info, CircuitBoard, BookOpen, Layers, MessageSquare, Clock, ChevronLeft } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+
 
 // Zod schema for validation
 const requirementSchema = z.object({
@@ -40,8 +51,8 @@ const requirementSchema = z.object({
   outcome: z.array(z.string()).min(1, 'Please select at least one desired outcome.'),
   output_type: z.array(z.string()).min(1, 'Please select at least one output type.'),
 }).refine(data => {
-    // If project_type is selected, existing_users must also be selected.
-    if (data.project_type && !data.existing_users) {
+    // If project_type is selected, existing_users must also be selected for the form to be valid.
+    if (data.project_type && (data.existing_users === undefined || data.existing_users === null)) {
         return false;
     }
     return true;
@@ -123,6 +134,7 @@ export default function RequirementsPageContent() {
   const [requirementId, setRequirementId] = useState<string | null>(searchParams.get('id'));
   const [isSaving, setIsSaving] = useState(false);
   const [showCustomDeadline, setShowCustomDeadline] = useState(false);
+  const [isBackAlertOpen, setIsBackAlertOpen] = useState(false);
 
   const form = useForm<FormData>({
     resolver: zodResolver(requirementSchema),
@@ -243,10 +255,46 @@ export default function RequirementsPageContent() {
     }
   };
 
+  const handleBackNavigation = () => {
+    if (form.formState.isDirty) {
+      setIsBackAlertOpen(true);
+    } else {
+      router.push('/dashboard');
+    }
+  };
+
+  const handleDiscardAndExit = () => {
+    router.push('/dashboard');
+  };
+
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <div className="container mx-auto max-w-4xl p-4 md:p-8">
+      <AlertDialog open={isBackAlertOpen} onOpenChange={setIsBackAlertOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>You have unsaved changes</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to leave? Your progress will be lost.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep Editing</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDiscardAndExit}>
+              Discard Changes
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center border-b border-border bg-background px-4">
+        <Button variant="ghost" size="sm" onClick={handleBackNavigation} className="flex items-center gap-2">
+            <ChevronLeft className="h-5 w-5" />
+            <span className="hidden md:inline">Back to Dashboard</span>
+        </Button>
+      </header>
+
+      <main className="container mx-auto max-w-4xl p-4 md:p-8">
         <FormProvider {...form}>
           <form onSubmit={(e) => e.preventDefault()} className="space-y-8">
             <Card>
@@ -604,7 +652,7 @@ export default function RequirementsPageContent() {
             </div>
           </form>
         </FormProvider>
-      </div>
+      </main>
     </div>
   );
 }
