@@ -116,10 +116,9 @@ function normalizeArrayFields<T extends Requirement | SavedResult | null>(item: 
     const normalizedItem = { ...item };
 
     for (const field of arrayFields) {
-        if (Array.isArray(normalizedItem[field])) {
-            continue; // Already an array, do nothing.
+        if (!Array.isArray(normalizedItem[field])) {
+            (normalizedItem as any)[field] = [];
         }
-        (normalizedItem as any)[field] = []; // If null, undefined, or not an array, default to [].
     }
     
     return normalizedItem;
