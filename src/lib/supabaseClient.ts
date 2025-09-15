@@ -105,13 +105,13 @@ export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey);
 function normalizeArrayFields<T extends Requirement | SavedResult | null>(item: T): T {
     if (!item) return item;
 
-    const arrayFields = [
+    const arrayFields: (keyof (Requirement & SavedResult))[] = [
         'output_type',
         'outcome',
         'device_type',
         'primary_goal',
         'constraints',
-    ] as const;
+    ];
 
     const normalizedItem = { ...item };
 
@@ -152,6 +152,11 @@ export async function insertRequirement(
   const requirementToInsert = {
     ...requirement,
     user_id: user.id,
+    output_type: requirement.output_type ?? [],
+    outcome: requirement.outcome ?? [],
+    device_type: requirement.device_type ?? [],
+    primary_goal: requirement.primary_goal ?? [],
+    constraints: requirement.constraints ?? [],
   };
 
   const { data, error } = await supabase
