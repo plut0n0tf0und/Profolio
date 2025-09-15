@@ -237,31 +237,31 @@ export default function ResultPage() {
                     <div>
                         <h4 className="font-semibold mb-2">Output Types</h4>
                         <div className="flex flex-wrap gap-2">
-                           {requirement.output_type?.map(tag => <Badge key={tag} variant="secondary">{outputTypeLabels?.[tag] || tag}</Badge>)}
+                           {(requirement.output_type ?? []).map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
                         </div>
                     </div>
                     <div>
                         <h4 className="font-semibold mb-2">Outcomes</h4>
                         <div className="flex flex-wrap gap-2">
-                           {requirement.outcome?.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
+                           {(requirement.outcome ?? []).map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
                         </div>
                     </div>
                     <div>
                         <h4 className="font-semibold mb-2">Device Types</h4>
                         <div className="flex flex-wrap gap-2">
-                           {requirement.device_type?.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
+                           {(requirement.device_type ?? []).map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
                         </div>
                     </div>
                     <div>
                       <h4 className="font-semibold mb-2">Primary Goal</h4>
                       <div className="flex flex-wrap gap-2">
-                         {requirement.primary_goal?.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
+                         {(requirement.primary_goal ?? []).map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
                       </div>
                     </div>
                     <div>
                       <h4 className="font-semibold mb-2">Constraints</h4>
                       <div className="flex flex-wrap gap-2">
-                         {requirement.constraints?.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
+                         {(requirement.constraints ?? []).map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
                       </div>
                     </div>
                      <div>
