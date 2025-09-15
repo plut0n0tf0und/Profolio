@@ -150,18 +150,12 @@ export default function ResultPage() {
       }
       
       setRequirement(data);
+      setStageTechniques(getFilteredTechniques(data));
       setIsLoading(false);
     };
 
     getRequirementData();
   }, [requirementId, router, toast]);
-
-  useEffect(() => {
-    if (requirement) {
-      const filteredTechniques = getFilteredTechniques(requirement);
-      setStageTechniques(filteredTechniques);
-    }
-  }, [requirement]);
   
   const handleProceedToDashboard = async () => {
     if (!requirement) {
