@@ -204,23 +204,25 @@ export default function RequirementsPageContent() {
 
     if (isValid) {
       setIsSaving(true);
-      const formData = form.getValues();
+      const allFormData = form.getValues();
       
-      // Construct the payload explicitly to ensure all fields, especially arrays, are correctly handled.
-      const payload: Partial<Requirement> = {
-          project_name: formData.project_name,
-          date: new Date(formData.date).toISOString(),
-          problem_statement: formData.problem_statement,
-          role: formData.role,
-          project_type: formData.project_type,
-          existing_users: formData.existing_users ? formData.existing_users === 'true' : undefined,
-          device_type: formData.device_type ?? [],
-          constraints: formData.constraints ?? [],
-          deadline: formData.deadline,
-          primary_goal: formData.primary_goal ?? [],
-          outcome: formData.outcome ?? [],
-          output_type: formData.output_type ?? [],
-      };
+      const payload: Partial<Requirement> = {};
+
+      // Only include fields from the current step in the payload
+      fieldsToValidate.forEach(fieldName => {
+          let value = allFormData[fieldName];
+
+          if (fieldName === 'date' && value) {
+              value = new Date(value as string | Date).toISOString();
+          }
+          if (fieldName === 'existing_users') {
+              value = value === 'true';
+          }
+          
+          if (value !== undefined) {
+             (payload as any)[fieldName] = value;
+          }
+      });
 
       let result;
       if (requirementId) {
@@ -230,7 +232,7 @@ export default function RequirementsPageContent() {
       }
 
       if (result.error) {
-          console.error("Error inserting requirement:", result.error);
+          console.error("Error saving requirement:", result.error);
           toast({ title: 'Save Failed', description: result.error.message || 'Could not save your progress.', variant: 'destructive' });
       } else if (result.data) {
           if (!requirementId) {
@@ -666,3 +668,5 @@ export default function RequirementsPageContent() {
     </div>
   );
 }
+
+    
