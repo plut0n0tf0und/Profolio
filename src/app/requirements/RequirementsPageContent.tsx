@@ -210,19 +210,21 @@ export default function RequirementsPageContent() {
 
       // Only include fields from the current step in the payload
       fieldsToValidate.forEach(fieldName => {
-          let value = allFormData[fieldName];
+        const value = allFormData[fieldName];
+  
+        if (value === undefined) {
+            return; // Don't save undefined fields
+        }
 
-          if (fieldName === 'date' && value) {
-              value = new Date(value as string | Date).toISOString();
-          }
-          if (fieldName === 'existing_users') {
-              value = value === 'true';
-          }
-          
-          if (value !== undefined) {
-             (payload as any)[fieldName] = value;
-          }
+        if (fieldName === 'date' && value) {
+            (payload as any)[fieldName] = new Date(value as string | Date).toISOString();
+        } else if (fieldName === 'existing_users') {
+            (payload as any)[fieldName] = value === 'true';
+        } else {
+            (payload as any)[fieldName] = value;
+        }
       });
+
 
       let result;
       if (requirementId) {
@@ -668,5 +670,3 @@ export default function RequirementsPageContent() {
     </div>
   );
 }
-
-    
