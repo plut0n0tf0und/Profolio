@@ -238,7 +238,7 @@ export async function saveOrUpdateResult(
     if (!user) return { data: null, error: { message: 'User not authenticated', code: '401' } };
 
     // **CRITICAL FIX**: Sanitize all data *before* attempting to save.
-    // This ensures nullish array fields become empty arrays.
+    // This ensures nullish array fields become empty arrays, and existing arrays are preserved.
     const dataToSave: Partial<SavedResult> = {
         user_id: user.id,
         requirement_id: requirement.id,
@@ -246,13 +246,13 @@ export async function saveOrUpdateResult(
         role: requirement.role || null,
         date: (requirement.date ? new Date(requirement.date).toISOString() : null),
         problem_statement: requirement.problem_statement || null,
-        output_type: requirement.output_type ?? [],
-        outcome: requirement.outcome ?? [],
-        device_type: requirement.device_type ?? [],
+        output_type: Array.isArray(requirement.output_type) ? requirement.output_type : [],
+        outcome: Array.isArray(requirement.outcome) ? requirement.outcome : [],
+        device_type: Array.isArray(requirement.device_type) ? requirement.device_type : [],
         stage_techniques: null, // This is intentionally null for now
         existing_users: requirement.existing_users ?? null,
-        primary_goal: requirement.primary_goal ?? [],
-        constraints: requirement.constraints ?? [],
+        primary_goal: Array.isArray(requirement.primary_goal) ? requirement.primary_goal : [],
+        constraints: Array.isArray(requirement.constraints) ? requirement.constraints : [],
         project_type: requirement.project_type || null,
         deadline: requirement.deadline || null,
     };
