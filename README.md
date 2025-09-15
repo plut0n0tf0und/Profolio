@@ -29,51 +29,6 @@ Profolio handles user authentication, data persistence, and all AI interactions,
 
 ---
 
-## Key Debugging Insights: The `.map()` of `undefined` Error
-
-A persistent and critical bug encountered during development was the `Uncaught TypeError: Cannot read properties of undefined (reading 'map')`. This section documents the root cause and the definitive solution for future reference.
-
-### Root Cause Analysis
-
-The error stemmed from a data mismatch between the PostgreSQL database and the React frontend, which cascaded through multiple layers of the application.
-
-1.  **Database Schema:** The `requirements` and `saved_results` tables defined several array-based columns as `text[] NULL` (e.g., `output_type`, `constraints`). When a user did not select any options for these fields, the database correctly stored the value as `NULL`.
-
-2.  **Data Access Layer (`src/lib/supabaseClient.ts`):** The Supabase client library translates a PostgreSQL `NULL` value into a JavaScript `null`. The initial versions of our data-fetching functions (`fetchRequirementById`, etc.) passed this `null` value directly to the application without sanitization.
-
-3.  **Business Logic Layer (`src/lib/uxTechniques.ts`):** The `getFilteredTechniques` function received the raw `requirement` object. It then attempted to call array methods like `.includes()` on properties that were `null` (e.g., `requirement.constraints.includes(...)`), causing the application to crash within its promise-based execution.
-
-4.  **UI Layer (`src/app/requirements/result/[id]/page.tsx`):** Simultaneously, the UI components would also receive the `null` values and attempt to render them by calling `.map()`, leading to the same crash on the client side.
-
-### The Definitive Solution
-
-The final, successful fix involved a multi-layered defense strategy, with the most critical change happening in the business logic layer.
-
-The core of the solution was to **sanitize the data at the earliest point of use.** In `src/lib/uxTechniques.ts`, the `getFilteredTechniques` function was modified to never trust its input. At the very beginning of the function, a "safeguard" was added to default any potentially `null` array fields to an empty array (`[]`).
-
-**Winning Code Snippet (from `uxTechniques.ts`):**
-```typescript
-export function getFilteredTechniques(requirement: Requirement): Record<string, { name: string; slug: string }[]> {
-    // --- SAFEGUARD ---
-    // This is the definitive fix. We ensure that any nullable array from the
-    // requirement object is defaulted to an empty array before any logic runs.
-    const safeRequirement = {
-        ...requirement,
-        constraints: requirement.constraints ?? [],
-        output_type: requirement.output_type ?? [],
-        primary_goal: requirement.primary_goal ?? [],
-        outcome: requirement.outcome ?? [],
-        device_type: requirement.device_type ?? [],
-    };
-    // --- END SAFEGUARD ---
-
-    // ... rest of the filtering logic now uses `safeRequirement`
-}
-```
-This ensures that the complex recommendation engine always operates on predictable, valid arrays, completely eliminating the bug at its most critical point.
-
----
-
 ## File Structure & Core Functionality
 
 This section breaks down the main directories and files to explain the project's architecture.
@@ -126,3 +81,52 @@ Contains helper functions, utilities, and client-side libraries.
 ### `src/services/`
 Contains simple, pure-logic helper functions.
 - **`password-generator.ts`**: A utility function to generate random, strong passwords for the "Suggest Password" feature.
+
+
+---
+
+
+## Key Debugging Insights: The `.map()` of `undefined` Error
+
+A persistent and critical bug encountered during development was the `Uncaught TypeError: Cannot read properties of undefined (reading 'map')`. This section documents the root cause and the definitive solution for future reference.
+
+### Root Cause Analysis
+
+The error stemmed from a data mismatch between the PostgreSQL database and the React frontend, which cascaded through multiple layers of the application.
+
+1.  **Database Schema:** The `requirements` and `saved_results` tables defined several array-based columns as `text[] NULL` (e.g., `output_type`, `constraints`). When a user did not select any options for these fields, the database correctly stored the value as `NULL`.
+
+2.  **Data Access Layer (`src/lib/supabaseClient.ts`):** The Supabase client library translates a PostgreSQL `NULL` value into a JavaScript `null`. The initial versions of our data-fetching functions (`fetchRequirementById`, etc.) passed this `null` value directly to the application without sanitization.
+
+3.  **Business Logic Layer (`src/lib/uxTechniques.ts`):** The `getFilteredTechniques` function received the raw `requirement` object. It then attempted to call array methods like `.includes()` on properties that were `null` (e.g., `requirement.constraints.includes(...)`), causing the application to crash within its promise-based execution.
+
+4.  **UI Layer (`src/app/requirements/result/[id]/page.tsx`):** Simultaneously, the UI components would also receive the `null` values and attempt to render them by calling `.map()`, leading to the same crash on the client side.
+
+### The Definitive Solution
+
+The final, successful fix involved a multi-layered defense strategy, with the most critical change happening in the business logic layer.
+
+The core of the solution was to **sanitize the data at the earliest point of use.** In `src/lib/uxTechniques.ts`, the `getFilteredTechniques` function was modified to never trust its input. At the very beginning of the function, a "safeguard" was added to default any potentially `null` array fields to an empty array (`[]`).
+
+**Winning Code Snippet (from `uxTechniques.ts`):**
+```typescript
+export function getFilteredTechniques(requirement: Requirement): Record<string, { name: string; slug: string }[]> {
+    // --- SAFEGUARD ---
+    // This is the definitive fix. We ensure that any nullable array from the
+    // requirement object is defaulted to an empty array before any logic runs.
+    const safeRequirement = {
+        ...requirement,
+        constraints: requirement.constraints ?? [],
+        output_type: requirement.output_type ?? [],
+        primary_goal: requirement.primary_goal ?? [],
+        outcome: requirement.outcome ?? [],
+        device_type: requirement.device_type ?? [],
+    };
+    // --- END SAFEGUARD ---
+
+    // ... rest of the filtering logic now uses `safeRequirement`
+}
+```
+This ensures that the complex recommendation engine always operates on predictable, valid arrays, completely eliminating the bug at its most critical point.
+
+---

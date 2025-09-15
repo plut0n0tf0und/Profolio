@@ -42,7 +42,6 @@ const SavedResultSchema = z.object({
   primary_goal: z.array(z.string()).optional().nullable(),
   constraints: z.array(z.string()).optional().nullable(),
   project_type: z.string().optional(),
-  deadline: z.string().optional().nullable(),
 });
 export type SavedResult = z.infer<typeof SavedResultSchema>;
 
@@ -246,15 +245,14 @@ export async function saveOrUpdateResult(
         role: normalizedRequirement.role,
         date: typeof normalizedRequirement.date === 'string' ? normalizedRequirement.date : normalizedRequirement.date?.toISOString(),
         problem_statement: normalizedRequirement.problem_statement,
-        output_type: normalizedRequirement.output_type,
-        outcome: normalizedRequirement.outcome,
-        device_type: normalizedRequirement.device_type,
+        output_type: normalizedRequirement.output_type ?? [],
+        outcome: normalizedRequirement.outcome ?? [],
+        device_type: normalizedRequirement.device_type ?? [],
         stage_techniques: null, // This can be updated later
         existing_users: normalizedRequirement.existing_users,
-        primary_goal: normalizedRequirement.primary_goal,
-        constraints: normalizedRequirement.constraints,
+        primary_goal: normalizedRequirement.primary_goal ?? [],
+        constraints: normalizedRequirement.constraints ?? [],
         project_type: normalizedRequirement.project_type,
-        deadline: normalizedRequirement.deadline,
     };
 
     const { data: existingResult, error: selectError } = await supabase
