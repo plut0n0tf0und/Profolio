@@ -100,17 +100,20 @@ const RequirementDetailSkeleton = () => (
   </div>
 );
 
-const BadgeGroup = ({ title, values }: { title: string, values: readonly string[] | null | undefined }) => (
-  <div>
-    <h4 className="font-semibold mb-2">{title}</h4>
-    <div className="flex flex-wrap gap-2">
-      {(values && values.length > 0)
-        ? values.map(tag => <Badge key={tag} variant="secondary">{outputTypeLabels[tag] || tag}</Badge>)
-        : <Badge variant="outline">N/A</Badge>
-      }
+const BadgeGroup = ({ title, values }: { title: string, values: readonly string[] | null | undefined }) => {
+  const displayValues = values ?? [];
+  return (
+    <div>
+      <h4 className="font-semibold mb-2">{title}</h4>
+      <div className="flex flex-wrap gap-2">
+        {displayValues.length > 0
+          ? displayValues.map(tag => <Badge key={tag} variant="secondary">{outputTypeLabels[tag] || tag}</Badge>)
+          : <Badge variant="outline">N/A</Badge>
+        }
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default function ResultPage() {
   const router = useRouter();
@@ -191,16 +194,6 @@ export default function ResultPage() {
     router.push(`/requirements?id=${requirementId}`);
   };
 
-  const safeRequirement = {
-    output_type: [],
-    outcome: [],
-    device_type: [],
-    primary_goal: [],
-    constraints: [],
-    ...requirement,
-  };
-
-
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
        <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between border-b bg-background px-4 md:px-6">
@@ -251,36 +244,36 @@ export default function ResultPage() {
             <>
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-3xl">{safeRequirement.project_name}</CardTitle>
+                  <CardTitle className="text-3xl">{requirement.project_name}</CardTitle>
                   <CardDescription>
-                    {safeRequirement.role} &middot; Created on {safeRequirement.date ? format(new Date(safeRequirement.date), 'PPP') : 'Date not available'}
+                    {requirement.role} &middot; Created on {requirement.date ? format(new Date(requirement.date), 'PPP') : 'Date not available'}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
                     <h4 className="font-semibold mb-2">Problem Statement</h4>
-                    <p className="text-muted-foreground">{safeRequirement.problem_statement || 'N/A'}</p>
+                    <p className="text-muted-foreground">{requirement.problem_statement || 'N/A'}</p>
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                    <BadgeGroup title="Output Types" values={safeRequirement.output_type} />
-                    <BadgeGroup title="Outcomes" values={safeRequirement.outcome} />
-                    <BadgeGroup title="Device Types" values={safeRequirement.device_type} />
+                    <BadgeGroup title="Output Types" values={requirement.output_type} />
+                    <BadgeGroup title="Outcomes" values={requirement.outcome} />
+                    <BadgeGroup title="Device Types" values={requirement.device_type} />
                     <div>
                       <h4 className="font-semibold mb-2">Project Type</h4>
                       <div className="flex flex-wrap gap-2">
-                        {safeRequirement.project_type ? <Badge variant="secondary" className="capitalize">{safeRequirement.project_type}</Badge> : <Badge variant="outline">N/A</Badge>}
+                        {requirement.project_type ? <Badge variant="secondary" className="capitalize">{requirement.project_type}</Badge> : <Badge variant="outline">N/A</Badge>}
                       </div>
                     </div>
                     <div>
                       <h4 className="font-semibold mb-2">Existing Users</h4>
                       <div className="flex flex-wrap gap-2">
-                        {safeRequirement.existing_users !== null && typeof safeRequirement.existing_users !== 'undefined' 
-                          ? <Badge variant="secondary">{safeRequirement.existing_users ? 'Yes' : 'No'}</Badge> 
+                        {requirement.existing_users !== null && typeof requirement.existing_users !== 'undefined' 
+                          ? <Badge variant="secondary">{requirement.existing_users ? 'Yes' : 'No'}</Badge> 
                           : <Badge variant="outline">N/A</Badge>}
                       </div>
                     </div>
-                    <BadgeGroup title="Primary Goal" values={safeRequirement.primary_goal} />
-                    <BadgeGroup title="Constraints" values={safeRequirement.constraints} />
+                    <BadgeGroup title="Primary Goal" values={requirement.primary_goal} />
+                    <BadgeGroup title="Constraints" values={requirement.constraints} />
                   </div>
                 </CardContent>
               </Card>
@@ -293,3 +286,5 @@ export default function ResultPage() {
     </div>
   );
 }
+
+    
