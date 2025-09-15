@@ -101,6 +101,18 @@ const RequirementDetailSkeleton = () => (
   </div>
 );
 
+const BadgeGroup = ({ title, values }: { title: string, values: readonly string[] | null | undefined }) => (
+  <div>
+    <h4 className="font-semibold mb-2">{title}</h4>
+    <div className="flex flex-wrap gap-2">
+      {(values && values.length > 0)
+        ? values.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)
+        : <Badge variant="outline">N/A</Badge>
+      }
+    </div>
+  </div>
+);
+
 export default function ProjectDetailPage() {
   const router = useRouter();
   const params = useParams();
@@ -203,48 +215,23 @@ export default function ProjectDetailPage() {
                   <p className="text-muted-foreground">{project.problem_statement || 'N/A'}</p>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                  <div>
-                    <h4 className="font-semibold mb-2">Output Types</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {project.output_type?.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold mb-2">Outcomes</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {project.outcome?.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold mb-2">Device Types</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {project.device_type?.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
-                    </div>
-                  </div>
+                  <BadgeGroup title="Output Types" values={project.output_type} />
+                  <BadgeGroup title="Outcomes" values={project.outcome} />
+                  <BadgeGroup title="Device Types" values={project.device_type} />
                    <div>
                     <h4 className="font-semibold mb-2">Project Type</h4>
                     <div className="flex flex-wrap gap-2">
-                      {project.project_type && <Badge variant="secondary" className="capitalize">{project.project_type}</Badge>}
+                      {project.project_type ? <Badge variant="secondary" className="capitalize">{project.project_type}</Badge> : <Badge variant="outline">N/A</Badge>}
                     </div>
                   </div>
                   <div>
                     <h4 className="font-semibold mb-2">Existing Users</h4>
                     <div className="flex flex-wrap gap-2">
-                      {project.existing_users !== null && typeof project.existing_users !== 'undefined' && <Badge variant="secondary">{project.existing_users ? 'Yes' : 'No'}</Badge>}
+                      {project.existing_users !== null && typeof project.existing_users !== 'undefined' ? <Badge variant="secondary">{project.existing_users ? 'Yes' : 'No'}</Badge> : <Badge variant="outline">N/A</Badge>}
                     </div>
                   </div>
-                   <div>
-                    <h4 className="font-semibold mb-2">Primary Goal</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {project.primary_goal && <Badge variant="secondary">{project.primary_goal}</Badge>}
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold mb-2">Constraints</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {project.constraints?.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
-                    </div>
-                  </div>
+                   <BadgeGroup title="Primary Goal" values={project.primary_goal} />
+                   <BadgeGroup title="Constraints" values={project.constraints} />
                 </div>
               </CardContent>
             </Card>

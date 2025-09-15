@@ -100,7 +100,7 @@ const RequirementDetailSkeleton = () => (
   </div>
 );
 
-const BadgeGroup = ({ title, values }: { title: string, values: string[] | null | undefined }) => (
+const BadgeGroup = ({ title, values }: { title: string, values: readonly string[] | null | undefined }) => (
   <div>
     <h4 className="font-semibold mb-2">{title}</h4>
     <div className="flex flex-wrap gap-2">
