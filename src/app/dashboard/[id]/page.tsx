@@ -101,17 +101,22 @@ const RequirementDetailSkeleton = () => (
   </div>
 );
 
-const BadgeGroup = ({ title, values }: { title: string, values: readonly string[] | null | undefined }) => (
-  <div>
-    <h4 className="font-semibold mb-2">{title}</h4>
-    <div className="flex flex-wrap gap-2">
-      {(values ?? []).length > 0
-        ? (values ?? []).map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)
-        : <Badge variant="outline">N/A</Badge>
-      }
+const BadgeGroup = ({ title, values }: { title: string, values: readonly string[] | null | undefined }) => {
+  // Safeguard: Default to an empty array if values are null/undefined to prevent crashes.
+  const displayValues = values ?? [];
+
+  return (
+    <div>
+      <h4 className="font-semibold mb-2">{title}</h4>
+      <div className="flex flex-wrap gap-2">
+        {displayValues.length > 0
+          ? displayValues.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)
+          : <Badge variant="outline">N/A</Badge>
+        }
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 export default function ProjectDetailPage() {
   const router = useRouter();
@@ -274,5 +279,3 @@ export default function ProjectDetailPage() {
     </div>
   );
 }
-
-    

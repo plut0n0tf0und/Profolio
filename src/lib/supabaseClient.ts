@@ -101,6 +101,19 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = createBrowserClient(supabaseUrl, supabaseAnonKey);
 
+// Helper function to normalize null array fields to empty arrays
+function normalizeArrayFields<T extends { [key: string]: any }>(item: T | null): T | null {
+  if (!item) return null;
+  const arrayFields = ['output_type', 'outcome', 'device_type', 'primary_goal', 'constraints'];
+  const normalizedItem = { ...item };
+  for (const field of arrayFields) {
+    if (normalizedItem[field] === null) {
+      normalizedItem[field] = [];
+    }
+  }
+  return normalizedItem;
+}
+
 export async function deleteUserAccount(): Promise<{ error: any | null }> {
     const { error } = await supabase.rpc('delete_user_data');
     if (error) console.error("Error deleting user account:", error);
@@ -137,7 +150,7 @@ export async function insertRequirement(
     .single();
   
   if (error) console.error("Error inserting requirement:", error);
-  return { data, error };
+  return { data: normalizeArrayFields(data), error };
 }
 
 export async function updateRequirement(
@@ -157,7 +170,7 @@ export async function updateRequirement(
       .single();
 
   if (error) console.error("Error updating requirement:", error);
-  return { data, error };
+  return { data: normalizeArrayFields(data), error };
 }
 
 export async function fetchRequirementsForUser(): Promise<{ data: Requirement[] | null; error: PostgrestError | null }> {
@@ -171,7 +184,7 @@ export async function fetchRequirementsForUser(): Promise<{ data: Requirement[] 
     .order('created_at', { ascending: false });
 
   if (error) console.error("Error fetching requirements for user:", error);
-  return { data, error };
+  return { data: data?.map(normalizeArrayFields) as Requirement[] | null, error };
 }
 
 export async function fetchRequirementById(
@@ -189,7 +202,7 @@ export async function fetchRequirementById(
 
   if (error) console.error("Error fetching requirement by ID:", error);
 
-  return { data, error };
+  return { data: normalizeArrayFields(data), error };
 }
 
 
@@ -235,7 +248,7 @@ export async function saveOrUpdateResult(
         .eq('id', existingResult.id)
         .single();
       if (error) throw error;
-      return { data, error: null };
+      return { data: normalizeArrayFields(data), error: null };
     } else {
       // It doesn't exist, create it.
       const { data, error } = await supabase
@@ -244,7 +257,7 @@ export async function saveOrUpdateResult(
         .select()
         .single();
       if (error) throw error;
-      return { data, error: null };
+      return { data: normalizeArrayFields(data), error: null };
     }
   } catch (error: any) {
     console.error("Error in saveOrUpdateResult:", error);
@@ -268,7 +281,7 @@ export async function updateSavedResult(
     .single();
 
   if (error) console.error("Error updating saved result:", error);
-  return { data, error };
+  return { data: normalizeArrayFields(data), error };
 }
 
 export async function fetchSavedResults(): Promise<{ data: SavedResult[] | null; error: PostgrestError | null }> {
@@ -282,7 +295,7 @@ export async function fetchSavedResults(): Promise<{ data: SavedResult[] | null;
         .order('created_at', { ascending: false });
 
     if (error) console.error("Error fetching saved results:", error);
-    return { data, error };
+    return { data: data?.map(normalizeArrayFields) as SavedResult[] | null, error };
 }
 
 export async function fetchSavedResultById(
@@ -299,7 +312,7 @@ export async function fetchSavedResultById(
     .maybeSingle();
 
   if (error) console.error("Error fetching saved result by ID:", error);
-  return { data, error };
+  return { data: normalizeArrayFields(data), error };
 }
 
 export async function deleteSavedResult(id: string): Promise<{ error: PostgrestError | null }> {
