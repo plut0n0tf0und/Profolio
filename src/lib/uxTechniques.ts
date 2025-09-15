@@ -21,15 +21,17 @@ interface TechniqueDetail {
   scoring_rules?: any;
 }
 
+// All stages that the UI expects to be present.
+const ALL_STAGES = ['Discover', 'Define', 'Design', 'Develop', 'Deliver'];
+
 const allTechniques: TechniqueDetail[] = techniqueDetailsData.techniques as unknown as TechniqueDetail[];
 
 
 /**
  * Checks for a non-empty intersection between two string arrays, ignoring case.
  */
-const doArraysIntersect = (reqArray: readonly string[] | undefined | null, techArray: readonly string[]): boolean => {
-  // Safeguard: Ensure reqArray is an array before processing.
-  if (!Array.isArray(reqArray) || reqArray.length === 0) return false;
+const doArraysIntersect = (reqArray: readonly string[], techArray: readonly string[]): boolean => {
+  if (!reqArray || reqArray.length === 0) return false;
   if (!techArray || techArray.length === 0) return false;
 
   const lowercasedReqSet = new Set(reqArray.map(item => item.toLowerCase()));
@@ -40,18 +42,20 @@ const doArraysIntersect = (reqArray: readonly string[] | undefined | null, techA
  * Retrieves a filtered and scored list of UX techniques based on project requirements.
  */
 export function getFilteredTechniques(requirement: Requirement): Record<string, { name: string; slug: string }[]> {
-  const recommendations: Record<string, { name: string; slug: string }[]> = {
-    Discover: [],
-    Define: [],
-    Design: [],
-    Develop: [],
-    Deliver: [],
-  };
+  const recommendations = ALL_STAGES.reduce((acc, stage) => {
+    acc[stage] = [];
+    return acc;
+  }, {} as Record<string, { name: string; slug: string }[]>);
 
   if (!requirement) return recommendations;
-
-  // Safeguard: Default potentially null/undefined arrays to empty arrays.
+  
+  // SAFEGUARDS: Immediately default all nullable array fields to empty arrays.
+  // This is the core fix to prevent crashes in the logic below.
   const safeConstraints = requirement.constraints ?? [];
+  const safeOutputTypes = requirement.output_type ?? [];
+  const safePrimaryGoals = requirement.primary_goal ?? [];
+  const safeOutcomes = requirement.outcome ?? [];
+  const safeDeviceTypes = requirement.device_type ?? [];
 
   // Detect lean mode (tight budget or deadline)
   const isLean = safeConstraints.some(c =>
@@ -102,12 +106,6 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
   let scoredTechniques = candidates.map(tech => {
     let score = 0;
 
-    // Safeguard: Ensure requirement arrays are valid before use.
-    const safeOutputTypes = requirement.output_type ?? [];
-    const safePrimaryGoals = requirement.primary_goal ?? [];
-    const safeOutcomes = requirement.outcome ?? [];
-    const safeDeviceTypes = requirement.device_type ?? [];
-
     // Huge bonus for matching output types
     if (doArraysIntersect(safeOutputTypes, tech.output_types)) score += 10;
 
@@ -128,9 +126,7 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
   });
 
   // PASS 3: Rank & Select
-  const stages = Object.keys(recommendations);
-
-  stages.forEach(stage => {
+  ALL_STAGES.forEach(stage => {
     const techniquesForStage = scoredTechniques
       .filter(tech => tech.stage.toLowerCase() === stage.toLowerCase())
       .sort((a, b) => b.score - a.score);
