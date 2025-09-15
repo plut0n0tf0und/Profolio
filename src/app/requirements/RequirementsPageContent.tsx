@@ -71,9 +71,9 @@ const deviceTypes = [
 ];
 
 const goalTypes = [
-    { id: 'innovation & growth', label: 'Innovation & Growth', description: 'Create new features, explore new markets' },
-    { id: 'optimization & conversion', label: 'Optimization & Conversion', description: 'Boost sign-ups, improve funnels' },
-    { id: 'retention & engagement', label: 'Retention & Engagement', description: 'Keep users active, reduce churn' },
+    { id: 'adoption', label: 'Adoption', description: 'Create new features, explore new markets' },
+    { id: 'task-success', label: 'Task Success', description: 'Boost sign-ups, improve funnels' },
+    { id: 'engagement', label: 'Engagement', description: 'Keep users active, reduce churn' },
 ];
 
 const outcomeTypes = [
