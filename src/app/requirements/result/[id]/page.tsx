@@ -223,71 +223,71 @@ export default function ResultPage() {
 
       <main className="container mx-auto max-w-4xl p-4 md:p-8">
         <div className="space-y-8">
-          {isLoading || !requirement ? <RequirementDetailSkeleton /> : (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-3xl">{requirement.project_name}</CardTitle>
-                <CardDescription>
-                  {requirement.role} &middot; Created on {requirement.date ? format(new Date(requirement.date), 'PPP') : 'Date not available'}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <h4 className="font-semibold mb-2">Problem Statement</h4>
-                  <p className="text-muted-foreground">{requirement.problem_statement || 'N/A'}</p>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                  <div>
-                      <h4 className="font-semibold mb-2">Output Types</h4>
-                      <div className="flex flex-wrap gap-2">
-                         {requirement.output_type?.map(tag => <Badge key={tag} variant="secondary">{outputTypeLabels[tag] || tag}</Badge>)}
-                      </div>
-                  </div>
-                  <div>
-                      <h4 className="font-semibold mb-2">Outcomes</h4>
-                      <div className="flex flex-wrap gap-2">
-                         {requirement.outcome?.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
-                      </div>
-                  </div>
-                  <div>
-                      <h4 className="font-semibold mb-2">Device Types</h4>
-                      <div className="flex flex-wrap gap-2">
-                         {requirement.device_type?.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
-                      </div>
-                  </div>
-                   <div>
-                    <h4 className="font-semibold mb-2">Project Type</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {requirement.project_type && <Badge variant="secondary" className="capitalize">{requirement.project_type}</Badge>}
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold mb-2">Existing Users</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {requirement.existing_users !== null && typeof requirement.existing_users !== 'undefined' && <Badge variant="secondary">{requirement.existing_users ? 'Yes' : 'No'}</Badge>}
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold mb-2">Primary Goal</h4>
-                     <div className="flex flex-wrap gap-2">
-                        {requirement.primary_goal?.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
-                    </div>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold mb-2">Constraints</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {requirement.constraints?.map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
-                    </div>
-                  </div>
-               </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {isLoading ? (
+          {isLoading || !requirement ? (
             <RequirementDetailSkeleton />
           ) : (
-            <FiveDProcess techniques={stageTechniques} projectId={requirementId} />
+            <>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-3xl">{requirement.project_name}</CardTitle>
+                  <CardDescription>
+                    {requirement.role} &middot; Created on {requirement.date ? format(new Date(requirement.date), 'PPP') : 'Date not available'}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <h4 className="font-semibold mb-2">Problem Statement</h4>
+                    <p className="text-muted-foreground">{requirement.problem_statement || 'N/A'}</p>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    <div>
+                        <h4 className="font-semibold mb-2">Output Types</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {(requirement.output_type || []).map(tag => <Badge key={tag} variant="secondary">{outputTypeLabels[tag] || tag}</Badge>)}
+                        </div>
+                    </div>
+                    <div>
+                        <h4 className="font-semibold mb-2">Outcomes</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {(requirement.outcome || []).map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
+                        </div>
+                    </div>
+                    <div>
+                        <h4 className="font-semibold mb-2">Device Types</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {(requirement.device_type || []).map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
+                        </div>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold mb-2">Project Type</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {requirement.project_type && <Badge variant="secondary" className="capitalize">{requirement.project_type}</Badge>}
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold mb-2">Existing Users</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {requirement.existing_users !== null && typeof requirement.existing_users !== 'undefined' && <Badge variant="secondary">{requirement.existing_users ? 'Yes' : 'No'}</Badge>}
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold mb-2">Primary Goal</h4>
+                      <div className="flex flex-wrap gap-2">
+                          {(requirement.primary_goal || []).map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold mb-2">Constraints</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {(requirement.constraints || []).map(tag => <Badge key={tag} variant="secondary">{tag}</Badge>)}
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <FiveDProcess techniques={stageTechniques} projectId={requirementId} />
+            </>
           )}
         </div>
       </main>
