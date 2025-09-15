@@ -30,7 +30,6 @@ import { Badge } from '@/components/ui/badge';
 import { ChevronLeft, Save, Loader2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
-import { outputTypeLabels } from '@/lib/output-type-labels';
 
 type StageTechniques = { [key: string]: {name: string, slug: string}[] };
 
