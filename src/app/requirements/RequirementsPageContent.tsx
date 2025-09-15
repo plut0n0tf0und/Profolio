@@ -46,7 +46,7 @@ const requirementSchema = z.object({
     }
     return true;
 }, {
-    message: 'Please answer the follow-up question about users/customers.',
+    message: 'Please select an option.',
     path: ['existing_users'],
 });
 
@@ -107,7 +107,6 @@ const outputTypes = {
     { id: 'video', label: 'Video' },
   ],
 };
-
 
 const constraintTypes = [
   { id: 'limited budget', label: 'Limited Budget' },
@@ -616,3 +615,5 @@ export default function RequirementsPageContent() {
     </div>
   );
 }
+
+    
