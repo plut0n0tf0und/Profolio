@@ -79,7 +79,7 @@ function parseDeadline(deadline?: string | null): number | null {
     return match ? parseInt(match[1], 10) : null;
 }
 
-export function getFilteredTechniques(requirement: Requirement): Record<string, { name: string; slug: string }[]> {
+export function getFilteredTechniques(requirement: Requirement): Record<string, { name: string; slug: string; reason: string | null }[]> {
     // --- SAFEGUARD ---
     // This is the definitive fix. We ensure that any nullable array from the
     // requirement object is defaulted to an empty array before any logic runs.
@@ -94,6 +94,7 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
     // --- END SAFEGUARD ---
 
     let scores: { [key: string]: number } = {};
+    let reasons: { [key: string]: { priority: number, text: string } } = {};
     allTechniques.forEach(t => scores[t.id] = 0);
     let allowedTechniques: Set<string> | null = null;
     const deadlineWeeks = parseDeadline(safeRequirement.deadline);
@@ -118,6 +119,9 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
             if (rule.recommendations) {
                 rule.recommendations.forEach(rec => {
                     scores[rec.technique_id] = (scores[rec.technique_id] || 0) + rec.score;
+                    if (rec.reason && (!reasons[rec.technique_id] || rule.priority > reasons[rec.technique_id].priority)) {
+                      reasons[rec.technique_id] = { priority: rule.priority, text: rec.reason };
+                    }
                 });
             }
             if (rule.adjustments) {
@@ -139,7 +143,11 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
     }
 
     let finalTechniques = allTechniques
-        .map(tech => ({ ...tech, score: scores[tech.id] }))
+        .map(tech => ({
+            ...tech,
+            score: scores[tech.id],
+            reason: reasons[tech.id]?.text || null
+        }))
         .filter(tech => tech.score > 0);
 
     if (allowedTechniques) {
@@ -148,15 +156,15 @@ export function getFilteredTechniques(requirement: Requirement): Record<string, 
     
     finalTechniques.sort((a, b) => b.score - a.score);
     
-    const recommendations: Record<string, { name: string; slug: string }[]> = ALL_STAGES.reduce((acc, stage) => {
+    const recommendations: Record<string, { name: string; slug: string; reason: string | null }[]> = ALL_STAGES.reduce((acc, stage) => {
         acc[stage] = [];
         return acc;
-    }, {} as Record<string, { name: string; slug: string }[]>);
+    }, {} as Record<string, { name: string; slug: string; reason: string | null }[]>);
 
     finalTechniques.slice(0, 10).forEach(tech => {
         const stage = techniqueToStageMapping[tech.id] || 'Define'; // Default to Define if no mapping
         if (recommendations[stage] && recommendations[stage].length < 3) {
-            recommendations[stage].push({ name: tech.label, slug: tech.slug });
+            recommendations[stage].push({ name: tech.label, slug: tech.slug, reason: tech.reason });
         }
     });
 

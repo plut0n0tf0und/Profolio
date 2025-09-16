@@ -1,3 +1,4 @@
+
 {
   "meta": {
     "version": "1.0",
@@ -42,10 +43,10 @@
       "priority": 100,
       "conditions": { "project_type": "new", "existing_users": true, "constraints": ["tight_deadline"], "deadline_weeks_max": 2 },
       "recommendations": [
-        { "technique_id": "quick-survey", "score": 95, "reason": "fast quantitative insight from existing users" },
-        { "technique_id": "guerrilla-testing", "score": 90, "reason": "fast usability signal on early concepts" },
-        { "technique_id": "rapid-prototyping", "score": 85, "reason": "build quick clickable flows to validate" },
-        { "technique_id": "lofi-wireframes", "score": 70, "reason": "quick deliverable for alignment" }
+        { "technique_id": "quick-survey", "score": 95, "reason": "Fast quantitative insight from existing users." },
+        { "technique_id": "guerrilla-testing", "score": 90, "reason": "Fast usability signal on early concepts from available users." },
+        { "technique_id": "rapid-prototyping", "score": 85, "reason": "Build quick clickable flows to validate with users." },
+        { "technique_id": "lofi-wireframes", "score": 70, "reason": "Quick deliverable for internal alignment before user testing." }
       ]
     },
     {
@@ -54,9 +55,9 @@
       "priority": 95,
       "conditions": { "project_type": "new", "existing_users": false, "constraints": ["tight_deadline"], "deadline_weeks_max": 2 },
       "recommendations": [
-        { "technique_id": "competitive-analysis", "score": 95, "reason": "fast market context without users" },
-        { "technique_id": "heuristic-evaluation", "score": 85, "reason": "expert quick wins" },
-        { "technique_id": "lofi-wireframes", "score": 70, "reason": "fast artifact to demo" }
+        { "technique_id": "competitive-analysis", "score": 95, "reason": "Provides fast market context without needing users." },
+        { "technique_id": "heuristic-evaluation", "score": 85, "reason": "Identify quick UX wins based on expert knowledge." },
+        { "technique_id": "lofi-wireframes", "score": 70, "reason": "A fast artifact to demonstrate core ideas internally." }
       ]
     },
     {
@@ -65,10 +66,10 @@
       "priority": 90,
       "conditions": { "project_type": "new", "existing_users": true, "constraints_excludes": ["tight_deadline"] , "deadline_weeks_min": 3, "deadline_weeks_max": 4 },
       "recommendations": [
-        { "technique_id": "user-interviews", "score": 95 },
-        { "technique_id": "recruit-survey-research", "score": 90 },
-        { "technique_id": "journey-mapping", "score": 85 },
-        { "technique_id": "rapid-prototyping", "score": 80 }
+        { "technique_id": "user-interviews", "score": 95, "reason": "Deeply understand the problem space by talking to users." },
+        { "technique_id": "recruit-survey-research", "score": 90, "reason": "Gather quantitative data to validate assumptions with a wider user base." },
+        { "technique_id": "journey-mapping", "score": 85, "reason": "Map out the user's experience to find pain points." },
+        { "technique_id": "rapid-prototyping", "score": 80, "reason": "Create interactive models to test with users." }
       ]
     },
     {
@@ -77,9 +78,9 @@
       "priority": 88,
       "conditions": { "project_type": "new", "existing_users": false, "constraints_excludes": ["tight_deadline"] , "deadline_weeks_min": 3, "deadline_weeks_max": 4 },
       "recommendations": [
-        { "technique_id": "competitive-analysis", "score": 90 },
-        { "technique_id": "quick-survey", "score": 80, "reason": "recruit target users for quick feedback" },
-        { "technique_id": "card-sorting", "score": 70 }
+        { "technique_id": "competitive-analysis", "score": 90, "reason": "Essential for understanding the market landscape for a new product." },
+        { "technique_id": "quick-survey", "score": 80, "reason": "Recruit target users online for quick, high-level feedback." },
+        { "technique_id": "card-sorting", "score": 70, "reason": "Define the information architecture with help from potential users." }
       ]
     },
     {
@@ -88,10 +89,10 @@
       "priority": 92,
       "conditions": { "project_type": "old", "existing_users": true },
       "recommendations": [
-        { "technique_id": "analytics-review", "score": 95 },
-        { "technique_id": "user-interviews", "score": 90 },
-        { "technique_id": "a-b-testing", "score": 85 },
-        { "technique_id": "journey-mapping", "score": 80 }
+        { "technique_id": "analytics-review", "score": 95, "reason": "Use existing data to find where users are struggling." },
+        { "technique_id": "user-interviews", "score": 90, "reason": "Talk to current users to understand the 'why' behind the data." },
+        { "technique_id": "a-b-testing", "score": 85, "reason": "Quantitatively test design changes with live traffic." },
+        { "technique_id": "journey-mapping", "score": 80, "reason": "Map the current user journey to identify areas for improvement." }
       ]
     },
     {
@@ -100,9 +101,9 @@
       "priority": 86,
       "conditions": { "project_type": "old", "existing_users": false },
       "recommendations": [
-        { "technique_id": "heuristic-evaluation", "score": 90 },
-        { "technique_id": "expert-review", "score": 85 },
-        { "technique_id": "service-blueprint", "score": 70 }
+        { "technique_id": "heuristic-evaluation", "score": 90, "reason": "A fast and effective way to find usability issues without users." },
+        { "technique_id": "expert-review", "score": 85, "reason": "Get an external expert's perspective on your product." },
+        { "technique_id": "service-blueprint", "score": 70, "reason": "Map out the entire service to find backend and frontend opportunities." }
       ]
     },
     {
@@ -139,9 +140,9 @@
       "priority": 98,
       "conditions": { "output_type_includes": ["design-system"] },
       "recommendations": [
-        { "technique_id": "design-system", "score": 100 },
-        { "technique_id": "hi-fi-prototype", "score": 80 },
-        { "technique_id": "content-strategy", "score": 70 }
+        { "technique_id": "design-system", "score": 100, "reason": "This is the direct output you requested." },
+        { "technique_id": "hi-fi-prototype", "score": 80, "reason": "High-fidelity designs are necessary to define system components." },
+        { "technique_id": "content-strategy", "score": 70, "reason": "Ensures the components work with real-world content." }
       ]
     },
     {
@@ -150,9 +151,9 @@
       "priority": 96,
       "conditions": { "output_type_includes": ["kpi-dashboard-analytics-report"] },
       "recommendations": [
-        { "technique_id": "analytics-review", "score": 100 },
-        { "technique_id": "a-b-testing", "score": 85 },
-        { "technique_id": "kpi-dashboard", "score": 80 }
+        { "technique_id": "analytics-review", "score": 100, "reason": "This is the primary method for gathering data for a KPI report." },
+        { "technique_id": "a-b-testing", "score": 85, "reason": "Provides concrete metrics to populate your dashboard." },
+        { "technique_id": "kpi-dashboard", "score": 80, "reason": "This is the direct output you requested." }
       ]
     },
     {
@@ -161,9 +162,8 @@
       "priority": 96,
       "conditions": { "output_type_includes": ["ui-design","visual-design"] },
       "recommendations": [
-        { "technique_id": "hi-fi-prototype", "score": 95 },
-        { "technique_id": "ui-design", "score": 90 },
-        { "technique_id": "visual-design", "score": 85 }
+        { "technique_id": "hi-fi-prototype", "score": 95, "reason": "The best way to represent final UI and Visual Design." },
+        { "technique_id": "rapid-prototyping", "score": 80, "reason": "Iterate on UI concepts quickly before committing to high-fidelity." }
       ]
     },
     {
@@ -179,9 +179,9 @@
       "priority": 10,
       "conditions": {},
       "recommendations": [
-        { "technique_id": "lofi-wireframes", "score": 80 },
-        { "technique_id": "user-interviews", "score": 75 },
-        { "technique_id": "heuristic-evaluation", "score": 70 }
+        { "technique_id": "lofi-wireframes", "score": 80, "reason": "A good starting point for any project to align on layout." },
+        { "technique_id": "user-interviews", "score": 75, "reason": "Fundamental for understanding user needs. Requires recruiting target users if none exist." },
+        { "technique_id": "heuristic-evaluation", "score": 70, "reason": "A fast, low-cost way to find basic usability issues." }
       ]
     }
   ],

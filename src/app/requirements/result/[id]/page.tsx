@@ -31,7 +31,7 @@ import { ChevronLeft, Save, Loader2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
 
-type StageTechniques = { [key: string]: {name: string, slug: string}[] };
+type StageTechniques = { [key: string]: {name: string, slug: string, reason: string | null}[] };
 
 const FiveDProcess = ({ techniques, projectId }: { techniques: StageTechniques, projectId: string }) => {
   // Always open all stages by default, even if empty.
@@ -58,11 +58,14 @@ const FiveDProcess = ({ techniques, projectId }: { techniques: StageTechniques, 
                   {stageTechs.length > 0 ? (
                     <div className="space-y-3 p-2">
                       {stageTechs.map(technique => (
-                        <Card key={technique.name} className="bg-background/50 border-border/50 hover:border-primary/50 transition-all">
-                          <CardContent className="flex items-center justify-between p-4">
-                             <Link href={`/dashboard/technique/${technique.slug}?projectId=${projectId}`} className="font-medium cursor-pointer hover:underline">
+                        <Card key={technique.name} className="bg-card-nested border-border/50 hover:border-primary/50 transition-all">
+                           <CardContent className="flex flex-col items-start gap-2 p-4">
+                            <Link href={`/dashboard/technique/${technique.slug}?projectId=${projectId}`} className="font-medium cursor-pointer hover:underline">
                               {technique.name}
                             </Link>
+                            {technique.reason && (
+                              <p className="text-sm text-muted-foreground">{technique.reason}</p>
+                            )}
                           </CardContent>
                         </Card>
                       ))}
